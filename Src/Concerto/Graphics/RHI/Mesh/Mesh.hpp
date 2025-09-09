@@ -29,7 +29,7 @@ namespace cct::gfx::rhi
 	public:
 		explicit Mesh(std::string filePath);
 		explicit Mesh(Vertices vertices);
-		virtual ~Mesh() = default;
+		~Mesh() = default;
 
 		[[nodiscard]] const std::string& GetPath() const;
 		[[nodiscard]] std::vector<std::shared_ptr<rhi::SubMesh>>& GetSubMeshes();
@@ -37,12 +37,13 @@ namespace cct::gfx::rhi
 
 		[[nodiscard]] bool LoadFromFile(const std::string& fileName);
 
-		[[nodiscard]] virtual std::unique_ptr<GpuMesh> BuildGpuMesh(rhi::MaterialBuilder& materialBuilder, const rhi::RenderPass& renderPass, rhi::Device& device) = 0;
+		[[nodiscard]] std::unique_ptr<GpuMesh> BuildGpuMesh(rhi::MaterialBuilder& materialBuilder, const rhi::RenderPass& renderPass, rhi::Device& device);
 	private:
 		std::string m_path;
 		std::vector<std::shared_ptr<rhi::SubMesh>> m_subMeshes;
 		std::unordered_map<std::string, std::shared_ptr<rhi::MaterialInfo>> m_materials;
 	};
+	using MeshPtr = std::shared_ptr<Mesh>;
 }
 
 #endif //CONCERTO_GRAPHICS_RHI_MESH_HPP

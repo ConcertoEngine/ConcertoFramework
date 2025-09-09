@@ -56,4 +56,12 @@
 #include <Concerto/Profiler/Profiler.hpp>
 #include <Concerto/Core/Result/Result.hpp>
 
+#include <Concerto/Graphics/Core/Defines.hpp>
+
+#define CCT_VK_LOG_TRACE(fmt, ...) CCT_GFX_LOG_TRACE("Vulkan-Backend", fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_VK_LOG_DEBUG(fmt, ...) CCT_GFX_LOG_DEBUG("Vulkan-Backend", fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_VK_LOG_INFO(fmt, ...) CCT_GFX_LOG_INFO("Vulkan-Backend", fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_VK_LOG_WARN(fmt, ...) CCT_GFX_LOG_WARN("Vulkan-Backend", fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_VK_LOG_ERROR(fmt, ...) CCT_GFX_LOG_ERROR("Vulkan-Backend", fmt __VA_OPT__(, ) __VA_ARGS__)
+#define CCT_VK_LOG_CRITICAL(fmt, ...) CCT_GFX_LOG_CRITICAL("Vulkan-Backend", fmt __VA_OPT__(, ) __VA_ARGS__)
 #endif //CONCERTO_GRAPHICS_BACKEND_VULKAN_DEFINES_HPP

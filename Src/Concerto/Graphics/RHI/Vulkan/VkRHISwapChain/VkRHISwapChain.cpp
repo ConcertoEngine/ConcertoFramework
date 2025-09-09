@@ -16,18 +16,18 @@
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandPool/VkRHICommandPool.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
-
+#include "Concerto/Graphics/Core/Window/Window.hpp"
 namespace cct::gfx::rhi
 {
 	VkRHISwapChain::VkRHISwapChain(rhi::VkRHIDevice& device, Window& window, PixelFormat pixelFormat, PixelFormat depthPixelFormat) :
 		rhi::SwapChain(pixelFormat, depthPixelFormat),
-		vk::SwapChain(device, window, Converters::ToVulkan(pixelFormat), Converters::ToVulkan(depthPixelFormat)),
-		m_pixelFormat(pixelFormat),
+		vk::SwapChain(device, window, Converters::ToVulkan(window.GetFormat()), Converters::ToVulkan(depthPixelFormat)),
+		m_pixelFormat(window.GetFormat()),
 		m_depthPixelFormat(depthPixelFormat)
 	{
 		CreateRenderPass();
 		CreateFrameBuffers(device);
-		m_commandPool = device.CreateCommandPool(QueueFamily::Graphics);
+		m_commandPool = device.CreateCommandPool(QueueFamily::Graphics, CommandBufferUsage::Primary);
 		m_presentQueue = std::make_unique<vk::Queue>(device, device.GetQueueFamilyIndex(vk::Queue::Type::Graphics));
 		CreateFrames();
 	}
@@ -38,6 +38,14 @@ namespace cct::gfx::rhi
 
 		if (m_presentQueue)
 			m_presentQueue->WaitIdle();
+
+		// Explicitly destroy frame buffers and render pass before base class destructor
+		// This ensures ImageViews are not referenced after they're destroyed
+		m_frameBuffers.clear();
+		m_frames.clear();
+		m_renderPass.reset();
+		m_commandPool.reset();
+		m_presentQueue.reset();
 	}
 
 	rhi::RenderPass* VkRHISwapChain::GetRenderPass()
@@ -172,7 +180,7 @@ namespace cct::gfx::rhi
 
 		std::vector<rhi::RenderPass::Attachment> attachment;
 		auto& colorAttachment = attachment.emplace_back();
-		colorAttachment.pixelFormat = GetPixelFormat();
+		colorAttachment.pixelFormat = Converters::FromVulkan(vk::SwapChain::GetImageFormat());
 		colorAttachment.loadOp = rhi::AttachmentLoadOp::Clear;
 		colorAttachment.storeOp = rhi::AttachmentStoreOp::Store;
 		colorAttachment.stencilLoadOp = rhi::AttachmentLoadOp::DontCare;
@@ -232,7 +240,7 @@ namespace cct::gfx::rhi
 	}
 
 	VkRHISwapChain::SwapChainFrame::SwapChainFrame(VkRHISwapChain& owner) :
-		m_commandBuffer(owner.GetCommandPool().AllocateCommandBuffer(CommandBufferUasge::Primary)),
+		m_commandBuffer(owner.GetCommandPool().AllocateCommandBuffer()),
 		m_renderFence(*owner.GetDevice()),
 		m_presentSemaphore(*owner.GetDevice()),
 		m_renderSemaphore(*owner.GetDevice()),

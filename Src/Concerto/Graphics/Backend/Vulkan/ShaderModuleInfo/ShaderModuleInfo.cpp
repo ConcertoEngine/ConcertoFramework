@@ -13,6 +13,32 @@
 
 namespace cct::gfx::vk
 {
+	namespace
+	{
+		VkShaderStageFlags ToVulkan(nzsl::ShaderStageType stageType)
+		{
+			switch (stageType)
+			{
+			case nzsl::ShaderStageType::Vertex:
+				return VK_SHADER_STAGE_VERTEX_BIT;
+			case nzsl::ShaderStageType::Fragment:
+				return VK_SHADER_STAGE_FRAGMENT_BIT;
+			case nzsl::ShaderStageType::Compute:
+				return VK_SHADER_STAGE_COMPUTE_BIT;
+			}
+			return VK_SHADER_STAGE_ALL;
+		}
+
+		VkShaderStageFlags ToVulkan(nzsl::ShaderStageTypeFlags stageType)
+		{
+			VkShaderStageFlags shaderStageBits = 0;
+			for (nzsl::ShaderStageType shaderStage : stageType)
+				shaderStageBits |= ToVulkan(shaderStage);
+
+			return shaderStageBits;
+		}
+	}
+
 	ShaderModuleInfo::ShaderModuleInfo(Device& device, std::string_view path) :
 		shaderAst(nzsl::ParseFromFile(path)),
 		sanitizedModule(nullptr)
@@ -62,8 +88,8 @@ namespace cct::gfx::vk
 		//callbacks.onOptionIndex = [](const std::string& name, std::size_t optIndex, const nzsl::SourceLocation& sourceLocation) {};
 		//callbacks.onStructIndex = [](const std::string& name, std::size_t structIndex, const nzsl::SourceLocation& sourceLocation) {};
 		//callbacks.onVariableIndex = [](const std::string& name, std::size_t varIndex, const nzsl::SourceLocation& sourceLocation) {};
-
-		reflectVisitor.Reflect(*resolvedModule, callbacks);
+		
+		reflectVisitor.Reflect(*sanitizedModule, callbacks);
 
 		nzsl::SpirvWriter spirvWriter;
 		auto sprivVersion = spirvWriter.GetMaximumSupportedVersion(1, 3);

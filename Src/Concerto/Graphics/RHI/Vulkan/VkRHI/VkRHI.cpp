@@ -6,6 +6,7 @@
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/RHI/Vulkan/VkRHI/VkRHI.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 
 namespace cct::gfx
@@ -105,5 +106,11 @@ namespace cct::gfx
 		default:
 			return {};
 		}
+	}
+
+	void VkRHI::SetLogger(Logger& logger)
+	{
+		Logger::SetContext(&logger);
+		vk::Instance::SetLogger(logger);
 	}
 }

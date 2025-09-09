@@ -447,6 +447,7 @@ namespace cct::gfx
 				if (event->window.windowID != window->GetId())
 					return 0;
 				MouseEvent wheelEvent = {};
+				wheelEvent.type = MouseEvent::Type::Wheel;
 				wheelEvent.mouseWheel.x = event->wheel.mouseX;
 				wheelEvent.mouseWheel.y = event->wheel.mouseX;
 				wheelEvent.mouseWheel.delta = event->wheel.preciseY;
@@ -509,7 +510,8 @@ namespace cct::gfx
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
 		Int32 result = SDL_ShowCursor(visible);
 		if (result < 0)
-			Logger::Warning("{}", SDL_GetError());
+			CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
+
 	}
 
 	void Window::SetCursorIcon(const std::string& path)
@@ -524,19 +526,19 @@ namespace cct::gfx
 		{
 			Int32 result = SDL_ShowCursor(SDL_DISABLE);
 			if (result < 0)
-				Logger::Warning("{}", SDL_GetError());
+				CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
 			result = SDL_SetRelativeMouseMode(SDL_TRUE);
 			if (result < 0)
-				Logger::Warning("{}", SDL_GetError());
+				CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
 		}
 		else
 		{
 			Int32 result = SDL_ShowCursor(SDL_ENABLE);
 			if (result < 0)
-				Logger::Warning("{}", SDL_GetError());
+				CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
 			result = SDL_SetRelativeMouseMode(SDL_FALSE);
 			if (result < 0)
-				Logger::Warning("{}", SDL_GetError());
+				CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
 		}
 	}
 

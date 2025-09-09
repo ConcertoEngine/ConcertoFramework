@@ -49,7 +49,15 @@ namespace cct::gfx::vk
 		std::vector<VkDescriptorPoolSize> sizes;
 		sizes.reserve(m_poolSizes.sizes.size());
 		for (const auto& [descriptorType, number] : m_poolSizes.sizes)
+		{
+			// Validate descriptor type is in valid range
+			if (descriptorType > VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT && descriptorType < 1000000000)
+			{
+				CCT_ASSERT_FALSE("ConcertoGraphics: Invalid VkDescriptorType {}, skipping", static_cast<int>(descriptorType));
+				continue;
+			}
 			sizes.push_back({ descriptorType, static_cast<UInt32>(number * DESCRIPTOR_POOL_SIZE) });
+		}
 		return std::make_shared<DescriptorPool>(*m_device, sizes);
 	}
 

@@ -96,6 +96,7 @@ namespace cct::gfx::vk
 		m_typeName(typeName),
 		m_debugReportObjectType(TypeNameToVkDebugReportObjectTypeEXT(typeName)),
 		m_vkHandle(vkHandle),
+		m_debugName(std::format("{}", typeName)),
 		m_createdOnThread(std::this_thread::get_id())
 	{
 	}

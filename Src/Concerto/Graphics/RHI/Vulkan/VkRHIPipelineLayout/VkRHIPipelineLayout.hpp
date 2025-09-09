@@ -1,5 +1,5 @@
 //
-// Created by arthur on 05/03/2026.
+// Created by arthur on 24/10/2025.
 //
 
 #ifndef CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIPIPELINELAYOUT_HPP
@@ -7,24 +7,24 @@
 
 #include <memory>
 #include <span>
-#include <vector>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/PipelineLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
-
-namespace cct::gfx::vk
-{
-	class Device;
-}
 
 namespace cct::gfx::rhi
 {
-	class VkRHIDescriptorSetLayout;
+	class VkRHIDevice;
 
-	class CONCERTO_GRAPHICS_RHI_BASE_API VkRHIPipelineLayout : public vk::PipelineLayout
+	class CONCERTO_GRAPHICS_RHI_BASE_API VkRHIPipelineLayout : public PipelineLayout, public vk::PipelineLayout
 	{
 	public:
-		VkRHIPipelineLayout(vk::Device& device, std::span<VkRHIDescriptorSetLayout*> layouts);
+		VkRHIPipelineLayout(VkRHIDevice& device, std::span<const std::shared_ptr<DescriptorSetLayout>> descriptorSetLayouts);
+
+		const std::vector<std::shared_ptr<DescriptorSetLayout>>& GetDescriptorSetLayouts() const override;
+
+	private:
+		std::vector<std::shared_ptr<DescriptorSetLayout>> m_descriptorSetLayouts;
 	};
 }
 

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Vertex/Vertex.hpp"
 
 namespace cct::gfx::vk
 {
@@ -16,8 +17,10 @@ namespace cct::gfx::vk
 	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API PipelineInfo
 	{
 	public:
-		PipelineInfo(std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkExtent2D windowExtent, std::shared_ptr<PipelineLayout>& pipelineLayout);
+		PipelineInfo();
+		PipelineInfo(std::vector<VkPipelineShaderStageCreateInfo> shaderStages, VkExtent2D windowExtent, const PipelineLayout& pipelineLayout);
 
+		VertexInputDescription m_vertexDescription;
 		std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages;
 		VkPipelineVertexInputStateCreateInfo m_vertexInputInfo;
 		VkPipelineInputAssemblyStateCreateInfo m_inputAssembly;
@@ -26,7 +29,7 @@ namespace cct::gfx::vk
 		VkPipelineRasterizationStateCreateInfo m_rasterizer;
 		VkPipelineColorBlendAttachmentState m_colorBlendAttachment;
 		VkPipelineMultisampleStateCreateInfo m_multisampling;
-		std::shared_ptr<PipelineLayout> m_pipelineLayout;
+		const PipelineLayout* m_pipelineLayout;
 		VkPipelineDepthStencilStateCreateInfo m_depthStencil;
 	};
 

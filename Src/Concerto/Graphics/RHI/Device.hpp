@@ -20,7 +20,9 @@
 #include "Concerto/Graphics/RHI/CommandPool.hpp"
 #include "Concerto/Graphics/RHI/Buffer.hpp"
 #include "Concerto/Graphics/RHI/GpuMesh.hpp"
-#include "Concerto/Graphics/RHI/Sampler/Sampler.hpp"
+#include "Concerto/Graphics/RHI/Queue.hpp"
+#include "Concerto/Graphics/RHI/Fence.hpp"
+#include "Concerto/Graphics/Core/ShaderModule.hpp"
 
 namespace cct::gfx
 {
@@ -38,6 +40,12 @@ namespace cct::gfx::rhi
 		DeviceType type;
 	};
 
+	class ShaderModule;
+	class DescriptorSetLayout;
+	class PipelineLayout;
+	class Pipeline;
+	class DescriptorSet;
+
 	class CONCERTO_GRAPHICS_RHI_BASE_API Device
 	{
 	public:
@@ -49,13 +57,28 @@ namespace cct::gfx::rhi
 		virtual std::unique_ptr<FrameBuffer> CreateFrameBuffer(UInt32 width, UInt32 height, const RenderPass& renderPass, const std::vector<std::unique_ptr<TextureView>>& attachments) = 0;
 		virtual std::unique_ptr<MaterialBuilder> CreateMaterialBuilder(const Vector2u& windowExtent) = 0;
 		virtual std::unique_ptr<TextureBuilder> CreateTextureBuilder() = 0;
-		virtual std::unique_ptr<CommandPool> CreateCommandPool(rhi::QueueFamily family) = 0;
+		virtual std::unique_ptr<CommandPool> CreateCommandPool(rhi::QueueFamily family, CommandBufferUsage usage) = 0;
 		virtual std::unique_ptr<Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) = 0;
+		virtual std::shared_ptr<ShaderModule> CreateShaderModule(const std::string& path) = 0;
+		virtual std::shared_ptr<DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) = 0;
+		virtual std::shared_ptr<PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<DescriptorSetLayout>>& descriptorSetLayouts) = 0;
+		virtual std::shared_ptr<Pipeline> CreatePipeline(const ShaderModule& vertexShader, const ShaderModule& fragmentShader,
+		                                                  const RenderPass& renderPass, const PipelineLayout& pipelineLayout,
+		                                                  const Vector2u& windowExtent) = 0;
+		virtual std::shared_ptr<Pipeline> CreatePipeline(const ShaderModule& vertexShader, const ShaderModule& fragmentShader,
+		                                                  const RenderPass& renderPass, const PipelineLayout& pipelineLayout,
+		                                                  const Vector2u& windowExtent, const PipelineConfig& config)
+		{
+			return CreatePipeline(vertexShader, fragmentShader, renderPass, pipelineLayout, windowExtent);
+		}
+		virtual std::unique_ptr<DescriptorSet> CreateDescriptorSet(const DescriptorSetLayout& layout) = 0;
 		virtual std::size_t GetMinimumUniformBufferOffsetAlignment() const = 0;
-		virtual std::unique_ptr<GpuMesh> CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, const RenderPass& renderPass) = 0;
+		virtual std::shared_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height) = 0;
 		virtual void WaitIdle() = 0;
-		virtual std::unique_ptr<Sampler> CreateSampler(SamplerFilter minFilter, SamplerFilter magFilter, SamplerAddressMode addressMode) = 0;
-		virtual std::unique_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height, TextureUsageFlags usage) = 0;
+		virtual std::unique_ptr<GpuMesh> CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, const RenderPass& renderPass) = 0;
+
+		virtual Queue& GetQueue(rhi::QueueFamily family) = 0;
+		virtual std::unique_ptr<Fence> CreateFence() = 0;
 	};
 }
 

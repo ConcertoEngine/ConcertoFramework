@@ -8,10 +8,16 @@
 #include <tiny_obj_loader.h>
 #include <Concerto/Core/Logger/Logger.hpp>
 #include <Concerto/Core/Cast.hpp>
+#include <Concerto/Core/ThreadPool/ThreadPool.hpp>
 
 #include "Concerto/Graphics/RHI/Mesh/Mesh.hpp"
 #include "Concerto/Graphics/RHI/Material.hpp"
 #include "Concerto/Graphics/RHI/SubMesh/SubMesh.hpp"
+#include "Concerto/Graphics/RHI/GpuMesh.hpp"
+#include "Concerto/Graphics/RHI/GpuSubMesh/GpuSubMesh.hpp"
+#include "Concerto/Graphics/RHI/MaterialBuilder.hpp"
+#include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
+#include "Concerto/Graphics/RHI/Device.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -45,14 +51,14 @@ namespace cct::gfx::rhi
 		{
 			if (!reader.Error().empty())
 			{
-				Logger::Error("TinyObjReader: {}", reader.Error());
+				CCT_RHI_LOG_WARN("TinyObjReader: {}", reader.Error());
 				return false;
 			}
 		}
 
 		if (!err.empty())
 		{
-			Logger::Error("Error while loading Obj file '{}': {}", fileName, err);
+			CCT_RHI_LOG_ERROR("Error while loading Obj file '{}': {}", fileName, err);
 			return false;
 		}
 
@@ -150,5 +156,58 @@ namespace cct::gfx::rhi
 	std::unordered_map<std::string, std::shared_ptr<rhi::MaterialInfo>>& Mesh::GetMaterials()
 	{
 		return m_materials;
+	}
+
+	std::unique_ptr<GpuMesh> Mesh::BuildGpuMesh(rhi::MaterialBuilder& materialBuilder, const rhi::RenderPass& renderPass, rhi::Device& device)
+	{
+		auto gpuMesh = std::make_unique<rhi::GpuMesh>();
+		auto& meshes = GetSubMeshes();
+
+		
+		std::atomic<std::size_t> totalVertices = 0;
+		{
+			for (auto& subMesh : meshes)
+			{
+				//threadPool.AddTask([&](){
+					auto& materialInfo = *subMesh->GetMaterial();
+					materialInfo.vertexShaderPath = "./Shaders/tri_mesh_ssbo.nzsl";
+					materialInfo.fragmentShaderPath = materialInfo.diffuseTexturePath.empty()
+						? "./Shaders/default_lit.nzsl"
+						: "./Shaders/textured_lit.nzsl";
+
+					rhi::MaterialPtr material = materialBuilder.BuildMaterial(materialInfo, renderPass);
+					auto gpuSubMesh = std::make_shared<GpuSubMesh>(subMesh, material, device);
+					//std::scoped_lock m_(subMeshesMutex);
+					gpuMesh->subMeshes.push_back(gpuSubMesh);
+				//});
+			}
+		}
+		// Sort by material for batch rendering
+		{
+			phmap::flat_hash_map<std::size_t, std::vector<GpuSubMeshPtr>> subMeshesByMaterial;
+			for (auto& subMesh : gpuMesh->subMeshes)
+			{
+				auto hash = MaterialInfo::Hash()(*subMesh->GetMaterial());
+				auto it = subMeshesByMaterial.find(hash);
+				if (it == subMeshesByMaterial.end())
+					subMeshesByMaterial.emplace(hash, std::vector{subMesh});
+				else
+					it->second.emplace_back(subMesh);
+			}
+
+			gpuMesh->subMeshes.clear();
+			for (auto& [hash, subMeshes] : subMeshesByMaterial)
+			{
+				for (auto& subMesh : subMeshes)
+					gpuMesh->subMeshes.emplace_back(subMesh);
+			}
+		}
+
+		TextureBuilder::Instance().Commit();
+
+		for (auto& gpuSubMesh : gpuMesh->subMeshes)
+			gpuSubMesh->UploadVertices();
+
+		return gpuMesh;
 	}
 }

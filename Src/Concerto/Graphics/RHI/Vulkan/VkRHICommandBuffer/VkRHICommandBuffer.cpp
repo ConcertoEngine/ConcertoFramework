@@ -9,21 +9,22 @@
 
 #include "Concerto/Graphics/RHI/Vulkan/VkMaterial.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
+
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIBuffer/VkRHIBuffer.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHISwapChain/VkRHISwapChain.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSet/VkRHIDescriptorSet.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIFrameBuffer/VKRHIFrameBuffer.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipelineLayout/VkRHIPipelineLayout.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSet/VkRHIDescriptorSet.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.hpp"
 
 namespace cct::gfx::rhi
 {
-	VkRHICommandBuffer::VkRHICommandBuffer(VkRHIDevice& device, vk::CommandPool& commandPool) :
-		vk::CommandBuffer(commandPool.AllocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY)),
-		m_device(device)
+	VkRHICommandBuffer::VkRHICommandBuffer(VkRHIDevice& device, vk::CommandPool& commandPool, CommandBufferUsage usage) :
+		vk::CommandBuffer(commandPool.AllocateCommandBuffer(usage == CommandBufferUsage::Primary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY : VK_COMMAND_BUFFER_LEVEL_SECONDARY)),
+		m_device(&device)
 	{
 	}
 
@@ -35,10 +36,6 @@ namespace cct::gfx::rhi
 	void VkRHICommandBuffer::End()
 	{
 		vk::CommandBuffer::End();
-	}
-
-	void VkRHICommandBuffer::Submit()
-	{
 	}
 
 	void VkRHICommandBuffer::Reset()
@@ -64,7 +61,7 @@ namespace cct::gfx::rhi
 		const VkRect2D vkScissor = {
 			.offset = {
 				.x = scissor.x,
-				.y = scissor.x
+				.y = scissor.y
 			},
 			.extent = {
 				.width = scissor.width,
@@ -110,18 +107,28 @@ namespace cct::gfx::rhi
 		vk::CommandBuffer::EndRenderPass();
 	}
 
-	void VkRHICommandBuffer::BindMaterial(const MaterialInfo& material)
+	void VkRHICommandBuffer::BindMaterial(const Material& material)
 	{
 		CCT_GFX_AUTO_PROFILER_SCOPE();
 
-		const vk::VkMaterial& vkMaterial = Cast<const vk::VkMaterial&>(material);
-		const VkPipeline pipeline = *vkMaterial.pipeline->Get();
-		//if (m_lastBoundedPipeline == pipeline)
-		//	return;
-		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-		//_lastBoundedPipeline = pipeline;
-		auto cpy = vkMaterial.descriptorSets; //fixme
-		vk::CommandBuffer::BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, *vkMaterial.pipeline->GetPipelineLayout()->Get(), cpy);
+		CCT_ASSERT(material.pipeline, "Invalid pointer");
+		const auto& pipeline = Cast<const VkRHIPipeline&>(*material.pipeline);
+
+		const auto& pipelineLayout = pipeline.GetLayout();
+
+		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetPipeline());
+		
+		std::vector<VkDescriptorSet> descriptorSets;
+		descriptorSets.resize(material.descriptorSets.size());
+		for (std::size_t i = 0; i < material.descriptorSets.size(); ++i)
+		{
+			CCT_ASSERT(material.descriptorSets[i], "Invalid pointer");
+			const auto& vkDescriptorSet = Cast<const VkRHIDescriptorSet&>(*material.descriptorSets[i]);
+			CCT_ASSERT(vkDescriptorSet.Get(), "Invalid pointer");
+			descriptorSets[i] = *vkDescriptorSet.Get()->Get();
+		}
+
+		vk::CommandBuffer::BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, *pipelineLayout.Get(), descriptorSets);
 	}
 
 	void VkRHICommandBuffer::BindVertexBuffer(const rhi::Buffer& buffer)
@@ -139,79 +146,197 @@ namespace cct::gfx::rhi
 		vk::CommandBuffer::Draw(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
 
-	void VkRHICommandBuffer::BindIndexBuffer(const rhi::Buffer& buffer, bool use32bitIndices)
+	void VkRHICommandBuffer::Copy(const Buffer& src, const Texture& dst)
 	{
-		const VkRHIBuffer& vkBuffer = Cast<const VkRHIBuffer&>(buffer);
-		m_device.vkCmdBindIndexBuffer(*Get(), *vkBuffer.Get(), 0,
+		const auto& vkBuffer = Cast<const VkRHIBuffer&>(src);
+		const auto& vkTexture = Cast<const VkRHITexture&>(dst);
+
+		VkBufferImageCopy copyRegion = {};
+		copyRegion.bufferOffset = 0;
+		copyRegion.bufferRowLength = 0;
+		copyRegion.bufferImageHeight = 0;
+		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyRegion.imageSubresource.mipLevel = 0;
+		copyRegion.imageSubresource.baseArrayLayer = 0;
+		copyRegion.imageSubresource.layerCount = 1;
+		copyRegion.imageExtent = {
+			.width = vkTexture.GetImage().GetExtent().width,
+			.height = vkTexture.GetImage().GetExtent().height,
+			.depth = 1
+		};
+
+		m_device->vkCmdCopyBufferToImage(
+			*vk::CommandBuffer::Get(), *static_cast<const vk::Buffer&>(vkBuffer).Get(),
+			*vkTexture.GetImage().Get(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1, &copyRegion);
+	}
+
+	void VkRHICommandBuffer::Copy(const Texture& src, const Buffer& dst)
+	{
+		const auto& vkTexture = Cast<const VkRHITexture&>(src);
+		const auto& vkBuffer = Cast<const VkRHIBuffer&>(dst);
+
+		VkBufferImageCopy copyRegion = {};
+		copyRegion.bufferOffset = 0;
+		copyRegion.bufferRowLength = 0;
+		copyRegion.bufferImageHeight = 0;
+		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		copyRegion.imageSubresource.mipLevel = 0;
+		copyRegion.imageSubresource.baseArrayLayer = 0;
+		copyRegion.imageSubresource.layerCount = 1;
+		copyRegion.imageExtent = {
+			.width = vkTexture.GetImage().GetExtent().width,
+			.height = vkTexture.GetImage().GetExtent().height,
+			.depth = 1
+		};
+
+		m_device->vkCmdCopyImageToBuffer(
+			*vk::CommandBuffer::Get(), *vkTexture.GetImage().Get(),
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			*static_cast<const vk::Buffer&>(vkBuffer).Get(),
+			1, &copyRegion);
+	}
+
+	void VkRHICommandBuffer::TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout)
+	{
+		const auto& vkTexture = Cast<const VkRHITexture&>(texture);
+
+		VkImageMemoryBarrier barrier = {};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = Converters::ToVulkan(oldLayout);
+		barrier.newLayout = Converters::ToVulkan(newLayout);
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = *vkTexture.GetImage().Get();
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+
+		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+
+		if (oldLayout == ImageLayout::Undefined && newLayout == ImageLayout::TransferDstOptimal)
+		{
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		}
+		else if (oldLayout == ImageLayout::TransferDstOptimal && newLayout == ImageLayout::ShaderReadOnlyOptimal)
+		{
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else if (oldLayout == ImageLayout::ShaderReadOnlyOptimal && newLayout == ImageLayout::TransferDstOptimal)
+		{
+			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		}
+		else if (oldLayout == ImageLayout::TransferDstOptimal && newLayout == ImageLayout::ColorAttachmentOptimal)
+		{
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		}
+		else if (oldLayout == ImageLayout::Undefined && newLayout == ImageLayout::ColorAttachmentOptimal)
+		{
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		}
+		else if (oldLayout == ImageLayout::ColorAttachmentOptimal && newLayout == ImageLayout::ShaderReadOnlyOptimal)
+		{
+			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else
+		{
+			barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+			dstStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+		}
+
+		m_device->vkCmdPipelineBarrier(
+			*vk::CommandBuffer::Get(), srcStage, dstStage, 0,
+			0, nullptr, 0, nullptr, 1, &barrier);
+	}
+
+	void VkRHICommandBuffer::BindPipeline(const Pipeline& pipeline)
+	{
+		const auto& vkPipeline = Cast<const VkRHIPipeline&>(pipeline);
+		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline.GetPipeline());
+	}
+
+	void VkRHICommandBuffer::BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set, UInt32 dynamicOffset)
+	{
+		const auto& vkLayout = Cast<const VkRHIPipelineLayout&>(layout);
+		const auto& vkSet = Cast<const VkRHIDescriptorSet&>(set);
+		vk::CommandBuffer::BindDescriptorSets(
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			*vkLayout.Get(),
+			0, 1, *vkSet.Get(), dynamicOffset);
+	}
+
+	void VkRHICommandBuffer::BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set)
+	{
+		const auto& vkLayout = Cast<const VkRHIPipelineLayout&>(layout);
+		const auto& vkSet = Cast<const VkRHIDescriptorSet&>(set);
+		vk::CommandBuffer::BindDescriptorSets(
+			VK_PIPELINE_BIND_POINT_GRAPHICS,
+			*vkLayout.Get(),
+			0, 1, *vkSet.Get());
+	}
+
+	void VkRHICommandBuffer::BindIndexBuffer(const Buffer& buffer, bool use32bitIndices)
+	{
+		const auto& vkBuffer = Cast<const VkRHIBuffer&>(buffer);
+		m_device->vkCmdBindIndexBuffer(
+			*vk::CommandBuffer::Get(),
+			*static_cast<const vk::Buffer&>(vkBuffer).Get(), 0,
 			use32bitIndices ? VK_INDEX_TYPE_UINT32 : VK_INDEX_TYPE_UINT16);
 	}
 
 	void VkRHICommandBuffer::DrawIndexed(UInt32 indexCount, UInt32 instanceCount, UInt32 firstIndex, Int32 vertexOffset, UInt32 firstInstance)
 	{
-		m_device.vkCmdDrawIndexed(*Get(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+		m_device->vkCmdDrawIndexed(*vk::CommandBuffer::Get(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 	}
 
-	void VkRHICommandBuffer::TransitionImageLayout(rhi::Texture& texture, rhi::ImageLayout oldLayout, rhi::ImageLayout newLayout,
-	                                               rhi::PipelineStageFlags srcStage, rhi::PipelineStageFlags dstStage,
-	                                               rhi::MemoryAccessFlags srcAccess, rhi::MemoryAccessFlags dstAccess)
+	void VkRHICommandBuffer::ClearTexture(const Texture& texture, const Vector4f& clearColor)
 	{
-		VkRHITexture& vkTexture = Cast<VkRHITexture&>(texture);
-
-		VkImageMemoryBarrier barrier{};
-		barrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout           = Converters::ToVulkan(oldLayout);
-		barrier.newLayout           = Converters::ToVulkan(newLayout);
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image               = *vkTexture.GetImage().Get();
-		barrier.subresourceRange    = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		barrier.srcAccessMask       = Converters::ToVulkan<VkAccessFlagBits>(srcAccess);
-		barrier.dstAccessMask       = Converters::ToVulkan<VkAccessFlagBits>(dstAccess);
-
-		m_device.vkCmdPipelineBarrier(
-			*Get(),
-			Converters::ToVulkan<VkPipelineStageFlagBits>(srcStage),
-			Converters::ToVulkan<VkPipelineStageFlagBits>(dstStage),
-			0, 0, nullptr, 0, nullptr, 1, &barrier);
+		const auto& vkTexture = Cast<const VkRHITexture&>(texture);
+		VkClearColorValue vkClearColor{{ clearColor.X(), clearColor.Y(), clearColor.Z(), clearColor[3] }};
+		VkImageSubresourceRange range{};
+		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		range.levelCount = 1;
+		range.layerCount = 1;
+		m_device->vkCmdClearColorImage(
+			*vk::CommandBuffer::Get(),
+			*vkTexture.GetImage().Get(),
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			&vkClearColor, 1, &range);
 	}
 
-	void VkRHICommandBuffer::ClearColorImage(rhi::Texture& texture, rhi::ImageLayout layout, float r, float g, float b, float a)
+	void VkRHICommandBuffer::ExecuteCommands(std::span<CommandBuffer*> secondaryCmdBufs)
 	{
-		VkRHITexture& vkTexture = Cast<VkRHITexture&>(texture);
-
-		VkClearColorValue clearColor{};
-		clearColor.float32[0] = r;
-		clearColor.float32[1] = g;
-		clearColor.float32[2] = b;
-		clearColor.float32[3] = a;
-
-		VkImageSubresourceRange range{ VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		m_device.vkCmdClearColorImage(*Get(), *vkTexture.GetImage().Get(),
-			Converters::ToVulkan(layout), &clearColor, 1, &range);
-	}
-
-	// ── Vulkan-only methods ───────────────────────────────────────────────────
-
-	void VkRHICommandBuffer::BindPipeline(VkPipelineBindPoint bindPoint, const VkRHIPipeline& pipeline)
-	{
-		vk::CommandBuffer::BindPipeline(bindPoint, *pipeline.Get());
-	}
-
-	void VkRHICommandBuffer::BindDescriptorSet(VkPipelineBindPoint bindPoint, const VkRHIPipelineLayout& layout,
-	                                           const VkRHIDescriptorSet& set, UInt32 dynamicOffset)
-	{
-		if (dynamicOffset == ~0U)
+		std::vector<VkCommandBuffer> vkCmdBufs;
+		vkCmdBufs.reserve(secondaryCmdBufs.size());
+		for (auto* cmdBuf : secondaryCmdBufs)
 		{
-			vk::CommandBuffer::BindDescriptorSets(bindPoint, *layout.Get(), 0, 1, set);
+			auto& vkCmdBuf = Cast<VkRHICommandBuffer&>(*cmdBuf);
+			vkCmdBufs.push_back(*static_cast<vk::CommandBuffer&>(vkCmdBuf).Get());
 		}
-		else
-		{
-			vk::CommandBuffer::BindDescriptorSets(bindPoint, *layout.Get(), 0, 1, set, dynamicOffset);
-		}
-	}
-
-	void VkRHICommandBuffer::UpdateDescriptorSets(std::span<VkWriteDescriptorSet> writes)
-	{
-		m_device.UpdateDescriptorSetsWrite(writes);
+		m_device->vkCmdExecuteCommands(*vk::CommandBuffer::Get(),
+			static_cast<UInt32>(vkCmdBufs.size()), vkCmdBufs.data());
 	}
 }

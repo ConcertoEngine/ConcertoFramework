@@ -10,8 +10,7 @@
 
 namespace cct::gfx::rhi
 {
-
-	enum class CommandBufferUasge
+	enum class CommandBufferUsage
 	{
 		Primary,
 		Secondary
@@ -20,9 +19,17 @@ namespace cct::gfx::rhi
 	class CONCERTO_GRAPHICS_RHI_BASE_API CommandPool
 	{
 	public:
+		CommandPool(CommandBufferUsage usage);
 		virtual ~CommandPool() = default;
-		virtual std::unique_ptr<CommandBuffer> AllocateCommandBuffer(CommandBufferUasge usage) = 0;
+
+		virtual std::unique_ptr<CommandBuffer> AllocateCommandBuffer() = 0;
+	protected:
+		CommandBufferUsage m_usage;
 	};
+
+	inline CommandPool::CommandPool(CommandBufferUsage usage): m_usage(usage)
+	{
+	}
 }
 
 #endif //CONCERTO_GRAPHICS_RHI_COMMANDPOOL_HPP

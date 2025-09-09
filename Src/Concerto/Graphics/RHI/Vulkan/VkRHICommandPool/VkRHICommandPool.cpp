@@ -9,14 +9,15 @@
 
 namespace cct::gfx::rhi
 {
-	VkRHICommandPool::VkRHICommandPool(VkRHIDevice& device, QueueFamily family) :
+	VkRHICommandPool::VkRHICommandPool(VkRHIDevice& device, QueueFamily family, CommandBufferUsage usage) :
+		rhi::CommandPool(usage),
 		vk::CommandPool(device, device.GetQueueFamilyIndex(static_cast<vk::Queue::Type>(family))), //fixme?
 		m_device(device)
 	{
 	}
 
-	std::unique_ptr<CommandBuffer> VkRHICommandPool::AllocateCommandBuffer(CommandBufferUasge usage)
+	std::unique_ptr<CommandBuffer> VkRHICommandPool::AllocateCommandBuffer()
 	{
-		return std::make_unique<VkRHICommandBuffer>(m_device, *this);
+		return std::make_unique<VkRHICommandBuffer>(m_device, *this, m_usage);
 	}
 }

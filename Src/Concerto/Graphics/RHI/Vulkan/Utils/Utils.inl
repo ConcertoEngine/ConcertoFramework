@@ -239,22 +239,22 @@ namespace cct::gfx::rhi
 		return {};
 	}
 
-	constexpr VkBufferUsageFlags Converters::ToVulkan(BufferUsageFlags flags)
+	constexpr VkBufferUsageFlags Converters::ToVulkan(BufferUsageFlags usage)
 	{
 		VkBufferUsageFlags vkFlags = 0;
-		if (flags & static_cast<BufferUsageFlags>(BufferUsage::Uniform))
+		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Uniform))
 			vkFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		if (flags & static_cast<BufferUsageFlags>(BufferUsage::Vertex))
+		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Vertex))
 			vkFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		if (flags & static_cast<BufferUsageFlags>(BufferUsage::Storage))
+		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Storage))
 			vkFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		if (flags & static_cast<BufferUsageFlags>(BufferUsage::TransferSrc))
+		if (usage & static_cast<BufferUsageFlags>(BufferUsage::TransferSrc))
 			vkFlags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		if (flags & static_cast<BufferUsageFlags>(BufferUsage::TransferDst))
+		if (usage & static_cast<BufferUsageFlags>(BufferUsage::TransferDst))
 			vkFlags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		if (flags & static_cast<BufferUsageFlags>(BufferUsage::Indirect))
+		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Indirect))
 			vkFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-		if (flags & static_cast<BufferUsageFlags>(BufferUsage::Index))
+		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Index))
 			vkFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 		return vkFlags;
 	}
@@ -335,65 +335,66 @@ namespace cct::gfx::rhi
 		return vkFlags;
 	}
 
-	constexpr VkFilter Converters::ToVulkan(SamplerFilter filter)
-	{
-		switch (filter)
-		{
-		case SamplerFilter::Nearest: return VK_FILTER_NEAREST;
-		case SamplerFilter::Linear:  return VK_FILTER_LINEAR;
-		}
-		return VK_FILTER_LINEAR;
-	}
 
-	constexpr VkSamplerAddressMode Converters::ToVulkan(SamplerAddressMode mode)
-	{
-		switch (mode)
-		{
-		case SamplerAddressMode::Repeat:         return VK_SAMPLER_ADDRESS_MODE_REPEAT;
-		case SamplerAddressMode::MirroredRepeat:  return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
-		case SamplerAddressMode::ClampToEdge:     return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		case SamplerAddressMode::ClampToBorder:   return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-		}
-		return VK_SAMPLER_ADDRESS_MODE_REPEAT;
-	}
-
-	constexpr VkImageUsageFlags Converters::ToVulkan(TextureUsageFlags usage)
-	{
-		VkImageUsageFlags vkFlags = 0;
-		if (usage & static_cast<TextureUsageFlags>(TextureUsage::Sampled))
-			vkFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
-		if (usage & static_cast<TextureUsageFlags>(TextureUsage::TransferSrc))
-			vkFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-		if (usage & static_cast<TextureUsageFlags>(TextureUsage::TransferDst))
-			vkFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-		if (usage & static_cast<TextureUsageFlags>(TextureUsage::ColorAttachment))
-			vkFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		return vkFlags;
-	}
-
-	constexpr VkDescriptorType Converters::ToVulkan(DescriptorType type)
-	{
-		switch (type)
-		{
-		case DescriptorType::UniformBuffer:        return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		case DescriptorType::UniformBufferDynamic: return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-		case DescriptorType::CombinedImageSampler: return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		case DescriptorType::StorageBuffer:        return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		}
-		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	}
-
-	constexpr VkShaderStageFlags Converters::ToVulkan(ShaderStageFlags stages)
+	constexpr VkShaderStageFlags Converters::ToVulkan(EnumFlags<cct::gfx::ShaderStage> stageFlags)
 	{
 		VkShaderStageFlags vkFlags = 0;
-		if (stages & static_cast<ShaderStageFlags>(ShaderStage::Vertex))
+		
+		if (stageFlags.Contains(cct::gfx::ShaderStage::Vertex))
 			vkFlags |= VK_SHADER_STAGE_VERTEX_BIT;
-		if (stages & static_cast<ShaderStageFlags>(ShaderStage::Fragment))
+		if (stageFlags.Contains(cct::gfx::ShaderStage::Fragment))
 			vkFlags |= VK_SHADER_STAGE_FRAGMENT_BIT;
-		if (stages & static_cast<ShaderStageFlags>(ShaderStage::Compute))
+		if (stageFlags.Contains(cct::gfx::ShaderStage::Compute))
 			vkFlags |= VK_SHADER_STAGE_COMPUTE_BIT;
+
 		return vkFlags;
 	}
+
+	constexpr VkDescriptorType Converters::ToVulkan(cct::gfx::ShaderBindingType bindingType)
+	{
+		switch (bindingType)
+		{
+		case cct::gfx::ShaderBindingType::Sampler:
+			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		case cct::gfx::ShaderBindingType::StorageBuffer:
+		case cct::gfx::ShaderBindingType::ReadOnlyStorageBuffer:
+			return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		case cct::gfx::ShaderBindingType::Texture:
+			return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+		case cct::gfx::ShaderBindingType::UniformBuffer:
+			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		case cct::gfx::ShaderBindingType::UniformBufferDynamic:
+			return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+		case cct::gfx::ShaderBindingType::CombinedImageSampler:
+			return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		}
+		return VK_DESCRIPTOR_TYPE_SAMPLER;
+	}
+
+	constexpr VkFormat Converters::ToVulkan(VertexAttributeFormat format)
+	{
+		switch (format)
+		{
+		case VertexAttributeFormat::Vec2f:      return VK_FORMAT_R32G32_SFLOAT;
+		case VertexAttributeFormat::Vec4f:      return VK_FORMAT_R32G32B32A32_SFLOAT;
+		case VertexAttributeFormat::RGBA8Unorm: return VK_FORMAT_R8G8B8A8_UNORM;
+		}
+		return VK_FORMAT_UNDEFINED;
+	}
+
+	constexpr PixelFormat Converters::FromVulkan(VkFormat format)
+	{
+		switch (format)
+		{
+		case VK_FORMAT_B8G8R8A8_UNORM: return PixelFormat::BGRA8uNorm;
+		case VK_FORMAT_B8G8R8A8_SRGB:  return PixelFormat::BGRA8_SRGB;
+		case VK_FORMAT_R8G8B8A8_UNORM: return PixelFormat::RGBA8uNorm;
+		case VK_FORMAT_R8G8B8A8_SRGB:  return PixelFormat::RGBA8_SRGB;
+		default:                        return PixelFormat::BGRA8uNorm;
+		}
+	}
 }
+
+#include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.inl"
 
 #endif //CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_UTILS_INL

@@ -124,7 +124,6 @@ namespace cct::gfx
 		projectionMatrix(2, 2) = m_far / (m_near - m_far);
 		projectionMatrix(2, 3) = -(2.f * m_far* m_near) / (m_far - m_near);
 		projectionMatrix(3, 2) = -1.f;
-		projectionMatrix(1, 1) *= -1.f;
 	}
 
 	void Camera::Rotate(double deltaX, double deltaY)

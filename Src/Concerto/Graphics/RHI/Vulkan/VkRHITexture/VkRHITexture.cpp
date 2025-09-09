@@ -10,10 +10,20 @@
 
 namespace cct::gfx::rhi
 {
-	VkRHITexture::VkRHITexture(vk::Device& device, PixelFormat format, Int32 width, Int32 height, VkImageAspectFlags aspectFlags, TextureUsageFlags usage) :
-		m_image(device.GetAllocator().AllocateImage(VkExtent2D{ static_cast<UInt32>(width), static_cast<UInt32>(height)}, Converters::ToVulkan(format), Converters::ToVulkan(usage))),
+	VkRHITexture::VkRHITexture(vk::Device& device, PixelFormat format, Int32 width, Int32 height, VkImageAspectFlags aspectFlags) :
+		m_image(device.GetAllocator().AllocateImage(
+			VkExtent2D{ static_cast<UInt32>(width), static_cast<UInt32>(height) },
+			Converters::ToVulkan(format),
+			(aspectFlags & VK_IMAGE_ASPECT_DEPTH_BIT)
+				? (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
+				: (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT))),
 		m_imageView(device, m_image, aspectFlags)
 	{
+	}
+
+	std::unique_ptr<rhi::TextureView> VkRHITexture::CreateView() const
+	{
+		return std::make_unique<VkRHITextureView>(m_imageView);
 	}
 
 	const vk::Image& VkRHITexture::GetImage() const

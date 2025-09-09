@@ -4,8 +4,13 @@
 
 #include <Concerto/Core/Assert.hpp>
 #include "Concerto/Graphics/RHI/Instance/Instance.hpp"
+
 #include "Concerto/Graphics/RHI/Instance/APIImpl.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHI/VkRHI.hpp"
+
+#ifdef CCT_PLATFORM_WINDOWS
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHI/Dx12RHI.hpp"
+#endif
 
 namespace cct::gfx::rhi
 {
@@ -15,19 +20,24 @@ namespace cct::gfx::rhi
 		CCT_GFX_AUTO_PROFILER_SCOPE();
 		switch (backend)
 		{
-		case Backend::ConcertoVulkan:
-			m_apiImpl = std::make_unique<VkRHI>();
-			m_apiImpl->Create(validationLevel);
-			break;
 		case Backend::Vulkan:
-		case Backend::DirectX11:
-		case Backend::DirectX12:
-		case Backend::Metal:
-		case Backend::OpenGL:
-		case Backend::OpenGLES:
-			CCT_ASSERT_FALSE("Not implemented");
+		{
+			if (Logger::GetContext())
+				VkRHI::SetLogger(*Logger::GetContext());
+			m_apiImpl = std::make_unique<VkRHI>();
 			break;
 		}
+#ifdef CCT_PLATFORM_WINDOWS
+		case Backend::DirectX12:
+		{
+			if (Logger::GetContext())
+				Dx12RHI::SetLogger(*Logger::GetContext());
+			m_apiImpl = std::make_unique<Dx12RHI>();
+			break;
+		}
+#endif
+		}
+		m_apiImpl->Create(validationLevel);
 	}
 
 	std::span<const DeviceInfo> Instance::EnumerateDevices() const
@@ -46,5 +56,10 @@ namespace cct::gfx::rhi
 	{
 		CCT_ASSERT(m_apiImpl, "ConcertoGraphics: Tying to get an invalid ApiImpl");
 		return m_apiImpl.get();
+	}
+
+	void Instance::SetLogger(Logger& logger)
+	{
+		Logger::SetContext(&logger);
 	}
 }

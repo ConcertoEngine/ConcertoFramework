@@ -8,6 +8,7 @@
 #include <vulkan/vulkan_core.h>
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Enums.hpp"
+#include "Concerto/Graphics/Core/ShaderModule.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -15,15 +16,14 @@ namespace cct::gfx::rhi
 	{
 	public:
 		static constexpr inline VkFormat ToVulkan(PixelFormat pixelFormat);
+		static constexpr inline PixelFormat FromVulkan(VkFormat format);
 		static constexpr inline VkAttachmentLoadOp ToVulkan(AttachmentLoadOp loadOp);
 		static constexpr inline VkAttachmentStoreOp ToVulkan(AttachmentStoreOp storeOp);
 		static constexpr inline VkImageLayout ToVulkan(ImageLayout layout);
 		static constexpr inline VkBufferUsageFlags ToVulkan(BufferUsageFlags usage);
-		static constexpr inline VkFilter ToVulkan(SamplerFilter filter);
-		static constexpr inline VkSamplerAddressMode ToVulkan(SamplerAddressMode mode);
-		static constexpr inline VkImageUsageFlags ToVulkan(TextureUsageFlags usage);
-		static constexpr inline VkDescriptorType ToVulkan(DescriptorType type);
-		static constexpr inline VkShaderStageFlags ToVulkan(ShaderStageFlags stages);
+		static constexpr inline VkShaderStageFlags ToVulkan(EnumFlags<cct::gfx::ShaderStage> stageFlags);
+		static constexpr inline VkDescriptorType ToVulkan(cct::gfx::ShaderBindingType bindingType);
+		static constexpr inline VkFormat ToVulkan(rhi::VertexAttributeFormat format);
 
 		template<typename T>
 		static constexpr inline VkFlags ToVulkan(UInt32 flags);

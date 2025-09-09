@@ -48,11 +48,9 @@ namespace cct::gfx::vk
 		void BindPipeline(VkPipelineBindPoint pipelineBindPoint, const Pipeline& pipeline) const;
 		void BindPipeline(VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline) const;
 
-		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout,
-				UInt32 firstSet, UInt32 descriptorSetCount, const DescriptorSet& descriptorSet,
-				UInt32 dynamicOffsets) const;
-		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout,
-				UInt32 firstSet, UInt32 descriptorSetCount, const DescriptorSet& descriptorSet) const;
+		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout,UInt32 firstSet, UInt32 descriptorSetCount, const DescriptorSet& descriptorSet,UInt32 dynamicOffsets) const;
+		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout,UInt32 firstSet, UInt32 descriptorSetCount, const DescriptorSet& descriptorSet) const;
+		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets) const;
 		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, std::span<DescriptorSet> descriptorSets) const;
 		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, std::span<std::shared_ptr<DescriptorSet>> descriptorSets) const;
 

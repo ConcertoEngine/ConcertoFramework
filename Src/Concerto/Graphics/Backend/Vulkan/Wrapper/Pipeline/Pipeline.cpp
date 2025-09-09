@@ -76,10 +76,10 @@ namespace cct::gfx::vk
 		return colorBlending;
 	}
 
-	std::shared_ptr<PipelineLayout> Pipeline::GetPipelineLayout() const
+	const PipelineLayout& Pipeline::GetPipelineLayout() const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
-		return m_pipelineInfo.m_pipelineLayout;
+		return *m_pipelineInfo.m_pipelineLayout;
 	}
 
 	VkResult Pipeline::BuildPipeline()
@@ -89,7 +89,6 @@ namespace cct::gfx::vk
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
 		VkPipelineViewportStateCreateInfo viewportState{};
-		VkPipelineColorBlendAttachmentState colorBlendAttachment(VulkanInitializer::ColorBlendAttachmentState());
 
 		VkDynamicState dynamicState[] = {
 			VK_DYNAMIC_STATE_VIEWPORT,
@@ -110,7 +109,7 @@ namespace cct::gfx::vk
 		colorBlending.logicOpEnable = VK_FALSE;
 		colorBlending.logicOp = VK_LOGIC_OP_COPY;
 		colorBlending.attachmentCount = 1;
-		colorBlending.pAttachments = &colorBlendAttachment;
+		colorBlending.pAttachments = &m_pipelineInfo.m_colorBlendAttachment;
 
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.pNext = nullptr;

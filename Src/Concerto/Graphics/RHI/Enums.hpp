@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_ENUMS_HPP
 
 #include <type_traits>
+#include <vector>
 #include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Graphics/Core/PixelFormat.hpp>
 
@@ -120,67 +121,38 @@ namespace cct::gfx::rhi
 
 	enum class BufferUsage : UInt32
 	{
-		Uniform = 0x00000001,
-		Vertex = 0x00000002,
-		Storage = 0x00000004,
+		Uniform     = 0x00000001,
+		Vertex      = 0x00000002,
+		Storage     = 0x00000004,
 		TransferSrc = 0x00000008,
 		TransferDst = 0x00000010,
-		Indirect = 0x00000020,
-		Index = 0x00000040,
+		Indirect    = 0x00000020,
+		Index       = 0x00000040
 	};
 	using BufferUsageFlags = std::underlying_type_t<BufferUsage>;
 
-	enum class SamplerFilter : UInt8
+	enum class VertexAttributeFormat : UInt8
 	{
-		Nearest,
-		Linear
+		Vec2f,
+		Vec4f,
+		RGBA8Unorm,
 	};
 
-	enum class SamplerAddressMode : UInt8
+	struct VertexAttribute
 	{
-		Repeat,
-		MirroredRepeat,
-		ClampToEdge,
-		ClampToBorder
+		UInt32                location;
+		VertexAttributeFormat format;
+		UInt32                offset;
 	};
 
-	enum class TextureUsage : UInt8
+	struct PipelineConfig
 	{
-		Sampled         = 0x01,
-		TransferSrc     = 0x02,
-		TransferDst     = 0x04,
-		ColorAttachment = 0x08,
-	};
-	using TextureUsageFlags = std::underlying_type_t<TextureUsage>;
-
-	enum class DescriptorType : UInt8
-	{
-		UniformBuffer,
-		UniformBufferDynamic,
-		CombinedImageSampler,
-		StorageBuffer
-	};
-
-	enum class ShaderStage : UInt16
-	{
-		Vertex   = 0x01,
-		Fragment = 0x02,
-		Compute  = 0x04
-	};
-	using ShaderStageFlags = std::underlying_type_t<ShaderStage>;
-
-	struct DescriptorBinding
-	{
-		UInt32           binding;
-		DescriptorType   type;
-		UInt32           count      = 1;
-		ShaderStageFlags stageFlags = 0;
-	};
-
-	struct DescriptorPoolSize
-	{
-		DescriptorType type;
-		UInt32         count;
+		UInt32                       vertexStride = 0;
+		std::vector<VertexAttribute> vertexAttributes;
+		bool                         blendEnable        = false;
+		bool                         premultipliedAlpha = false;
+		bool                         depthTestEnable    = true;
+		bool                         depthWriteEnable   = true;
 	};
 
 	inline std::size_t PadUniformBuffer(std::size_t size, std::size_t minUniformBufferOffsetAlignment)

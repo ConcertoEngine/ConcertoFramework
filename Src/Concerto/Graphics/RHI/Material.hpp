@@ -7,6 +7,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include <Concerto/Core/Math/Vector/Vector.hpp>
 
@@ -14,6 +15,10 @@
 
 namespace cct::gfx::rhi
 {
+	class DescriptorSet;
+	class Pipeline;
+	class PipelineLayout;
+
 	class CONCERTO_GRAPHICS_RHI_BASE_API MaterialInfo
 	{
 	public:
@@ -54,6 +59,30 @@ namespace cct::gfx::rhi
 		std::string vertexShaderPath;
 		std::string fragmentShaderPath;
 	};
-	using MaterialPtr = std::shared_ptr<rhi::MaterialInfo>;
+
+	/**
+	 * @brief Material with GPU resources (pipeline, descriptor sets)
+	 * Inherits from MaterialInfo to contain material data
+	 */
+	class CONCERTO_GRAPHICS_RHI_BASE_API Material : public MaterialInfo
+	{
+	public:
+		Material() = default;
+		Material(MaterialInfo info) : MaterialInfo(std::move(info)) {}
+
+		// Delete copy operations (descriptor sets are unique_ptr)
+		Material(const Material&) = delete;
+		Material& operator=(const Material&) = delete;
+
+		// Allow move operations
+		Material(Material&&) = default;
+		Material& operator=(Material&&) = default;
+
+		std::shared_ptr<Pipeline> pipeline;
+		std::shared_ptr<PipelineLayout> pipelineLayout;
+		std::vector<std::shared_ptr<DescriptorSet>> descriptorSets;
+	};
+
+	using MaterialPtr = std::shared_ptr<rhi::Material>;
 }
 #endif //CONCERTO_GRAPHICS_INCLUDE_MATERIAL_HPP_

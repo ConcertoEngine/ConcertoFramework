@@ -20,6 +20,7 @@ namespace cct::gfx::vk
 	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Pipeline : public Object<VkPipeline>
 	{
 	public:
+		Pipeline() = default;
 		Pipeline(Device& device, PipelineInfo pipeLineInfo, const RenderPass& renderPass);
 		~Pipeline() override;
 
@@ -31,7 +32,7 @@ namespace cct::gfx::vk
 
 		VkResult Create(Device& device, const PipelineInfo& pipeLineInfo, const RenderPass& renderPass);
 
-		[[nodiscard]] std::shared_ptr<PipelineLayout> GetPipelineLayout() const;
+		[[nodiscard]] const PipelineLayout& GetPipelineLayout() const;
 		struct CreateInfo
 		{
 			VkPipelineViewportStateCreateInfo viewportState;

@@ -15,24 +15,28 @@
 
 namespace cct::gfx::rhi
 {
+	class Device;
+
 	class CONCERTO_GRAPHICS_RHI_BASE_API GpuSubMesh
 	{
 	public:
 		GpuSubMesh(rhi::SubMeshPtr meshPtr, rhi::MaterialPtr material);
-		virtual ~GpuSubMesh() = default;
+		GpuSubMesh(rhi::SubMeshPtr meshPtr, rhi::MaterialPtr material, rhi::Device& device);
+		~GpuSubMesh() = default;
 
 		[[nodiscard]] const Vertices& GetVertices() const;
 		[[nodiscard]] const rhi::MaterialPtr& GetMaterial() const;
 		[[nodiscard]] const rhi::SubMeshPtr& GetSubMesh() const;
 		const rhi::Buffer& GetVertexBuffer() const;
 
+		void UploadVertices();
+
 	private:
 		rhi::SubMeshPtr m_subMesh;
 		rhi::MaterialPtr m_material;
-	protected:
 		std::unique_ptr<rhi::Buffer> m_vertexBuffer;
 	};
 	using GpuSubMeshPtr = std::shared_ptr<GpuSubMesh>;
-} // cct::gfx::vk
+} // cct::gfx::rhi
 
 #endif //CONCERTO_GRAPHICS_RHI_GPUSUBMESH_HPP

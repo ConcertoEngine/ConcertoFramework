@@ -21,6 +21,7 @@ namespace cct::gfx::vk
 	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API DescriptorSetLayout : public Object<VkDescriptorSetLayout>
 	{
 	public:
+		DescriptorSetLayout() = default;
 		DescriptorSetLayout(Device& device, const std::vector<VkDescriptorSetLayoutBinding>& bindings);
 		~DescriptorSetLayout() override;
 

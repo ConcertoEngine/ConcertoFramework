@@ -31,6 +31,7 @@ namespace cct::gfx::rhi
 		                 static_cast<TextureUsageFlags>(TextureUsage::Sampled) |
 		                 static_cast<TextureUsageFlags>(TextureUsage::TransferDst)));
 
+		std::unique_ptr<rhi::TextureView> CreateView() const override;
 		const vk::Image& GetImage() const;
 		const vk::ImageView& GetImageView() const;
 

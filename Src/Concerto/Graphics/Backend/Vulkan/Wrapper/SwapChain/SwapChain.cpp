@@ -52,7 +52,6 @@ namespace cct::gfx::vk
 
 		m_device = &device;
 		m_windowExtent = { .width = window.GetWidth(), .height = window.GetHeight() },
-		m_swapChainImageFormat = colorFormat;
 		m_depthImage = device.GetAllocator().AllocateImage(m_windowExtent, depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
 
 		m_lastResult = m_depthImageView.Create(device, m_depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
@@ -66,11 +65,24 @@ namespace cct::gfx::vk
 		if (m_lastResult != VK_SUCCESS)
 			return m_lastResult;
 
-		m_lastResult = m_depthImageView.Create(*GetDevice(), m_depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
-		if (m_lastResult != VK_SUCCESS)
-			return m_lastResult;
-
 		PhysicalDevice::SurfaceSupportDetails surfaceSupportDetails = m_device->GetPhysicalDevice().GetSurfaceSupportDetails(m_surface);
+
+		// Select the best format actually supported by the surface
+		VkFormat selectedFormat = VK_FORMAT_UNDEFINED;
+		for (const VkSurfaceFormatKHR& surfaceFormat : surfaceSupportDetails.formats)
+		{
+			if (surfaceFormat.format == colorFormat)
+			{
+				selectedFormat = colorFormat;
+				break;
+			}
+		}
+		if (selectedFormat == VK_FORMAT_UNDEFINED && !surfaceSupportDetails.formats.empty())
+			selectedFormat = surfaceSupportDetails.formats[0].format;
+		else if (selectedFormat == VK_FORMAT_UNDEFINED)
+			selectedFormat = colorFormat;
+		m_swapChainImageFormat = selectedFormat;
+
 		VkSwapchainCreateInfoKHR swapChainCreateInfo = {};
 		UInt32 imageCount = surfaceSupportDetails.capabilities.minImageCount + 1;
 		if (surfaceSupportDetails.capabilities.maxImageCount > 0 && imageCount > surfaceSupportDetails.capabilities.maxImageCount)

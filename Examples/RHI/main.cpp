@@ -18,7 +18,6 @@
 
 #include <Concerto/Graphics/RHI/Frame.hpp>
 #include <Concerto/Graphics/RHI/Mesh/Mesh.hpp>
-#include <Concerto/Graphics/RHI/Vulkan/VkRHIMesh/VkRHIMesh.hpp>
 
 #include "Concerto/Graphics/Core/Camera/Camera.hpp"
 #include "Concerto/Graphics/Core/DisplayManager/DisplayManager.hpp"
@@ -32,6 +31,9 @@ int main()
 {
 	try
 	{
+		Logger logger;
+		Logger::SetContext(&logger);
+
 		DisplayManager displayManager;
 		auto displayInfos = displayManager.EnumerateDisplaysInfos();
 
@@ -48,7 +50,7 @@ int main()
 		auto window = displayManager.CreateWindow(1, "Concerto Graphics", 1280, 720);
 		Input& inputManager = window->GetInputManager();
 
-		rhi::Instance rInstance;
+		rhi::Instance rInstance(rhi::Instance::Backend::Vulkan);
 		std::unique_ptr<rhi::Device> device;
 
 		std::size_t deviceIndex = 0;
@@ -63,7 +65,7 @@ int main()
 			++deviceIndex;
 		}
 
-		if (device == device)
+		if (device == nullptr)
 			device = rInstance.CreateDevice(0);
 
 		if (!device)
@@ -209,6 +211,7 @@ int main()
 		}
 
 		swapChain->WaitAll();
+		device->WaitIdle();
 	}
 	catch (const std::exception& e)
 	{

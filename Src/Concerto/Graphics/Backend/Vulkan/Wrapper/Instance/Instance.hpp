@@ -46,6 +46,7 @@ namespace cct::gfx::vk
 		#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/InstanceFunction.hpp"
 
 		static PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
+		static void SetLogger(Logger& logger);
 	private:
 		Version m_apiVersion;
 		mutable std::optional<std::vector<PhysicalDevice>> m_physicalDevices;

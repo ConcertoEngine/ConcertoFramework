@@ -32,6 +32,20 @@ namespace cct::gfx::vk
 
 	Device::~Device()
 	{
+		if (IsValid())
+		{
+			// Ensure all GPU operations are complete
+			vkDeviceWaitIdle(m_handle);
+		}
+
+		// Explicitly destroy the allocator before vkDestroyDevice
+		// This ensures all GPU memory allocations are freed in the correct order
+		m_allocator.reset();
+
+		// Clear other resources before device destruction
+		m_queues.clear();
+		m_extensions.clear();
+
 		vkDestroyDevice(m_handle, nullptr);
 	}
 

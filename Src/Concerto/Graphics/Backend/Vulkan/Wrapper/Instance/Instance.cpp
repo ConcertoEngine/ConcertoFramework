@@ -9,6 +9,7 @@
 
 #include <Concerto/Core/Assert.hpp>
 
+#include "Concerto/Core/Logger/Logger.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 #define VOLK_IMPLEMENTATION
 #include <volk.h> // must be under this ^ include
@@ -17,6 +18,7 @@
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
+#include <cpptrace/cpptrace.hpp>
 
 namespace cct::gfx::vk
 {
@@ -31,19 +33,19 @@ namespace cct::gfx::vk
 		{
 			if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
 			{
-				//Logger::Info(pCallbackData->pMessage);
+				CCT_VK_LOG_DEBUG("{}", pCallbackData->pMessage);
 			}
 			else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 			{
-				//Logger::Info(pCallbackData->pMessage);
+				CCT_VK_LOG_INFO("{}", pCallbackData->pMessage);
 			}
 			else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 			{
-				//Logger::Warning(pCallbackData->pMessage);
+				CCT_VK_LOG_WARN("{}", pCallbackData->pMessage);
 			}
 			else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 			{
-				//Logger::Warning(pCallbackData->pMessage);
+				CCT_VK_LOG_ERROR("{}\n Trace: \n{}", pCallbackData->pMessage, cpptrace::generate_trace().to_string());
 			}
 			return VK_FALSE;
 		}
@@ -175,5 +177,10 @@ namespace cct::gfx::vk
 	bool Instance::IsExtensionEnabled(const std::string& ext) const
 	{
 		return m_loadedExtensions.contains(ext);
+	}
+
+	void Instance::SetLogger(Logger& logger)
+	{
+		Logger::SetContext(&logger);
 	}
 } // namespace cct::gfx::vk

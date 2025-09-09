@@ -24,7 +24,7 @@ namespace cct::gfx
 		[[nodiscard]] std::span<const rhi::DeviceInfo> EnumerateDevices() override;
 		std::unique_ptr<rhi::Device> CreateDevice(std::size_t index) override;
 		static constexpr inline rhi::DeviceType FromVulkan(VkPhysicalDeviceType deviceType);
-
+		static void SetLogger(Logger& logger);
 	private:
 		std::unique_ptr<vk::Instance> m_instance;
 		std::vector<rhi::DeviceInfo> m_devicesInfo;

@@ -36,7 +36,7 @@ namespace cct::gfx::vk
 
 	CommandBuffer::~CommandBuffer()
 	{
-		if(m_handle == VK_NULL_HANDLE)
+		if (m_handle == VK_NULL_HANDLE)
 			return;
 		if (m_device)
 		{
@@ -196,7 +196,7 @@ namespace cct::gfx::vk
 		CCT_GFX_AUTO_PROFILER_SCOPE();
 
 		VkDeviceSize offset = 0;
-		m_device->vkCmdBindVertexBuffers(m_handle, 0, 1,  buffer.Get(), &offset);
+		m_device->vkCmdBindVertexBuffers(m_handle, 0, 1, buffer.Get(), &offset);
 	}
 
 	void CommandBuffer::UpdatePushConstants(const PipelineLayout& pipelineLayout, const MeshPushConstants& meshPushConstants) const
@@ -204,7 +204,7 @@ namespace cct::gfx::vk
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 		CCT_GFX_AUTO_PROFILER_SCOPE();
 
-		m_device->vkCmdPushConstants(m_handle, *pipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT, 0,sizeof(MeshPushConstants), &meshPushConstants);
+		m_device->vkCmdPushConstants(m_handle, *pipelineLayout.Get(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &meshPushConstants);
 	}
 
 	void CommandBuffer::UpdatePushConstants(const VkPipelineLayout pipelineLayout, const MeshPushConstants& meshPushConstants) const
@@ -215,9 +215,7 @@ namespace cct::gfx::vk
 		m_device->vkCmdPushConstants(m_handle, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &meshPushConstants);
 	}
 
-	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout,
-	                                       const UInt32 firstSet, const UInt32 descriptorSetCount, const DescriptorSet& descriptorSet,
-	                                       const UInt32 dynamicOffsets) const
+	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout, const UInt32 firstSet, const UInt32 descriptorSetCount, const DescriptorSet& descriptorSet, const UInt32 dynamicOffsets) const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 		CCT_GFX_AUTO_PROFILER_SCOPE();
@@ -225,8 +223,7 @@ namespace cct::gfx::vk
 		m_device->vkCmdBindDescriptorSets(m_handle, pipelineBindPoint, pipelineLayout, firstSet, descriptorSetCount, descriptorSet.Get(), 1, &dynamicOffsets);
 	}
 
-	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout,
-	                                       const UInt32 firstSet, const UInt32 descriptorSetCount, const DescriptorSet& descriptorSet) const
+	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout, const UInt32 firstSet, const UInt32 descriptorSetCount, const DescriptorSet& descriptorSet) const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 		CCT_GFX_AUTO_PROFILER_SCOPE();
@@ -234,8 +231,15 @@ namespace cct::gfx::vk
 		m_device->vkCmdBindDescriptorSets(m_handle, pipelineBindPoint, pipelineLayout, firstSet, descriptorSetCount, descriptorSet.Get(), 0, nullptr);
 	}
 
-	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout,
-	                                       const std::span<DescriptorSet> descriptorSets) const
+	void CommandBuffer::BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets) const
+	{
+		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
+		CCT_GFX_AUTO_PROFILER_SCOPE();
+
+		m_device->vkCmdBindDescriptorSets(m_handle, pipelineBindPoint, pipelineLayout, 0, static_cast<UInt32>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+	}
+
+	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout, const std::span<DescriptorSet> descriptorSets) const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 		CCT_GFX_AUTO_PROFILER_SCOPE();
@@ -247,8 +251,7 @@ namespace cct::gfx::vk
 		m_device->vkCmdBindDescriptorSets(m_handle, pipelineBindPoint, pipelineLayout, 0, static_cast<UInt32>(vkDescriptorSets.size()), vkDescriptorSets.data(), 0, nullptr);
 	}
 
-	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout,
-	                                       const std::span<DescriptorSetPtr> descriptorSets) const
+	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout, const std::span<DescriptorSetPtr> descriptorSets) const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 		CCT_GFX_AUTO_PROFILER_SCOPE();

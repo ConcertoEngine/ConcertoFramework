@@ -23,20 +23,19 @@ namespace cct::gfx::rhi
 	public:
 		enum class Backend
 		{
-			ConcertoVulkan, // ConcertoGraphics Vulkan backend
-			Vulkan, // WebGPU Vulkan backend
-			DirectX11, // WebGPU DirectX11 backend
-			DirectX12, // WebGPU DirectX12 backend
-			Metal, // WebGPU Metal backend
-			OpenGL, // WebGPU OpenGL backend
-			OpenGLES, // WebGPU OpenGLES backend
+			Vulkan,
+#ifdef CCT_PLATFORM_WINDOWS
+			DirectX12
+#endif
 		};
 
-		Instance(Backend backend = Backend::ConcertoVulkan, ValidationLevel validationLevel = ValidationLevel::All);
+		Instance(Backend backend = Backend::Vulkan, ValidationLevel validationLevel = ValidationLevel::All);
 
 		std::span<const DeviceInfo> EnumerateDevices() const;
 		std::unique_ptr<Device> CreateDevice(std::size_t index) const;
 		inline APIImpl* GetImpl() const;
+
+		static void SetLogger(Logger& logger);
 	private:
 		std::unique_ptr<APIImpl> m_apiImpl;
 		Backend m_backend;
