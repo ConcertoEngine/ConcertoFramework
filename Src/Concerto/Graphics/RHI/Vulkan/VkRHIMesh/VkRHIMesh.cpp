@@ -62,9 +62,9 @@ namespace cct::gfx::rhi
 					gpuMesh->subMeshes.push_back(vkSubMesh);
 				});
 			}
+			taskScheduler.WaitForTasks();
 		}
 
-		taskScheduler.WaitForTasks();
 
 		{
 			CCT_GFX_PROFILER_SCOPE("Sort sub meshes by material");

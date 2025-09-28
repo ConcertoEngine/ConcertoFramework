@@ -567,7 +567,7 @@ namespace cct::gfx
 			nativeWindow.window = wmInfo.info.win.window;
 			nativeWindow.hinstance = wmInfo.info.win.hinstance;
 #elif defined(CCT_PLATFORM_MACOS)
-			CCT_ASSERT_FALSE("Not implemented");
+			nativeWindow.window = wmInfo.info.cocoa.window;
 #elif defined(CCT_PLATFORM_LINUX)
 			if (wmInfo.subsystem == SDL_SYSWM_X11)
 				nativeWindow.platform = NativeWindow::X11{ wmInfo.info.x11.display, wmInfo.info.x11.window };

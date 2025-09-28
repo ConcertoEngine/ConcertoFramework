@@ -8,6 +8,9 @@ add_requires("concerto-core", { debug = true, configs = { asserts = true, shared
 add_requires("vulkan-headers", "vulkan-memory-allocator", "stb", "nzsl", "vulkan-utility-libraries", "parallel-hashmap", "tinyobjloader")
 add_requires("nazaraengine", { debug = is_mode("debug"), configs = { graphics = false, textrenderer = false, renderer = false, widgets = false, plugin_assimp = false, plugin_ffmpeg = false, plugin_imgui = false, entt = false, audio = false, physics2d = false, physics3d  = false, platform = false }})
 add_requires("libsdl2", {configs = {wayland = is_plat("linux", "bsd"), x11 = is_plat("linux", "bsd")}})
+if is_plat("macosx") then
+    add_requires("moltenvk", { configs = { shared = true }})
+end
 
 option("override_runtime", { description = "Override vs runtime to MD in release and MDd in debug", default = true })
 option("examples", { description = "Build examples", default = false })
@@ -113,6 +116,11 @@ target("concerto-vulkan-backend", function()
     add_packages("concerto-core", "volk", "vulkan-headers", "vulkan-utility-libraries", "vulkan-memory-allocator", "nzsl", { public = true })
     add_deps("concerto-graphics-core")
     add_rpathdirs("$ORIGIN")
+
+    if is_plat("macosx") then
+        add_files("Src/Concerto/Graphics/Backend/Vulkan/**.mm")
+        add_frameworks("Cocoa", "QuartzCore", "Metal", "MetalKit")
+    end
 
     if has_config("profiling") then
         add_deps("concerto-profiler", { public = false })

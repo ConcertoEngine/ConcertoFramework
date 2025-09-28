@@ -16,6 +16,9 @@
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/FrameBuffer/FrameBuffer.hpp"
+#ifdef VK_USE_PLATFORM_METAL_EXT
+	#include <objc/runtime.h>
+#endif // VK_USE_PLATFORM_METAL_EXT
 
 namespace cct::gfx::vk
 {
@@ -197,6 +200,10 @@ namespace cct::gfx::vk
 		return *m_window;
 	}
 
+#ifdef CCT_PLATFORM_MACOS
+	id GetMetalLayerFromView(void* window);
+#endif
+
 	VkResult SwapChain::CreateSurface()
 	{
 		NativeWindow nativeWindow = m_window->GetNativeWindow();
@@ -210,7 +217,13 @@ namespace cct::gfx::vk
 		};
 		m_lastResult = m_device->GetInstance().vkCreateWin32SurfaceKHR(*m_device->GetInstance().Get(), &createInfo, nullptr, &m_surface);
 #elif defined(CCT_PLATFORM_MACOS)
-		CCT_ASSERT_FALSE("Not implemented");
+		const VkMetalSurfaceCreateInfoEXT createInfo = {
+			.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT,
+			.pNext = nullptr,
+			.flags = 0,
+			.pLayer = GetMetalLayerFromView(nativeWindow.window)
+		};
+		m_lastResult = m_device->GetInstance().vkCreateMetalSurfaceEXT(*m_device->GetInstance().Get(), &createInfo, nullptr, &m_surface);
 #elif defined(CCT_PLATFORM_LINUX)
 		if (std::holds_alternative<NativeWindow::X11>(nativeWindow.platform))
 		{
