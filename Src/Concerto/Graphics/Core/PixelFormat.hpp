@@ -5,7 +5,7 @@
 #ifndef CONCERTO_GRAPHICS_PIXELFORMAT_HPP
 #define CONCERTO_GRAPHICS_PIXELFORMAT_HPP
 
-#include <Concerto/Core/Types.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 
 namespace cct::gfx
 {

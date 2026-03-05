@@ -3,7 +3,7 @@
 //
 
 #include <Concerto/Core/Math/Algorithm.hpp>
-#include <Concerto/Core/Math/Vector.hpp>
+#include <Concerto/Core/Math/Vector/Vector.hpp>
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/Core/Primitives/Primitives.hpp"

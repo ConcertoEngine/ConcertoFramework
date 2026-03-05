@@ -6,7 +6,7 @@
 #define CONCERTO_GRAPHICS_DEFINES_HPP
 
 #include <cstring>
-#include <Concerto/Core/Types.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 
 #ifdef CCT_COMPILER_MSVC
 #pragma warning(disable: 4251) // Disable warning about DLL interface needed

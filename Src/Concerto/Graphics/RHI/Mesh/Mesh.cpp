@@ -6,7 +6,7 @@
 
 #include <filesystem>
 #include <tiny_obj_loader.h>
-#include <Concerto/Core/Logger.hpp>
+#include <Concerto/Core/Logger/Logger.hpp>
 #include <Concerto/Core/Cast.hpp>
 
 #include "Concerto/Graphics/RHI/Mesh/Mesh.hpp"

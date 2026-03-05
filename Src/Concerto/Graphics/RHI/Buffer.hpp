@@ -7,7 +7,7 @@
 
 #include <span>
 #include <type_traits>
-#include <Concerto/Core/FunctionRef.hpp>
+#include <Concerto/Core/FunctionRef/FunctionRef.hpp>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
 

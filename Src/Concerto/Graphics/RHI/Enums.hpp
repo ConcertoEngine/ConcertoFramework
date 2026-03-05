@@ -6,7 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_ENUMS_HPP
 
 #include <type_traits>
-#include <Concerto/Core/Types.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Graphics/Core/PixelFormat.hpp>
 
 namespace cct::gfx::rhi

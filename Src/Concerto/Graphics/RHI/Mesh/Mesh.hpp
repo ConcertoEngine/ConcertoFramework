@@ -10,7 +10,7 @@
 #include <vector>
 #include <string>
 
-#include <Concerto/Core/Math/Matrix.hpp>
+#include <Concerto/Core/Math/Matrix/Matrix.hpp>
 
 #include "Concerto/Graphics/Core/Vertex.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"

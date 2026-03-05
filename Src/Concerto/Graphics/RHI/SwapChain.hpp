@@ -5,7 +5,7 @@
 #ifndef CONCERTO_GRAPHICS_RHI_SWAPCHAIN_HPP
 #define CONCERTO_GRAPHICS_RHI_SWAPCHAIN_HPP
 
-#include <Concerto/Core/Math/Vector.hpp>
+#include <Concerto/Core/Math/Vector/Vector.hpp>
 
 #include "Concerto/Graphics/RHI/Frame.hpp"
 #include "Concerto/Graphics/RHI/RenderPass.hpp"

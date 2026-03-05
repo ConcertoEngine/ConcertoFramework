@@ -4,7 +4,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <Concerto/Core/DeferredExit.hpp>
+#include <Concerto/Core/DeferredExit/DeferredExit.hpp>
 
 #include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
 #include "Concerto/Graphics/RHI/Device.hpp"

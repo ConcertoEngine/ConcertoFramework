@@ -4,7 +4,7 @@
 
 #include <stdexcept>
 
-#include <Concerto/Core/Logger.hpp>
+#include <Concerto/Core/Logger/Logger.hpp>
 #include <Concerto/Core/Assert.hpp>
 
 #ifdef CCT_PLATFORM_LINUX

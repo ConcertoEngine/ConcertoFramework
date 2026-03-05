@@ -9,9 +9,9 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
-#include <Concerto/Core/FunctionRef.hpp>
+#include <Concerto/Core/FunctionRef/FunctionRef.hpp>
 
-#include <Concerto/Core/SparseVector.hpp>
+#include <Concerto/Core/SparseVector/SparseVector.hpp>
 
 #include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/Window/Event.hpp"

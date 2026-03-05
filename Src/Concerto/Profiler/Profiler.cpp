@@ -4,7 +4,7 @@
 
 #include "tracy/Tracy.hpp"
 #include <Concerto/Core/Defines.hpp>
-#include <Concerto/Core/Types.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 
 CCT_EXPORT cct::Int32 MakeMsvcHappy()
 {

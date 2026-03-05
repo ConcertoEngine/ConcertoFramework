@@ -8,7 +8,7 @@
 #include <string>
 #include <memory>
 
-#include <Concerto/Core/Math/Vector.hpp>
+#include <Concerto/Core/Math/Vector/Vector.hpp>
 
 #include "Concerto/Graphics/RHI/Texture.hpp"
 

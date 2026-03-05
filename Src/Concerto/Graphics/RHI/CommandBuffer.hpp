@@ -5,7 +5,7 @@
 #ifndef CONCERTO_GRAPHICS_RHI_COMMANDBUFFER_HPP
 #define CONCERTO_GRAPHICS_RHI_COMMANDBUFFER_HPP
 
-#include <Concerto/Core/Math/Vector.hpp>
+#include <Concerto/Core/Math/Vector/Vector.hpp>
 
 #include "Concerto/Graphics/RHI/Utils/Utils.hpp"
 

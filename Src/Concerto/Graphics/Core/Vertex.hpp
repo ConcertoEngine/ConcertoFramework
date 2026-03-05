@@ -6,7 +6,7 @@
 #define CONCERTO_GRAPHICS_VERTEX_HPP
 
 #include <vector>
-#include <Concerto/Core/Math/Vector.hpp>
+#include <Concerto/Core/Math/Vector/Vector.hpp>
 
 namespace cct::gfx
 {

@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_CAMERA_HPP
 #define CONCERTO_GRAPHICS_CAMERA_HPP
 
-#include <Concerto/Core/Math/Quaternion.hpp>
-#include <Concerto/Core/Math/Vector.hpp>
+#include <Concerto/Core/Math/Quaternion/Quaternion.hpp>
+#include <Concerto/Core/Math/Vector/Vector.hpp>
 
 #include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/Camera/GPUData.hpp"

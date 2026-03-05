@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_UTILS_HPP
 #define CONCERTO_GRAPHICS_UTILS_HPP
 
-#include <Concerto/Core/Math/Vector.hpp>
-#include <Concerto/Core/Math/Matrix.hpp>
+#include <Concerto/Core/Math/Vector/Vector.hpp>
+#include <Concerto/Core/Math/Matrix/Matrix.hpp>
 
 namespace cct::gfx::vk
 {

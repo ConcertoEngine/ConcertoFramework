@@ -5,7 +5,7 @@
 #ifndef CONCERTO_GRAPHICS_BACKEND_VULKAN_DEFINES_HPP
 #define CONCERTO_GRAPHICS_BACKEND_VULKAN_DEFINES_HPP
 
-#include <Concerto/Core/Types.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 
 #ifdef CCT_COMPILER_MSVC
 #pragma warning(disable: 4251) // Disable warning about DLL interface needed
@@ -54,6 +54,6 @@
 #endif
 
 #include <Concerto/Profiler/Profiler.hpp>
-#include <Concerto/Core/Result.hpp>
+#include <Concerto/Core/Result/Result.hpp>
 
 #endif //CONCERTO_GRAPHICS_BACKEND_VULKAN_DEFINES_HPP

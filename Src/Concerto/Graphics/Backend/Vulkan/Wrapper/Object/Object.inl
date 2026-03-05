@@ -8,7 +8,7 @@
 #include <utility>
 
 #include <Concerto/Core/Assert.hpp>
-#include <Concerto/Core/TypeInfo.hpp>
+#include <Concerto/Core/TypeInfo/TypeInfo.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
