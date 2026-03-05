@@ -162,17 +162,13 @@ namespace cct::gfx::vk
 	{
 		const std::span<VkQueueFamilyProperties> queueFamilyProperties = m_physicalDevice->GetQueueFamilyProperties();
 		UInt32 i = 0;
-		for (const VkQueueFamilyProperties properties : queueFamilyProperties)
+		for (const VkQueueFamilyProperties& properties : queueFamilyProperties)
 		{
-			if (properties.queueFlags == flag && flag & VK_QUEUE_GRAPHICS_BIT)
-				return i;
-			if (properties.queueFlags == flag && flag & VK_QUEUE_COMPUTE_BIT)
-				return i;
-			if (properties.queueFlags == flag && flag & VK_QUEUE_TRANSFER_BIT)
+			if ((properties.queueFlags & flag) == flag)
 				return i;
 			++i;
 		}
-		CCT_ASSERT_FALSE("No queue family found");;
+		CCT_ASSERT_FALSE("No queue family found");
 		return std::numeric_limits<UInt32>::max();
 	}
 
