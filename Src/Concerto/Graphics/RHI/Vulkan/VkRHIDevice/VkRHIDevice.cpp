@@ -16,6 +16,8 @@
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandPool/VkRHICommandPool.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIMaterialBuilder/VkRHIMaterialBuilder.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHITextureBuilder/VkRHITextureBuilder.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHISampler/VkRHISampler.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
@@ -163,5 +165,25 @@ namespace cct::gfx::rhi
 	vk::Instance& VkRHIDevice::GetVkInstance() const
 	{
 		return vk::Device::GetInstance();
+	}
+
+	void VkRHIDevice::WaitIdle()
+	{
+		vk::Device::WaitIdle();
+	}
+
+	std::unique_ptr<Sampler> VkRHIDevice::CreateSampler(SamplerFilter minFilter, SamplerFilter magFilter, SamplerAddressMode addressMode)
+	{
+		return std::make_unique<VkRHISampler>(*this, minFilter, magFilter, addressMode);
+	}
+
+	std::unique_ptr<Texture> VkRHIDevice::CreateTexture(PixelFormat format, Int32 width, Int32 height, TextureUsageFlags usage)
+	{
+		return std::make_unique<VkRHITexture>(*this, format, width, height, VK_IMAGE_ASPECT_COLOR_BIT, usage);
+	}
+
+	void VkRHIDevice::UpdateDescriptorSets(std::span<VkWriteDescriptorSet> writes)
+	{
+		vk::Device::UpdateDescriptorSetsWrite(writes);
 	}
 } //cct::Graphics::RHI

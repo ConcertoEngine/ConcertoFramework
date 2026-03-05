@@ -125,9 +125,63 @@ namespace cct::gfx::rhi
 		Storage = 0x00000004,
 		TransferSrc = 0x00000008,
 		TransferDst = 0x00000010,
-		Indirect = 0x00000020
+		Indirect = 0x00000020,
+		Index = 0x00000040,
 	};
 	using BufferUsageFlags = std::underlying_type_t<BufferUsage>;
+
+	enum class SamplerFilter : UInt8
+	{
+		Nearest,
+		Linear
+	};
+
+	enum class SamplerAddressMode : UInt8
+	{
+		Repeat,
+		MirroredRepeat,
+		ClampToEdge,
+		ClampToBorder
+	};
+
+	enum class TextureUsage : UInt8
+	{
+		Sampled         = 0x01,
+		TransferSrc     = 0x02,
+		TransferDst     = 0x04,
+		ColorAttachment = 0x08,
+	};
+	using TextureUsageFlags = std::underlying_type_t<TextureUsage>;
+
+	enum class DescriptorType : UInt8
+	{
+		UniformBuffer,
+		UniformBufferDynamic,
+		CombinedImageSampler,
+		StorageBuffer
+	};
+
+	enum class ShaderStage : UInt16
+	{
+		Vertex   = 0x01,
+		Fragment = 0x02,
+		Compute  = 0x04
+	};
+	using ShaderStageFlags = std::underlying_type_t<ShaderStage>;
+
+	struct DescriptorBinding
+	{
+		UInt32           binding;
+		DescriptorType   type;
+		UInt32           count      = 1;
+		ShaderStageFlags stageFlags = 0;
+	};
+
+	struct DescriptorPoolSize
+	{
+		DescriptorType type;
+		UInt32         count;
+	};
 
 	inline std::size_t PadUniformBuffer(std::size_t size, std::size_t minUniformBufferOffsetAlignment)
 	{

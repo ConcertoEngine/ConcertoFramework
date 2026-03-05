@@ -19,6 +19,11 @@ namespace cct::gfx::rhi
 		static constexpr inline VkAttachmentStoreOp ToVulkan(AttachmentStoreOp storeOp);
 		static constexpr inline VkImageLayout ToVulkan(ImageLayout layout);
 		static constexpr inline VkBufferUsageFlags ToVulkan(BufferUsageFlags usage);
+		static constexpr inline VkFilter ToVulkan(SamplerFilter filter);
+		static constexpr inline VkSamplerAddressMode ToVulkan(SamplerAddressMode mode);
+		static constexpr inline VkImageUsageFlags ToVulkan(TextureUsageFlags usage);
+		static constexpr inline VkDescriptorType ToVulkan(DescriptorType type);
+		static constexpr inline VkShaderStageFlags ToVulkan(ShaderStageFlags stages);
 
 		template<typename T>
 		static constexpr inline VkFlags ToVulkan(UInt32 flags);

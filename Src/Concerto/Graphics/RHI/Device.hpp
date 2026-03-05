@@ -20,6 +20,7 @@
 #include "Concerto/Graphics/RHI/CommandPool.hpp"
 #include "Concerto/Graphics/RHI/Buffer.hpp"
 #include "Concerto/Graphics/RHI/GpuMesh.hpp"
+#include "Concerto/Graphics/RHI/Sampler/Sampler.hpp"
 
 namespace cct::gfx
 {
@@ -52,6 +53,9 @@ namespace cct::gfx::rhi
 		virtual std::unique_ptr<Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) = 0;
 		virtual std::size_t GetMinimumUniformBufferOffsetAlignment() const = 0;
 		virtual std::unique_ptr<GpuMesh> CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, const RenderPass& renderPass) = 0;
+		virtual void WaitIdle() = 0;
+		virtual std::unique_ptr<Sampler> CreateSampler(SamplerFilter minFilter, SamplerFilter magFilter, SamplerAddressMode addressMode) = 0;
+		virtual std::unique_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height, TextureUsageFlags usage) = 0;
 	};
 }
 

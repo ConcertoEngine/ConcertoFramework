@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_DEVICE_HPP
 
 #include <optional>
+#include <span>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Device.hpp"
@@ -30,7 +31,12 @@ namespace cct::gfx::rhi
 		std::unique_ptr<rhi::Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) override;
 		std::size_t GetMinimumUniformBufferOffsetAlignment() const override;
 		std::unique_ptr<GpuMesh> CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, const RenderPass& renderPass) override;
+		void WaitIdle() override;
+		std::unique_ptr<Sampler> CreateSampler(SamplerFilter minFilter, SamplerFilter magFilter, SamplerAddressMode addressMode) override;
+		std::unique_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height, TextureUsageFlags usage) override;
 
+		// ── Vulkan-only ──────────────────────────────────────────────────────
+		void UpdateDescriptorSets(std::span<VkWriteDescriptorSet> writes);
 		vk::UploadContext& GetUploadContext();
 		vk::Instance& GetVkInstance() const;
 
