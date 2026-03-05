@@ -15,8 +15,20 @@ namespace cct::gfx::vk
 {
 	ShaderModuleInfo::ShaderModuleInfo(Device& device, std::string_view path) :
 		shaderAst(nzsl::ParseFromFile(path)),
-		sanitizedModule(nzsl::Ast::Sanitize(*shaderAst))
+		sanitizedModule(nullptr)
 	{
+		nzsl::Ast::ReflectVisitor reflectVisitor;
+		nzsl::Ast::TransformerExecutor executor;
+		executor.AddPass<nzsl::Ast::ResolveTransformer>();
+		executor.AddPass<nzsl::Ast::BindingResolverTransformer>({ .forceAutoBindingResolve = true });
+		executor.AddPass<nzsl::Ast::ValidationTransformer>();
+
+		nzsl::Ast::TransformerContext context;
+		context.partialCompilation = true;
+
+		nzsl::Ast::ModulePtr resolvedModule = nzsl::Ast::Clone(*shaderAst);
+		executor.Transform(*resolvedModule, context);
+
 		nzsl::Ast::ReflectVisitor::Callbacks callbacks;
 		std::vector<VkDescriptorSetLayoutBinding> descriptorSetLayouts;
 		VkShaderStageFlags shaderStageFlag = VK_SHADER_STAGE_ALL;
@@ -50,8 +62,8 @@ namespace cct::gfx::vk
 		//callbacks.onOptionIndex = [](const std::string& name, std::size_t optIndex, const nzsl::SourceLocation& sourceLocation) {};
 		//callbacks.onStructIndex = [](const std::string& name, std::size_t structIndex, const nzsl::SourceLocation& sourceLocation) {};
 		//callbacks.onVariableIndex = [](const std::string& name, std::size_t varIndex, const nzsl::SourceLocation& sourceLocation) {};
-		nzsl::Ast::ReflectVisitor reflectVisitor;
-		reflectVisitor.Reflect(*sanitizedModule, callbacks);
+
+		reflectVisitor.Reflect(*resolvedModule, callbacks);
 
 		nzsl::SpirvWriter spirvWriter;
 		auto sprivVersion = spirvWriter.GetMaximumSupportedVersion(1, 3);
@@ -60,7 +72,7 @@ namespace cct::gfx::vk
 			.spvMinorVersion = 3
 		};
 		spirvWriter.SetEnv(env);
-		spirv = spirvWriter.Generate(*sanitizedModule);
+		spirv = spirvWriter.Generate(*resolvedModule);
 		shaderModule = std::make_unique<vk::ShaderModule>(device, spirv, static_cast<VkShaderStageFlagBits>(shaderStageFlag), std::move(entryPointName));
 	}
 

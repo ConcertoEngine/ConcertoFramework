@@ -9,6 +9,11 @@
 #include <NZSL/Parser.hpp>
 #include <NZSL/SpirvWriter.hpp>
 #include <NZSL/Ast/ReflectVisitor.hpp>
+#include <NZSL/Ast/Cloner.hpp>
+#include <NZSL/Ast/TransformerExecutor.hpp>
+#include <NZSL/Ast/Transformations/BindingResolverTransformer.hpp>
+#include <NZSL/Ast/Transformations/ResolveTransformer.hpp>
+#include <NZSL/Ast/Transformations/ValidationTransformer.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ShaderModule/ShaderModule.hpp"
