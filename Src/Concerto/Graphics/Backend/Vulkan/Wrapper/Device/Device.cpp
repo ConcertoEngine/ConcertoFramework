@@ -87,24 +87,16 @@ namespace cct::gfx::vk
 		std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 		queueCreateInfos.reserve(queueFamilyProperties.size());
 
-		for (VkQueueFamilyProperties property : queueFamilyProperties)
+		float queuePriority = 1.0f;
+		for (UInt32 i = 0; i < static_cast<UInt32>(queueFamilyProperties.size()); ++i)
 		{
-			auto it = std::ranges::find_if(queueCreateInfos,
-				[&](const VkDeviceQueueCreateInfo& queueCreateInfo)
-				{
-					return queueCreateInfo.queueFamilyIndex == property.queueFlags;
-				});
-			if (it == queueCreateInfos.end())
-			{
-				VkDeviceQueueCreateInfo queueCreateInfo{};
-				float queuePriority = 1.0f;
-				queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-				queueCreateInfo.queueFamilyIndex = GetQueueFamilyIndex(property.queueFlags);
-				queueCreateInfo.queueCount = 1;
-				queueCreateInfo.flags = 0;
-				queueCreateInfo.pQueuePriorities = &queuePriority;
-				queueCreateInfos.push_back(queueCreateInfo);
-			}
+			VkDeviceQueueCreateInfo queueCreateInfo{};
+			queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueCreateInfo.queueFamilyIndex = i;
+			queueCreateInfo.queueCount = 1;
+			queueCreateInfo.flags = 0;
+			queueCreateInfo.pQueuePriorities = &queuePriority;
+			queueCreateInfos.push_back(queueCreateInfo);
 		}
 
 		VkPhysicalDeviceFeatures deviceFeatures{};
@@ -175,13 +167,26 @@ namespace cct::gfx::vk
 	UInt32 Device::GetQueueFamilyIndex(UInt32 flag) const
 	{
 		const std::span<VkQueueFamilyProperties> queueFamilyProperties = m_physicalDevice->GetQueueFamilyProperties();
+		UInt32 fallback = std::numeric_limits<UInt32>::max();
 		UInt32 i = 0;
 		for (const VkQueueFamilyProperties& properties : queueFamilyProperties)
 		{
-			if ((properties.queueFlags & flag) == flag)
-				return i;
+			if (properties.queueFlags & flag)
+			{
+				if (!(flag & VK_QUEUE_GRAPHICS_BIT) && (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT))
+				{
+					if (fallback == std::numeric_limits<UInt32>::max())
+						fallback = i;
+				}
+				else
+				{
+					return i;
+				}
+			}
 			++i;
 		}
+		if (fallback != std::numeric_limits<UInt32>::max())
+			return fallback;
 		CCT_ASSERT_FALSE("No queue family found");
 		return std::numeric_limits<UInt32>::max();
 	}
