@@ -1,0 +1,40 @@
+[nzsl_version("1.0")]
+module;
+
+[layout(std140)]
+struct SceneData
+{
+    fogColor: vec4[f32], // w is for exponent
+    fogDistances: vec4[f32], //x for min, y for max, zw unused.
+    ambientColor: vec4[f32],
+    sunlightDirection : vec4[f32], //w for sun power
+    sunlightColor : vec4[f32]
+}
+
+external
+{
+  [set(0), binding(1)] sceneData: uniform[SceneData],
+  [set(2), binding(0)] texture: sampler2D[f32]
+}
+
+struct VertOut
+{
+    [location(0)] vColor: vec3[f32],
+    [location(1)] vTexCoord: vec2[f32],
+    [location(2)] vNnormal: vec3[f32],
+    [location(3)] vPosition: vec4[f32],
+}
+
+struct FragOut
+{
+    [location(0)] color: vec4[f32],
+}
+
+[entry(frag)]
+fn main(input: VertOut) -> FragOut
+{
+    let output: FragOut;
+    let color: vec3[f32] = texture.Sample(input.vTexCoord).xyz;
+    output.color = vec4[f32](color, 1.0);
+    return output;
+}

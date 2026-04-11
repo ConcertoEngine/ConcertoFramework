@@ -1,0 +1,91 @@
+//
+// Created by arthur on 29/10/2024.
+//
+
+#ifndef CONCERTO_GRAPHICS_PIXELFORMAT_HPP
+#define CONCERTO_GRAPHICS_PIXELFORMAT_HPP
+
+#include <Concerto/Core/Types/Types.hpp>
+
+namespace cct::gfx
+{
+	enum class PixelFormat : UInt8
+	{
+		R8uNorm,
+		R8ui,
+		RG8uNorm,
+		RG8ui,
+		RGB8uNorm,
+		RGB8ui,
+		BGRuNorm,
+		BGRui,
+		RGBA8uNorm,
+		RGBA8ui,
+		BGRA8uNorm,
+		BGRA8ui,
+		R8sNorm,
+		R8i,
+		R8_SRGB,
+		R8G8sNorm,
+		R8G8i,
+		R8G8_SRGB,
+		RGB8sNorm,
+		RGB8i,
+		RGB8_SRGB,
+		BGRsNorm,
+		BGRi,
+		BGR_SRGB,
+		RGBA8sNorm,
+		RGBA8i,
+		RGBA8_SRGB,
+		BGRA8sNorm,
+		BGRA8i,
+		BGRA8_SRGB,
+		R16uNorm,
+		R16G16uNorm,
+		R16ui,
+		R16G16ui,
+		RGBuNorm,
+		RGBui,
+		RGBA16uNorm,
+		RGBA16ui,
+		R16sNorm,
+		R16i,
+		R16G16sNorm,
+		R16G16i,
+		RGBsNorm,
+		RGBi,
+		RGBA16sNorm,
+		RGBA16i,
+		R16f,
+		R16G16f,
+		RGBf,
+		RGBA16f,
+		R32ui,
+		RG32u,
+		RGB32ui,
+		RGBA32ui,
+		R32i,
+		RG32i,
+		RGB32i,
+		RGBA32i,
+		R32f,
+		RG32f,
+		RGB32f,
+		RGBA32f,
+		R64ui,
+		RG64ui,
+		RGB64ui,
+		RGBA64ui,
+		R64i,
+		RG64i,
+		RGB64i,
+		RGBA64i,
+		R64f,
+		RG64f,
+		RGB64f,
+		RGBA64f,
+		D32f
+	};
+}
+#endif //CONCERTO_GRAPHICS_PIXELFORMAT_HPP

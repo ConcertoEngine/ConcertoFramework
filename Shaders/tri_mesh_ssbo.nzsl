@@ -1,0 +1,60 @@
+[nzsl_version("1.0")]
+module;
+
+[layout(std140)]
+struct CameraBuffer
+{
+    view: mat4[f32],
+    proj: mat4[f32],
+    viewproj: mat4[f32]
+}
+
+[layout(std140)]
+struct ObjectData
+{
+    model: mat4[f32]
+}
+
+[layout(std140)]
+struct ObjectBuffer
+{
+  objects: dyn_array[ObjectData]
+}
+
+external
+{
+  [set(0), binding(0)] cameraBuffer: uniform[CameraBuffer],
+  [set(1), binding(0)] objectBuffer: storage[ObjectBuffer, readonly]
+}
+
+struct VertIn
+{
+    [location(0)] vPosition: vec3[f32],
+    [location(1)] vNormal: vec3[f32],
+    [location(2)] vColor: vec3[f32],
+    [location(3)] vTexCoord: vec2[f32],
+    [builtin(base_instance)] base_instance: i32
+}
+
+struct VertOut
+{
+    [location(0)] color: vec3[f32],
+    [location(1)] texCoord: vec2[f32],
+    [location(2)] normal: vec3[f32],
+    [location(3)] position: vec4[f32],
+    [builtin(position)] gl_Position: vec4[f32]
+}
+
+[entry(vert)]
+fn main(input: VertIn) -> VertOut
+{
+    let output: VertOut;
+    let modelMatrix: mat4[f32] = objectBuffer.objects[input.base_instance].model;
+    let transformMatrix: mat4[f32] = (cameraBuffer.viewproj * modelMatrix);
+    output.position = transformMatrix * vec4[f32](input.vPosition, 1.0);
+    output.gl_Position = output.position;
+    output.color = input.vColor;
+    output.texCoord = input.vTexCoord;
+    output.normal = input.vNormal;
+    return output;
+}

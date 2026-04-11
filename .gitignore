@@ -1,10 +1,12 @@
-build
 .xmake
-.idea
-.cache
 .vscode
+vsxmake*
+build
+.cache
+.compile_commands.json
 CMakeLists.txt
-vsxmake2022
+.idea
+assets
 # Prerequisites
 *.d
 

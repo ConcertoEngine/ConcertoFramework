@@ -22,3 +22,7 @@ end
 
 includes("Src/Concerto/Core/xmake.lua")
 includes("Tests/xmake.lua")
+includes("Xmake/**.lua")
+includes("Examples/Graphics/xmake.lua")
+includes("Src/Concerto/Graphics/xmake.lua")
+includes("Src/Concerto/Profiler/xmake.lua")

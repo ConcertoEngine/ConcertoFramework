@@ -1,50 +1,87 @@
-# ConcertoCore
+# ConcertoFramework
 
-Concerto Core is a C++ library that provides a set of common functionality used by all of the components in the Concerto suite of software. It is designed to be lightweight, flexible, and portable, and is suitable for a wide range of software applications.
-
-It is essentially developed for learning purposes.
+C++ framework combining the **Core** and **Graphics** modules of the Concerto project.  
+Developed for learning purposes.
 
 ## Build Status
-| Platform | Status                                                                                                                                                                                          |
-|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Windows  | [![Windows build status](https://github.com/ConcertoEngine/ConcertoCore/actions/workflows/windows.yml/badge.svg)](https://github.com/ConcertoEngine/ConcertoCore/actions/workflows/windows.yml) |
-| Linux    | [![Linux build status](https://github.com/ConcertoEngine/ConcertoCore/actions/workflows/ubuntu24.yml/badge.svg)](https://github.com/ConcertoEngine/ConcertoCore/actions/workflows/ubuntu22.yml) |
-| MacOS    | [![macOS build status](https://github.com/ConcertoEngine/ConcertoCore/actions/workflows/macos.yml/badge.svg)](https://github.com/ConcertoEngine/ConcertoCore/actions/workflows/macos.yml)       |
 
-## Installation
+| Platform | Status |
+|----------|--------|
+| Windows  | [![Windows](https://github.com/ConcertoEngine/ConcertoFramework/actions/workflows/windows.yml/badge.svg)](https://github.com/ConcertoEngine/ConcertoFramework/actions/workflows/windows.yml) |
+| Linux    | [![Linux](https://github.com/ConcertoEngine/ConcertoFramework/actions/workflows/ubuntu24.yml/badge.svg)](https://github.com/ConcertoEngine/ConcertoFramework/actions/workflows/ubuntu24.yml) |
+| macOS    | [![macOS](https://github.com/ConcertoEngine/ConcertoFramework/actions/workflows/macos.yml/badge.svg)](https://github.com/ConcertoEngine/ConcertoFramework/actions/workflows/macos.yml) |
 
-Install [xmake](https://xmake.io/#/)
+## Modules
 
-Clone this repo 
+### Core (`Src/Concerto/Core`)
+Foundation library: types, math, networking (ENet), serialization, signals, thread pool, DynLib, logger (spdlog), and more.
 
-```bash
-git clone git@github.com:ArthurVasseur/ConcertoGraphics.git
-```
+### Graphics (`Src/Concerto/Graphics`)
+Low-level rendering layer featuring:
+- **RHI** - multi-backend abstraction (Vulkan / DX12)
+- **Vulkan backend** - Vulkan wrapping via volk + VMA
+- **DX12 backend** - Direct3D 12 wrapping (Windows only)
+- **Profiler** - optional Tracy integration
+
+## Requirements
+
+- [xmake](https://xmake.io) >= 2.8
+- C++20 compiler (MSVC, Clang, GCC)
+- Vulkan SDK (for the Vulkan backend)
+- DX12 (Windows only, included in the Windows SDK)
 
 ## Build
 
-Build the project with `xmake`.
+```bash
+# Debug
+xmake config -m debug
+
+# Release
+xmake config -m release
+
+# With examples
+xmake config -m debug --examples=true
+
+# With Tracy profiler
+xmake config -m debug --profiling=true
+```
 
 ```bash
 xmake
 ```
-The compiled shared library will be located in the `$(buildir)/$(plat)/$(arch)/$(mode)` directory. 
 
-Creating cmake project files.
+## Tests
 
 ```bash
-xmake project -k cmakelists
+xmake config --tests=true
+xmake
+xmake run concerto-core-tests
 ```
 
-Creating Visual Studio project files.
+## IDE Project Generation
 
 ```bash
+# CMakeLists
+xmake project -k cmakelists
+
+# Visual Studio
 xmake project -k vsxmake
 ```
 
-## Run
+## Structure
 
-You can run unit tests : 
-```bash
-xmake run xmake run ConcertoCoreTests
+```
+Src/
+  Concerto/
+    Core/       # Core module
+    Graphics/   # Graphics module (RHI, Vulkan/DX12 backends)
+    Profiler/   # Profiler module (Tracy)
+Examples/
+  Core/         # Core examples
+  Graphics/     # Graphics examples (RHI)
+Tests/
+  Core/         # Core unit tests (Catch2)
+Shaders/        # NZSL / GLSL shaders
+Xmake/          # Custom xmake rules
+assets/         # Test assets
 ```
