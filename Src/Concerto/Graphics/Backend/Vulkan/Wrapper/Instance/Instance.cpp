@@ -18,8 +18,11 @@
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
+
+#ifdef CCT_ENABLE_OBJECT_DEBUG
 #include <cpptrace/cpptrace.hpp>
-#include <cpptrace/cpptrace.hpp>
+#endif
+
 namespace cct::gfx::vk
 {
 	PFN_vkGetInstanceProcAddr Instance::vkGetInstanceProcAddr = nullptr;
@@ -45,7 +48,11 @@ namespace cct::gfx::vk
 			}
 			else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 			{
+#ifdef CCT_ENABLE_OBJECT_DEBUG
 				CCT_VK_LOG_ERROR("{}\n Trace: \n{}", pCallbackData->pMessage, cpptrace::generate_trace().to_string());
+#else
+				CCT_VK_LOG_ERROR("{}", pCallbackData->pMessage);
+#endif
 			}
 			return VK_FALSE;
 		}

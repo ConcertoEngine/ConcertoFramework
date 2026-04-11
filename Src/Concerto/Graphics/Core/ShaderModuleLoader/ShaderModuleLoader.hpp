@@ -12,7 +12,7 @@
 #include <NZSL/Ast/Module.hpp>
 
 #include "Concerto/Graphics/Core/Defines.hpp"
-#include "Concerto/Graphics/Core/ShaderModule.hpp"
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 
 namespace cct::gfx
 {

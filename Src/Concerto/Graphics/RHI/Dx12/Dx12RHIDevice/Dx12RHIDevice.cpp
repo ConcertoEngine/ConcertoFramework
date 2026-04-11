@@ -19,7 +19,7 @@
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
 #include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
 #include "Concerto/Graphics/RHI/DescriptorSet.hpp"
-#include "Concerto/Graphics/Core/ShaderModuleLoader.hpp"
+#include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
 #include "Concerto/Graphics/Core/Vertex.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueue/Dx12RHIQueue.hpp"

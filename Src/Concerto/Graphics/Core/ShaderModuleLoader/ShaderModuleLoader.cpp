@@ -2,7 +2,7 @@
 // Created by arthur on 23/10/2025.
 //
 
-#include "Concerto/Graphics/Core/ShaderModuleLoader.hpp"
+#include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
 
 #include <ranges>
 #include <NZSL/Parser.hpp>

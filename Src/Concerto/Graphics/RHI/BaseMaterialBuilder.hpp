@@ -12,7 +12,7 @@
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/MaterialBuilder.hpp"
 #include "Concerto/Graphics/RHI/ShaderModule.hpp"
-#include "Concerto/Graphics/Core/ShaderModule.hpp"
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 
 namespace cct::gfx::rhi
 {

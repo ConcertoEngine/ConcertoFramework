@@ -2,7 +2,7 @@
 // Created by arthur on 23/10/2025.
 //
 
-#include "Concerto/Graphics/Core/ShaderModule.hpp"
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 
 namespace cct::gfx
 {

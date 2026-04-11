@@ -8,7 +8,7 @@
 #include <vulkan/vulkan_core.h>
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Enums.hpp"
-#include "Concerto/Graphics/Core/ShaderModule.hpp"
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 
 namespace cct::gfx::rhi
 {

@@ -22,7 +22,7 @@
 #include "Concerto/Graphics/RHI/GpuMesh.hpp"
 #include "Concerto/Graphics/RHI/Queue.hpp"
 #include "Concerto/Graphics/RHI/Fence.hpp"
-#include "Concerto/Graphics/Core/ShaderModule.hpp"
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 
 namespace cct::gfx
 {

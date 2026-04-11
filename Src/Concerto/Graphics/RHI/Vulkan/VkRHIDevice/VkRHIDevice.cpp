@@ -22,7 +22,7 @@
 #include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIShaderModule/VkRHIShaderModule.hpp"
-#include "Concerto/Graphics/Core/ShaderModuleLoader.hpp"
+#include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSetLayout/VkRHIDescriptorSetLayout.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipelineLayout/VkRHIPipelineLayout.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
