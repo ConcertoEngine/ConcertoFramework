@@ -1,11 +1,7 @@
-add_rules("mode.debug", "mode.release", "mode.releasedbg")
-add_repositories("Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main")
 add_repositories("nazara-repo https://github.com/NazaraEngine/xmake-repo")
 
---add_requires("imgui", {configs = {vulkan = true, sdl2 = true, debug = is_mode("debug"), with_symbols = true}})
 add_requires("volk", {configs = {header_only = true}})
 add_requires("nzsl", {configs = {shared = false}})
-add_requires("concerto-core", { debug = true, configs = { asserts = true, shared = true }})
 add_requires("vulkan-headers", "vulkan-memory-allocator", "stb", "vulkan-utility-libraries", "parallel-hashmap", "tinyobjloader")
 add_requires("libsdl2", {configs = {wayland = is_plat("linux", "bsd"), x11 = is_plat("linux", "bsd")}})
 
@@ -19,9 +15,6 @@ if is_plat("linux", "bsd") then
     add_defines("CCT_GFX_WAYLAND")
 end
 
-
-add_defines("CCT_ENABLE_ASSERTS")
-
 if is_plat("windows") then
     set_runtimes(is_mode("debug") and "MDd" or "MD")
 end
@@ -29,26 +22,6 @@ end
 if has_config("object_debug") then
     add_defines("CCT_ENABLE_OBJECT_DEBUG")
     add_requires("cpptrace")
-end
-
-
-function add_files_to_target(p)
-    for _, dir in ipairs(os.filedirs(p)) do
-        relative_dir = path.relative(dir, "Src/")
-        --print(dir)
-        if os.isdir(dir) then
-            add_files(path.join("Src", relative_dir, "*.cpp"))
-            add_headerfiles(path.join("Src", "(" .. relative_dir .. "/*.hpp)"))
-            add_headerfiles(path.join("Src", "(" .. relative_dir .. "/*.inl)"))
-        else
-            local ext = path.extension(relative_dir)
-            if ext == ".hpp" or ext == ".inl" then
-                add_headerfiles(path.join("Src", "(" .. relative_dir .. ")"))
-            elseif ext == ".cpp" then
-                add_files(path.join("Src", relative_dir))
-            end
-        end
-    end
 end
 
 target("concerto-graphics-core", function()
@@ -75,8 +48,8 @@ target("concerto-graphics-core", function()
         add_files_to_target("./Core/" .. file .. "/*")
     end
     add_files_to_target("./Core/*.hpp")
-
-    add_packages("concerto-core", "libsdl2", "vulkan-headers", "nzsl", "imgui", { public = true })
+    add_deps("concerto-core")
+    add_packages("libsdl2", "vulkan-headers", "nzsl", "imgui", { public = true })
     add_rpathdirs("$ORIGIN")
     if has_config("profiling") then
         add_deps("concerto-profiler", { public = false })
@@ -101,7 +74,8 @@ target("concerto-vulkan-backend", function()
     add_headerfiles("../../(Concerto/Graphics/Backend/Vulkan/*.hpp)")
 
     add_includedirs("../../", { public = true })
-    add_packages("concerto-core", "volk", "vulkan-headers", "vulkan-utility-libraries", "vulkan-memory-allocator", "nzsl", { public = true })
+    add_deps("concerto-core", { public = false })
+    add_packages("volk", "vulkan-headers", "vulkan-utility-libraries", "vulkan-memory-allocator", "nzsl", { public = true })
     add_deps("concerto-graphics-core")
     add_rpathdirs("$ORIGIN")
 
@@ -133,7 +107,8 @@ if is_plat("windows") then
 
         add_includedirs("../../", { public = true })
         add_headerfiles("../../(Concerto/Graphics/Backend/Dx12/*.hpp)")
-        add_packages("concerto-core", "nzsl", { public = true })
+        add_deps("concerto-core")
+        add_packages("nzsl", { public = true })
         add_deps("concerto-graphics-core")
         add_rpathdirs("$ORIGIN")
         add_syslinks("d3d12", "dxgi", "dxguid")
@@ -169,7 +144,8 @@ target("concerto-rhi-module", function()
     end
     add_deps("concerto-vulkan-backend")
 
-    add_packages("concerto-core", "parallel-hashmap", { public = true })
+    add_deps("concerto-core")
+    add_packages("parallel-hashmap", { public = true })
     add_packages("nazaraengine", "tinyobjloader", { public = true })
     add_rpathdirs("$ORIGIN")
 

@@ -1,6 +1,3 @@
-add_rules("mode.debug", "mode.release", "mode.coverage")
-add_rules("plugin.vsxmake.autoupdate")
-
 option("unitybuild", { description = "Build using unity build", default = false })
 option("tests", { description = "Enable unit tests", default = false})
 option("examples", { description = "Enable examples", default = false})
@@ -17,7 +14,7 @@ if has_config("enet") then
     add_requires("enet", {configs = {shared = false}})
 end
 
-add_requires("spdlog")
+add_requires("spdlog", {configs = {header_only = false}})
 
 target("concerto-core", function()
     set_kind("$(kind)")

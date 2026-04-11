@@ -1,3 +1,6 @@
+add_rules("mode.debug", "mode.release", "mode.releasedbg")
+add_rules("plugin.vsxmake.autoupdate")
+
 function add_files_to_target(p, hpp_as_files, install)
     for _, dir in ipairs(os.filedirs(p)) do
         relative_dir = path.relative(dir, "Src/")

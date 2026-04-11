@@ -4,7 +4,7 @@ target('concerto-rhi-sample')
     set_languages('cxx20')
     set_warnings('allextra')
     add_rules('download.assets', 'compile.shaders')
-    add_packages("concerto-core", { public = true })
+    add_deps("concerto-core", { public = true })
     add_rpathdirs("$ORIGIN")
     
     if has_config("profiling") then
