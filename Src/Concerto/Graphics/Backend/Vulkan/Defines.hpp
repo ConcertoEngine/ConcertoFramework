@@ -44,9 +44,6 @@
 		#include <vulkan/vulkan_wayland.h>
 	#endif
 	#undef None
-#elif defined(CCT_PLATFORM_MACOS)
-	#define VK_USE_PLATFORM_METAL_EXT
-	#include <Vulkan/vulkan_metal.h>
 #endif
 
 #ifndef VULKAN_H_

@@ -19,7 +19,7 @@
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 #include <cpptrace/cpptrace.hpp>
-
+#include <cpptrace/cpptrace.hpp>
 namespace cct::gfx::vk
 {
 	PFN_vkGetInstanceProcAddr Instance::vkGetInstanceProcAddr = nullptr;
@@ -62,6 +62,8 @@ namespace cct::gfx::vk
 
 	Instance::~Instance()
 	{
+		if (m_debugMessenger != VK_NULL_HANDLE && vkDestroyDebugUtilsMessengerEXT)
+			vkDestroyDebugUtilsMessengerEXT(m_handle, m_debugMessenger, nullptr);
 		vkDestroyInstance(m_handle, nullptr);
 	}
 
@@ -83,8 +85,8 @@ namespace cct::gfx::vk
 		VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
 		debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 		debugCreateInfo.messageSeverity =
-			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-			VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 		debugCreateInfo.messageType =
 			VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 			VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
@@ -146,6 +148,13 @@ namespace cct::gfx::vk
 #define CONCERTO_VULKAN_BACKEND_INSTANCE_EXT_END }
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/InstanceFunction.hpp"
+
+		if (IsExtensionEnabled(VK_EXT_DEBUG_UTILS_EXTENSION_NAME) && vkCreateDebugUtilsMessengerEXT)
+		{
+			m_lastResult = vkCreateDebugUtilsMessengerEXT(m_handle, &debugCreateInfo, nullptr, &m_debugMessenger);
+			CCT_ASSERT(m_lastResult == VK_SUCCESS, "ConcertoGraphics: vkCreateDebugUtilsMessengerEXT failed VkResult={}", static_cast<int>(m_lastResult));
+		}
+
 		return m_lastResult;
 	}
 

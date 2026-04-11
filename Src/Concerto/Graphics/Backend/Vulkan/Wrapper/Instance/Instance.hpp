@@ -49,6 +49,7 @@ namespace cct::gfx::vk
 		static void SetLogger(Logger& logger);
 	private:
 		Version m_apiVersion;
+		VkDebugUtilsMessengerEXT m_debugMessenger = VK_NULL_HANDLE;
 		mutable std::optional<std::vector<PhysicalDevice>> m_physicalDevices;
 		std::unordered_set<std::string> m_loadedExtensions;
 		std::unordered_set<std::string> m_loadedLayers;

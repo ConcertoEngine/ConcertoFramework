@@ -5,29 +5,17 @@
 #ifndef CONCERTO_GRAPHICS_RHI_VKRHICOMMANDBUFFER_HPP
 #define CONCERTO_GRAPHICS_RHI_VKRHICOMMANDBUFFER_HPP
 
-#include <span>
-
 #include "Concerto/Graphics/RHI/CommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
 
-namespace cct::gfx::vk
-{
-	class DescriptorSet;
-}
-
 namespace cct::gfx::rhi
 {
-	class VkRHIPipeline;
-	class VkRHIPipelineLayout;
-	class VkRHIDescriptorSet;
-
 	class CONCERTO_GRAPHICS_RHI_BASE_API VkRHICommandBuffer final: public rhi::CommandBuffer, public vk::CommandBuffer
 	{
 	public:
 		VkRHICommandBuffer(VkRHIDevice& device, vk::CommandPool& commandPool, CommandBufferUsage usage);
 
-		// ── rhi::CommandBuffer interface ──────────────────────────────────────
 		void Begin() override;
 		void End() override;
 		void Reset() override;

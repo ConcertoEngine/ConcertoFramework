@@ -98,7 +98,7 @@ namespace cct::gfx::vk
 			.spvMinorVersion = 3
 		};
 		spirvWriter.SetEnv(env);
-		spirv = spirvWriter.Generate(*resolvedModule);
+		spirv = spirvWriter.Generate(*sanitizedModule);
 		shaderModule = std::make_unique<vk::ShaderModule>(device, spirv, static_cast<VkShaderStageFlagBits>(shaderStageFlag), std::move(entryPointName));
 	}
 

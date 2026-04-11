@@ -169,7 +169,7 @@ namespace cct::gfx::vk
 		const std::span<VkQueueFamilyProperties> queueFamilyProperties = m_physicalDevice->GetQueueFamilyProperties();
 		UInt32 fallback = std::numeric_limits<UInt32>::max();
 		UInt32 i = 0;
-		for (const VkQueueFamilyProperties& properties : queueFamilyProperties)
+		for (const VkQueueFamilyProperties properties : queueFamilyProperties)
 		{
 			if (properties.queueFlags & flag)
 			{

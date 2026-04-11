@@ -23,7 +23,7 @@ namespace cct::gfx
 #elif defined(CCT_PLATFORM_MACOS)
 	struct NativeWindow
 	{
-		void* window;
+
 	};
 #elif defined(CCT_PLATFORM_LINUX)
 	struct NativeWindow

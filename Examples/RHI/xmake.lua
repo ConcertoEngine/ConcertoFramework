@@ -10,6 +10,3 @@ target('concerto-rhi-sample')
     if has_config("profiling") then
         add_deps("concerto-profiler", { public = false })
     end
-    if is_plat("macosx") then
-        add_packages("moltenvk", { links = {} })
-    end

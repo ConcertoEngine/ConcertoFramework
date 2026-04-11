@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/RHI/Texture.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
@@ -26,10 +25,7 @@ namespace cct::gfx::rhi
 	class CONCERTO_GRAPHICS_RHI_BASE_API VkRHITexture : public rhi::Texture
 	{
 	public:
-		VkRHITexture(vk::Device& device, PixelFormat format, Int32 width, Int32 height, VkImageAspectFlags aspectFlags,
-		             TextureUsageFlags usage = static_cast<TextureUsageFlags>(
-		                 static_cast<TextureUsageFlags>(TextureUsage::Sampled) |
-		                 static_cast<TextureUsageFlags>(TextureUsage::TransferDst)));
+		VkRHITexture(vk::Device& device, PixelFormat format, Int32 width, Int32 height, VkImageAspectFlags aspectFlags);
 
 		std::unique_ptr<rhi::TextureView> CreateView() const override;
 		const vk::Image& GetImage() const;
