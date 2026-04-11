@@ -1,0 +1,6 @@
+target("c-api-example", function()
+    set_languages("c11")
+    set_kind("binary")
+    add_files("CApiExample/main.c")
+    add_deps("concerto-core")
+end)
