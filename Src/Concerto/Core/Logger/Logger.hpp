@@ -1,119 +1,130 @@
-//
-// Created by arthur on 25/05/22.
-//
-
 #ifndef CONCERTO_CORE_LOGGER_HPP
 #define CONCERTO_CORE_LOGGER_HPP
 
+#include <cstddef>
+#include <cstdint>
+#include <filesystem>
 #include <format>
-#include <iostream>
+#include <memory>
 #include <source_location>
+#include <string>
+#include <string_view>
 
 #include "Concerto/Core/Types/Types.hpp"
 
 namespace cct
 {
-	namespace Terminal::Color
+	enum class LogLevel : std::uint8_t
 	{
-		static constexpr auto DEFAULT = "\x1B[0m";
-		static constexpr auto RED = "\x1B[31m";
-		static constexpr auto GREEN = "\x1B[32m";
-		static constexpr auto YELLOW = "\x1B[33m";
-		static constexpr auto BLUE = "\x1B[34m";
-		static constexpr auto MAGENTA = "\x1B[35m";
-		static constexpr auto CYAN = "\x1B[36m";
-	}// namespace Terminal::Color
+		Trace = 0,
+		Debug = 1,
+		Info = 2,
+		Warning = 3,
+		Error = 4,
+		Critical = 5,
+		Off = 6
+	};
+
+	struct LogConfig
+	{
+		LogLevel GlobalLevel = LogLevel::Info;
+		bool EnableConsole = true;
+		bool EnableFile = false;
+		std::filesystem::path LogDir = "Logs";
+		std::string LogFileName = "concerto.log";
+		std::size_t MaxFileSize = 5 * 1024 * 1024; // 5 MB
+		std::size_t MaxFiles = 3;
+		bool AsyncMode = false;
+		std::size_t AsyncQueueSize = 8192;
+		std::size_t AsyncThreadCount = 1;
+		// NOTE: Pattern uses spdlog format specifiers (%e, %n, %^, %$).
+		std::string Pattern = "[%Y-%m-%d %H:%M:%S.%e] [%n] %^[%l] %v%$";
+	};
+
 	class CCT_CORE_PUBLIC_API Logger
 	{
-	 public:
+	public:
+		explicit Logger(const LogConfig& config = {});
+		~Logger();
+
+		Logger(const Logger&) = delete;
+		Logger& operator=(const Logger&) = delete;
+		Logger(Logger&&) = delete;
+		Logger& operator=(Logger&&) = delete;
+
+		static Logger* GetContext();
+		static void SetContext(Logger* context);
+
+		void Flush();
+		void SetGlobalLevel(LogLevel level);
+		void SetCategoryLevel(std::string_view category, LogLevel level);
+		void SetChannelLevel(std::string_view channel, LogLevel level);
+		void SetChannelEnabled(std::string_view channel, bool enabled);
+
+		bool ShouldLog(const char* category, const char* channel, LogLevel level) const noexcept;
+		void LogMessage(const char* category, const char* channel, LogLevel level, std::string_view message);
+
 		template<typename... T>
 		struct Debug
 		{
-			explicit Debug(const std::format_string<T...> fmt, T&&... args, std::source_location loc = std::source_location::current())
+			explicit Debug(const std::format_string<T...> fmt,
+						   T&&... args,
+						   std::source_location loc = std::source_location::current())
 			{
-				Log(std::vformat(fmt.get(), std::make_format_args(args...)), LogLevel::Debug, loc);
+				auto* ctx = Logger::GetContext();
+				if (!ctx || !ctx->ShouldLog("Core", "Default", LogLevel::Debug))
+					return;
+				auto msg = std::format("{}:{}: ", loc.file_name(), loc.line());
+				msg += std::vformat(fmt.get(), std::make_format_args(args...));
+				ctx->LogMessage("Core", "Default", LogLevel::Debug, msg);
 #ifdef CCT_PLATFORM_WINDOWS
-				DebugString(std::vformat(fmt.get(), std::make_format_args(args...)));
+				Logger::DebugString(msg);
 #endif
 			}
 		};
-		enum class LogLevel
-		{
-			Debug,
-			Info,
-			Warning,
-			Error
-		};
 
-		/**
-	    * @brief Log a message with the DEBUG level = INFO
-	    * @param fmt The format of the message to Log
-	    * @param args The arguments of the message to Log
-	    */
-		template<typename... Types>
-		static void Info(const std::format_string<Types...> fmt, Types&&... args)
-		{
-			Log(std::vformat(fmt.get(), std::make_format_args(args...)), LogLevel::Info);
-		}
-
-		/**
-	    * @brief Log a message with the DEBUG level = DEBUG
-	    * @param fmt The format of the message to Log
-	    * @param args The arguments of the message to Log
-	    * @attention see https://cor3ntin.github.io/posts/variadic/
-	    */
 		template<typename... Types>
 		Debug(std::format_string<Types...>, Types&&...) -> Debug<Types...>;
 
-		/**
-	    * @brief Log a message with the DEBUG level = WARNING
-	    * @param fmt The format of the message to Log
-	    * @param args The arguments of the message to Log
-	    */
+		template<typename... Types>
+		static void Info(const std::format_string<Types...> fmt, Types&&... args)
+		{
+			auto* ctx = Logger::GetContext();
+			if (!ctx || !ctx->ShouldLog("Core", "Default", LogLevel::Info))
+				return;
+			const auto msg = std::vformat(fmt.get(), std::make_format_args(args...));
+			ctx->LogMessage("Core", "Default", LogLevel::Info, msg);
+		}
+
 		template<typename... Types>
 		static void Warning(const std::format_string<Types...> fmt, Types&&... args)
 		{
-			Log(std::vformat(fmt.get(), std::make_format_args(args...)), LogLevel::Warning);
+			auto* ctx = Logger::GetContext();
+			if (!ctx || !ctx->ShouldLog("Core", "Default", LogLevel::Warning))
+				return;
+			const auto msg = std::vformat(fmt.get(), std::make_format_args(args...));
+			ctx->LogMessage("Core", "Default", LogLevel::Warning, msg);
 		}
 
-		/**
-	    * @brief Log a message with the DEBUG level = ERROR
-		* @param fmt The format of the message to Log
-	    * @param args The arguments of the message to Log
-	    */
 		template<typename... Types>
 		static void Error(const std::format_string<Types...> fmt, Types&&... args)
 		{
-			Log(std::vformat(fmt.get(), std::make_format_args(args...)), LogLevel::Error);
+			auto* ctx = Logger::GetContext();
+			if (!ctx || !ctx->ShouldLog("Core", "Default", LogLevel::Error))
+				return;
+			const auto msg = std::vformat(fmt.get(), std::make_format_args(args...));
+			ctx->LogMessage("Core", "Default", LogLevel::Error, msg);
 		}
 
-		/**
-	    * @brief Log a message
-	    * @param level The level of the message
-	    * @param message The message to Log
-	    * @param location The location of the message
-	    */
-		template<typename T>
-		static void Log(const T& message, LogLevel level, const std::source_location& location = std::source_location::current())
-		{
-			switch (level)
-			{
-			case LogLevel::Debug:
-				std::cerr << Terminal::Color::CYAN << location.file_name() << ": " << location.line() << ": " << message << Terminal::Color::DEFAULT << '\n';
-				break;
-			case LogLevel::Info:
-				std::cout << Terminal::Color::GREEN << message << Terminal::Color::DEFAULT << '\n';
-				break;
-			case LogLevel::Warning:
-				std::cout << Terminal::Color::YELLOW << message << Terminal::Color::DEFAULT << '\n';
-				break;
-			case LogLevel::Error:
-				std::cerr << Terminal::Color::RED << message << Terminal::Color::DEFAULT << '\n';
-				break;
-			}
-		}
+		static void DebugString(const std::string& string);
 
-		static void DebugString(std::string_view string);
+	public: // Intentionally public: anonymous-namespace helpers in Logger.cpp
+			// need access to LoggerState. The type is incomplete for consumers.
+		struct LoggerState;
+
+	private:
+		std::unique_ptr<LoggerState> m_State;
 	};
-}// namespace cct
-#endif//CONCERTO_CORE_LOGGER_HPP
+} // namespace cct
+
+#endif // CONCERTO_CORE_LOGGER_HPP
