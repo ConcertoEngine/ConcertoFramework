@@ -7,7 +7,7 @@ on:
     paths-ignore:
       - '.github/workflows/macos.yml'
       - '.github/workflows/windows.yml'
-    branches: [ "main" ]
+    branches: [ "merge" ]
 
 jobs:
   build:
@@ -52,7 +52,7 @@ jobs:
         key: MSVC-${{ matrix.arch }}-${{ matrix.mode }}-${{ matrix.kind }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
 
     - name: Configure xmake and install dependencies
-      run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} -k ${{ matrix.kind }} --yes --tests=y
+      run: xmake config -v --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} -k ${{ matrix.kind }} --yes --tests=y
 
     - name: Save cached xmake dependencies
       if: ${{ !steps.restore-depcache.outputs.cache-hit }}

@@ -7,7 +7,7 @@ on:
     paths-ignore:
         - '.github/workflows/ubuntu22.yml'
         - '.github/workflows/windows.yml'
-    branches: [ "main" ]
+    branches: [ "merge" ]
 
 jobs:
   build:
@@ -58,7 +58,7 @@ jobs:
         key: macOS-${{ matrix.arch }}-${{ matrix.mode }}-${{ matrix.kind }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
 
     - name: Configure xmake and install dependencies
-      run: xmake config -vD --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} -k ${{ matrix.kind }} --yes --toolchain=llvm --runtimes=c++_shared --sdk=${LLVM_PREFIX} --tests=y
+      run: xmake config -v -vD --arch=${{ matrix.arch }} --mode=${{ matrix.mode }} -k ${{ matrix.kind }} --yes --toolchain=llvm --runtimes=c++_shared --sdk=${LLVM_PREFIX} --tests=y
 
     - name: Save cached xmake dependencies
       if: ${{ !steps.restore-depcache.outputs.cache-hit }}
