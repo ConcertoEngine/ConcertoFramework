@@ -38,11 +38,11 @@ namespace cct::gfx::rhi
 
 	std::shared_ptr<Texture> TextureBuilder::BuildTexture(const std::string& path)
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 		Int32 width, height, channels;
 		stbi_uc* pixels;
 		{
-			CCT_GFX_PROFILER_SCOPE("stbi_load");
+			CCT_PROFILER_SCOPE("stbi_load");
 			pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
 			if (!pixels)
 			{
@@ -69,7 +69,7 @@ namespace cct::gfx::rhi
 			return nullptr;
 
 		{
-			CCT_GFX_PROFILER_SCOPE("Map & memcpy to Buffer");
+			CCT_PROFILER_SCOPE("Map & memcpy to Buffer");
 			Byte* data = nullptr;
 			if (buffer->Map(&data) == false)
 			{
@@ -93,7 +93,7 @@ namespace cct::gfx::rhi
 
 	void TextureBuilder::Commit()
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		if (m_pendingUploads.empty())
 			return;

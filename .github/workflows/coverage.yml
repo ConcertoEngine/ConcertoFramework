@@ -94,13 +94,13 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         xmake run concerto-core-tests
-        gcovr -x coverage.out -s -f "Src/Concerto/Core/.*" --gcov-ignore-parse-errors=negative_hits.warn build/.objs/
+        gcovr -x coverage.out -s -f "Src/Concerto/Core/.*" -f "Src/Reflection/.*" --gcov-ignore-parse-errors=negative_hits.warn build/.objs/
 
     - name: Run unit tests and generate coverage output (Windows)
       if: runner.os == 'Windows'
       shell: cmd
       run: |
-        "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" --export_type cobertura:coverage.out --sources "Src\Concerto\Core\*" --modules "build" --cover_children -- xmake run concerto-core-tests
+        "C:\Program Files\OpenCppCoverage\OpenCppCoverage.exe" --export_type cobertura:coverage.out --sources "Src\Concerto\Core\*" --sources "Include\Reflection\*" --sources "Src\Reflection\*" --excluded_sources "Tests\*" --modules "build" --cover_children -- xmake run concerto-tests
 
     - name: Upload Coverage Report to Codecov
       uses: codecov/codecov-action@v5

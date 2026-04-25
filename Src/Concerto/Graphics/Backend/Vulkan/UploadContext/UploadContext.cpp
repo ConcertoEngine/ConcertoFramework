@@ -20,7 +20,7 @@ namespace cct::gfx::vk
 
 	void UploadContext::ReserveSecondaryCommandBuffers(UInt32 count)
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		m_secondCommandBuffers.reserve(count);
 		// count - 1 because we start at 0

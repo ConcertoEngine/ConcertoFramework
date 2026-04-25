@@ -132,7 +132,7 @@ namespace cct::gfx::rhi
 		};
 		m_owner->GetCommandQueue()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), commandLists.data());
 		m_owner->dx12::SwapChain::Get()->Present(1, 0);
-		CCT_GFX_FRAME_MARK;
+		CCT_FRAME_MARK();
 	}
 
 	rhi::CommandBuffer& Dx12RHISwapChain::SwapChainFrame::GetCommandBuffer()

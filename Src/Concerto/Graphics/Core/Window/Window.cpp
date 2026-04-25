@@ -471,7 +471,7 @@ namespace cct::gfx
 		m_windowID(0),
 		m_shouldQuit(false)
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 		Uint32 flags = 0;
 		flags |= SDL_WINDOW_RESIZABLE;
 		m_window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
@@ -492,7 +492,7 @@ namespace cct::gfx
 	}
 	Window::~Window()
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 		SDL_DelEventWatch(EventHandler, this);
 		SDL_DestroyWindow(m_window);
 		m_window = nullptr;

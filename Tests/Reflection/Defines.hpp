@@ -1,0 +1,31 @@
+//
+// Created by arthur on 09/12/2024.
+//
+
+#pragma once
+
+#include <Concerto/Reflection/Defines.hpp>
+
+#if defined(CCT_REFLECTION_TESTS_BUILD) && defined(CCT_REFLECTION_PKG_GENERATOR_BUILD)
+
+#define CCT_REFL_TESTS_PACKAGE(...) CCT_PACKAGE(__VA_ARGS__)
+#define CCT_REFL_TESTS_CLASS(...) CCT_CLASS(__VA_ARGS__)
+#define CCT_REFL_TESTS_GENERIC_TYPE() CCT_GENERIC_TYPE()
+#define CCT_REFL_TESTS_MEMBER(...) CCT_MEMBER(__VA_ARGS__)
+#define CCT_REFL_TESTS_NATIVE_MEMBER(...) CCT_NATIVE_MEMBER(__VA_ARGS__)
+#define CCT_REFL_TESTS_METHOD(...) CCT_METHOD(__VA_ARGS__)
+#define CCT_REFL_TESTS_ENUM(...) CCT_ENUM(__VA_ARGS__)
+#define CCT_REFL_TESTS_ENUM_VALUE(...) CCT_ENUM_VALUE(__VA_ARGS__)
+
+#else
+
+#define CCT_REFL_TESTS_PACKAGE(...)
+#define CCT_REFL_TESTS_CLASS(...)
+#define CCT_REFL_TESTS_GENERIC_TYPE(name)
+#define CCT_REFL_TESTS_MEMBER(...)
+#define CCT_REFL_TESTS_NATIVE_MEMBER(...)
+#define CCT_REFL_TESTS_METHOD(...)
+#define CCT_REFL_TESTS_ENUM(...)
+#define CCT_REFL_TESTS_ENUM_VALUE(...)
+
+#endif

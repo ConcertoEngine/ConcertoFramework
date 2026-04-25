@@ -10,7 +10,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <Concerto/Core/Logger/Logger.hpp>
-#include <Concerto/Core/Network/ENet/ENet.hpp>
+#include <Concerto/Core/Network/ENet/ENet/ENet.hpp>
 #include <Concerto/Core/Network/ENet/Server/Server.hpp>
 #include <Concerto/Core/Network/ENet/Client/Client.hpp>
 

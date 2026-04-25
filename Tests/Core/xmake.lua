@@ -22,9 +22,9 @@ target("concerto-core-dummy", function()
 end)
 
 target("concerto-core-tests", function()
-    add_deps("concerto-core", "concerto-core-dummy")
-    set_kind("binary")
-    if (is_mode("debug")) then
+    add_deps("concerto-core", "concerto-core-dummy", {public = true})
+    set_kind("object")
+    if is_mode("debug") then
         set_symbols("debug")
     end
     set_warnings("allextra")

@@ -5,9 +5,7 @@ add_requires("nzsl", {configs = {shared = false}})
 add_requires("vulkan-headers", "vulkan-memory-allocator", "stb", "vulkan-utility-libraries", "parallel-hashmap", "tinyobjloader")
 add_requires("libsdl2", {configs = {wayland = is_plat("linux", "bsd"), x11 = is_plat("linux", "bsd")}})
 
-option("override_runtime", { description = "Override vs runtime to MD in release and MDd in debug", default = false })
 option("examples", { description = "Build examples", default = false })
-option("profiling", { description = "Build with tracy profiler", default = false })
 option("object_debug", { description = "Build with graphics object debugging", default = is_mode("debug") })
 
 if is_plat("linux", "bsd") then
@@ -15,9 +13,6 @@ if is_plat("linux", "bsd") then
     add_defines("CCT_GFX_WAYLAND")
 end
 
-if is_plat("windows") then
-    set_runtimes(is_mode("debug") and "MDd" or "MD")
-end
 
 if has_config("object_debug") then
     add_defines("CCT_ENABLE_OBJECT_DEBUG")

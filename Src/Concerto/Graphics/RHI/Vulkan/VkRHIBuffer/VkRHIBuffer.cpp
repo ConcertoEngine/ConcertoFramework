@@ -20,7 +20,7 @@ namespace cct::gfx::rhi
 
 	bool VkRHIBuffer::CopyTo(const Texture& texture)
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		const auto& vkTexture = cct::Cast<const VkRHITexture&>(texture);
 		auto& uploadContext = m_device.GetUploadContext();

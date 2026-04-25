@@ -2,7 +2,9 @@
 // Created by arthur on 20/06/2025.
 //
 
-#include "tracy/Tracy.hpp"
+#ifdef CCT_PROFILING
+#include <tracy/Tracy.hpp>
+#endif
 #include <Concerto/Core/Defines.hpp>
 #include <Concerto/Core/Types/Types.hpp>
 

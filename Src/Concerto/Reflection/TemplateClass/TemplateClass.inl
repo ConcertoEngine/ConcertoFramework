@@ -1,0 +1,12 @@
+//
+// Created by arthur on 10/12/2024.
+//
+
+#ifndef CONCERTO_REFLECTION_TEMPLATE_CLASS_INL
+#define CONCERTO_REFLECTION_TEMPLATE_CLASS_INL
+
+namespace cct::refl
+{
+}
+
+#endif // CONCERTO_REFLECTION_TEMPLATE_CLASS_INL

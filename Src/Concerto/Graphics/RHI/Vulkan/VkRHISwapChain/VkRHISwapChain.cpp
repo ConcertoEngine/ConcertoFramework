@@ -126,7 +126,7 @@ namespace cct::gfx::rhi
 
 	void VkRHISwapChain::Present(UInt32 imageIndex)
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		m_lastFrameIndex = m_currentFrameIndex;
 		m_currentFrameIndex = (m_currentFrameIndex + 1) % GetImageCount();
@@ -154,7 +154,7 @@ namespace cct::gfx::rhi
 
 	void VkRHISwapChain::CreateFrameBuffers(rhi::VkRHIDevice& device)
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		const std::span<vk::ImageView> imagesViews = vk::SwapChain::GetImageViews();
 
@@ -176,7 +176,7 @@ namespace cct::gfx::rhi
 
 	void VkRHISwapChain::CreateRenderPass()
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		std::vector<rhi::RenderPass::Attachment> attachment;
 		auto& colorAttachment = attachment.emplace_back();
@@ -257,14 +257,14 @@ namespace cct::gfx::rhi
 
 	void VkRHISwapChain::SwapChainFrame::Present()
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		const vk::Queue& presentQueue = m_owner->GetPresentQueue();
 
 		m_renderFence.Reset();
 		presentQueue.Submit(Cast<VkRHICommandBuffer&>(*m_commandBuffer), &m_presentSemaphore, &m_renderSemaphore, m_renderFence);
 		m_owner->Present(m_imageIndex);
-		CCT_GFX_FRAME_MARK;
+		CCT_FRAME_MARK();
 	}
 
 	rhi::CommandBuffer& VkRHISwapChain::SwapChainFrame::GetCommandBuffer()
@@ -295,7 +295,7 @@ namespace cct::gfx::rhi
 
 	void VkRHISwapChain::SwapChainFrame::Wait() const
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		m_renderFence.Wait(-1);
 		m_renderFence.Reset();

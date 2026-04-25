@@ -78,7 +78,7 @@ namespace cct::gfx::vk
 		const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
 		std::span<const char*> layers)
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 		m_apiVersion = apiVersion;
 
 		VkApplicationInfo appInfo = {};

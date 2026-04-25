@@ -29,7 +29,7 @@ namespace cct::gfx
 			case SDL_PIXELFORMAT_ABGR8888:
 				return PixelFormat::BGRA8uNorm;
 			case SDL_PIXELFORMAT_RGB565:
-				return PixelFormat::RGB8uNorm; // Assuming it’s closest to 8-bit normalized
+				return PixelFormat::RGB8uNorm; // Assuming itï¿½s closest to 8-bit normalized
 			case SDL_PIXELFORMAT_RGBA5551:
 				return PixelFormat::RGBA8uNorm;
 			case SDL_PIXELFORMAT_RGB332:
@@ -45,7 +45,7 @@ namespace cct::gfx
 	}
 	DisplayManager::DisplayManager()
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 		int result = SDL_Init(SDL_INIT_VIDEO);
 		if (result < 0)
 		{
@@ -61,7 +61,7 @@ namespace cct::gfx
 
 	std::vector<DisplayInfo> DisplayManager::EnumerateDisplaysInfos()
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 		std::vector<DisplayInfo> displayInfos;
 		const Int32 numDisplay = SDL_GetNumVideoDisplays();
 		if (numDisplay < 0)
@@ -72,7 +72,7 @@ namespace cct::gfx
 
 		for (Int32 displayIndex = 0; displayIndex < numDisplay; ++displayIndex)
 		{
-			CCT_GFX_PROFILER_SCOPE("Enumerate display");
+			CCT_PROFILER_SCOPE("Enumerate display");
 			const char* displayName = SDL_GetDisplayName(displayIndex);
 			if (displayName == nullptr)
 			{

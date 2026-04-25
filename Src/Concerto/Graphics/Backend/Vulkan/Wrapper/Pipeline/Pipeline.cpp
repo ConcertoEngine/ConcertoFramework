@@ -84,7 +84,7 @@ namespace cct::gfx::vk
 
 	VkResult Pipeline::BuildPipeline()
 	{
-		CCT_GFX_AUTO_PROFILER_SCOPE();
+		CCT_PROFILER_SCOPE();
 
 		VkGraphicsPipelineCreateInfo pipelineInfo{};
 		VkPipelineColorBlendStateCreateInfo colorBlending{};
