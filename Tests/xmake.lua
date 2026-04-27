@@ -14,6 +14,8 @@ if has_config("tests") then
 		add_files("./main.cpp")
 		add_packages("catch2", {public = true})
 		add_deps("concerto-core-tests", {public = true})
-		add_deps("concerto-reflection-tests", {public = true})
+		if has_config("reflection") then
+			add_deps("concerto-reflection-tests", {public = true})
+		end
 	end)
 end

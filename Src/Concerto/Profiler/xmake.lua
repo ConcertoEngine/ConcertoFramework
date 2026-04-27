@@ -15,7 +15,7 @@ target("concerto-profiler", function()
     add_deps("concerto-core", { public = true })
 end)
 
-if is_plat("windows") then
+if is_plat("windows") and has_config("reflection") then
     target("concerto-profiler-mt", function()
         set_kind("shared")
         add_includedirs("../../../Src", { public = true })

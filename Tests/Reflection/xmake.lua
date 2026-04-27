@@ -1,5 +1,5 @@
 
-if has_config("tests") then
+if has_config("tests") and has_config("reflection") then
     target("concerto-reflection-tests", function () 
         set_kind("object")
         set_languages("cxx20")

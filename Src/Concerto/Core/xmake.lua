@@ -9,8 +9,10 @@ if is_plat("windows") then
     add_requires("enet",      {configs = {shared = false,      runtimes = is_mode("debug") and "MDd" or "MD"}})  
     add_requires("spdlog",    {configs = {header_only = false, runtimes = is_mode("debug") and "MDd" or "MD"}})  
 
-    add_requires("enet~mt",   {alias = "enet-mt",   configs = {shared = false,      runtimes = "MT"}})  
-    add_requires("spdlog~mt", {alias = "spdlog-mt", configs = {header_only = false, runtimes = "MT"}})  
+    if has_config("reflection") then
+        add_requires("enet~mt",   {alias = "enet-mt",   configs = {shared = false,      runtimes = "MT"}})  
+        add_requires("spdlog~mt", {alias = "spdlog-mt", configs = {header_only = false, runtimes = "MT"}})  
+    end
 else  
     add_requires("enet",   {configs = {shared = false}})  
     add_requires("spdlog", {configs = {header_only = false}})  
@@ -18,7 +20,7 @@ end
 
 local concerto_core = {
     concerto_core_mt = {
-        enabled = is_plat("windows"),
+        enabled = is_plat("windows") and has_config("reflection"),
         kind = get_config("kind") or "shared",
         runtimes = "MT",
         packages = {"spdlog-mt"},
@@ -83,6 +85,10 @@ for targetName, targetConfig in pairs(concerto_core) do
         add_cxxflags("cl::/Zc:preprocessor", { public = true })
         add_cxxflags("cl::/utf-8")
         add_includedirs("../../", {public = true})
+
+        if is_plat("mingw", "linux", "macosx", "bsd") then
+            add_syslinks("pthread")
+        end
 
         local files = {
             "Any",

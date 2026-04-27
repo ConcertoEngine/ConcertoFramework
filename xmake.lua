@@ -25,7 +25,7 @@ function add_files_to_target(p, hpp_as_files, install)
     end
 end
 
-option("reflection", { description = "Enable C++ reflection system", default = true })
+option("reflection", { description = "Enable C++ reflection system", default = false })
 option("profiling", { description = "Build with tracy profiler", default = false })
 option("graphics", { description = "Build graphics", default = false })
 
