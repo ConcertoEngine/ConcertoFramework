@@ -94,8 +94,7 @@ if is_plat("windows") then
         end
 
         add_defines("CONCERTO_GRAPHICS_DX12_BACKEND_BUILD", { public = false })
-        
-        add_files("./Backend/Dx12/*.cpp")
+
         add_files_to_target("./Backend/Dx12/*")
         add_files_to_target("./Backend/Dx12/Wrapper/*")
         add_headerfiles("../../(Concerto/Graphics/Backend/Dx12/*.hpp)")
