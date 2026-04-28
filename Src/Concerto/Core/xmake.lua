@@ -143,7 +143,7 @@ for targetName, targetConfig in pairs(concerto_core) do
         end
 
         if has_config("asserts") then
-            add_defines("CCT_ENABLE_ASSERTS")
+            add_defines("CCT_ENABLE_ASSERTS", { public = true })
         end
 
         -- macOS: ensure we link against the correct C++ runtime when using custom toolchain
