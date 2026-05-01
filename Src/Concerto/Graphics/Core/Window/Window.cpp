@@ -7,26 +7,7 @@
 #include <Concerto/Core/Logger/Logger.hpp>
 #include <Concerto/Core/Assert.hpp>
 
-#ifdef CCT_PLATFORM_LINUX
-	#ifdef CCT_GFX_XLIB
-		#define SDL_VIDEO_DRIVER_X11
-	#endif // CCT_GFX_XLIB
-	#ifdef CCT_GFX_WAYLAND
-		#define SDL_VIDEO_DRIVER_WAYLAND
-	#endif
-#endif // CCT_PLATFORM_LINUX
-
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_syswm.h>
-
-#ifdef CCT_PLATFORM_POSIX
-// Because #include <SDL2/SDL_syswm.h> includes <X11/X.h>
-#undef Button1
-#undef Button2
-#undef Button3
-#undef Button4
-#undef Button5
-#endif
+#include <SDL3/SDL.h>
 
 #include "Concerto/Graphics/Core/Window/Window.hpp"
 
@@ -53,7 +34,7 @@ namespace cct::gfx
 			return MouseButton::Button::Button5;
 		}
 
-		PixelFormat PixelFormatFromSDL(Uint32 sdlFmt)
+		PixelFormat PixelFormatFromSDL(SDL_PixelFormat sdlFmt)
 		{
 			switch (sdlFmt)
 			{
@@ -362,11 +343,11 @@ namespace cct::gfx
 			}
 		}
 
-		int EventHandler(void* userdata, SDL_Event* event)
+		bool EventHandler(void* userdata, SDL_Event* event)
 		{
 			Window* window = static_cast<Window*>(userdata);
 			if (window == nullptr)
-				return 0;
+				return false;
 			Event newEvent = {
 				.type = Event::Type::Mouse,
 				.name = "",
@@ -374,27 +355,35 @@ namespace cct::gfx
 			};
 			switch (event->type)
 			{
-			case SDL_WINDOWEVENT:
-			{
-
+			case SDL_EVENT_WINDOW_RESIZED:
 				if (event->window.windowID != window->GetId())
-					return 0;
-				else if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-					window->TriggerResize();
-				else if (event->window.event == SDL_WINDOWEVENT_CLOSE)
-					window->SetShouldQuit(true);
-				else if (event->window.event == SDL_WINDOWEVENT_MAXIMIZED)
-					window->FireStateChange(WindowState::Maximized);
-				else if (event->window.event == SDL_WINDOWEVENT_MINIMIZED)
-					window->FireStateChange(WindowState::Minimized);
-				else if (event->window.event == SDL_WINDOWEVENT_RESTORED)
-					window->FireStateChange(WindowState::Normal);
-				return 0;
-			}
-			case SDL_MOUSEMOTION:
-			{
+					return false;
+				window->TriggerResize();
+				return false;
+			case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
 				if (event->window.windowID != window->GetId())
-					return 0;
+					return false;
+				window->SetShouldQuit(true);
+				return false;
+			case SDL_EVENT_WINDOW_MAXIMIZED:
+				if (event->window.windowID != window->GetId())
+					return false;
+				window->FireStateChange(WindowState::Maximized);
+				return false;
+			case SDL_EVENT_WINDOW_MINIMIZED:
+				if (event->window.windowID != window->GetId())
+					return false;
+				window->FireStateChange(WindowState::Minimized);
+				return false;
+			case SDL_EVENT_WINDOW_RESTORED:
+				if (event->window.windowID != window->GetId())
+					return false;
+				window->FireStateChange(WindowState::Normal);
+				return false;
+			case SDL_EVENT_MOUSE_MOTION:
+			{
+				if (event->motion.windowID != window->GetId())
+					return false;
 				MouseEvent mouseEvent = {};
 				mouseEvent.type = MouseEvent::Type::Moved;
 				mouseEvent.mouseMove.x = event->motion.x;
@@ -404,10 +393,10 @@ namespace cct::gfx
 				newEvent.data = mouseEvent;
 				break;
 			}
-			case SDL_MOUSEBUTTONDOWN:
+			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			{
-				if (event->window.windowID != window->GetId())
-					return 0;
+				if (event->button.windowID != window->GetId())
+					return false;
 				MouseEvent mouseEvent = {};
 				mouseEvent.type = MouseEvent::Type::Button;
 				mouseEvent.button.button = SDLButtonToConcerto(event->button.button);
@@ -415,10 +404,10 @@ namespace cct::gfx
 				newEvent.data = mouseEvent;
 				break;
 			}
-			case SDL_MOUSEBUTTONUP:
+			case SDL_EVENT_MOUSE_BUTTON_UP:
 			{
-				if (event->window.windowID != window->GetId())
-					return 0;
+				if (event->button.windowID != window->GetId())
+					return false;
 				MouseEvent mouseEvent = {};
 				mouseEvent.type = MouseEvent::Type::Button;
 				mouseEvent.button.button = SDLButtonToConcerto(event->button.button);
@@ -426,46 +415,46 @@ namespace cct::gfx
 				newEvent.data = mouseEvent;
 				break;
 			}
-			case SDL_KEYDOWN:
+			case SDL_EVENT_KEY_DOWN:
 			{
-				if (event->window.windowID != window->GetId())
-					return 0;
+				if (event->key.windowID != window->GetId())
+					return false;
 				KeyEvent keyEvent = {};
 				newEvent.type = Event::Type::Key;
-				keyEvent.key = SDLKeyToConcerto(event->key.keysym.scancode);
+				keyEvent.key = SDLKeyToConcerto(event->key.scancode);
 				keyEvent.triggerType = TriggerType::Pressed;
 				newEvent.data = keyEvent;
 				break;
 			}
-			case SDL_KEYUP:
+			case SDL_EVENT_KEY_UP:
 			{
-				if (event->window.windowID != window->GetId())
-					return 0;
+				if (event->key.windowID != window->GetId())
+					return false;
 				KeyEvent keyEvent = {};
 				newEvent.type = Event::Type::Key;
-				keyEvent.key = SDLKeyToConcerto(event->key.keysym.scancode);
+				keyEvent.key = SDLKeyToConcerto(event->key.scancode);
 				keyEvent.triggerType = TriggerType::Released;
 				newEvent.data = keyEvent;
 				break;
 			}
-			case SDL_MOUSEWHEEL:
+			case SDL_EVENT_MOUSE_WHEEL:
 			{
-				if (event->window.windowID != window->GetId())
-					return 0;
+				if (event->wheel.windowID != window->GetId())
+					return false;
 				MouseEvent wheelEvent = {};
 				wheelEvent.type = MouseEvent::Type::Wheel;
-				wheelEvent.mouseWheel.x = event->wheel.mouseX;
-				wheelEvent.mouseWheel.y = event->wheel.mouseX;
-				wheelEvent.mouseWheel.delta = event->wheel.preciseY;
+				wheelEvent.mouseWheel.x = static_cast<int>(event->wheel.mouse_x);
+				wheelEvent.mouseWheel.y = static_cast<int>(event->wheel.mouse_x);
+				wheelEvent.mouseWheel.delta = event->wheel.y;
 				newEvent.type = Event::Type::Mouse;
 				newEvent.data = wheelEvent;
 				break;
 			}
 			default:
-				return 0; //do not trigger event
+				return false; //do not trigger event
 			}
 			window->GetInputManager().Trigger({ newEvent });
-			return 0;
+			return false;
 		}
 	}
 
@@ -484,15 +473,22 @@ namespace cct::gfx
 		m_titleBarHeight(0)
 	{
 		CCT_PROFILER_SCOPE();
-		Uint32 flags = 0;
-		flags |= SDL_WINDOW_RESIZABLE;
+		const auto displayId = static_cast<SDL_DisplayID>(displayIndex);
+		SDL_PropertiesID props = SDL_CreateProperties();
+		SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title.c_str());
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_CENTERED_DISPLAY(displayId));
+		SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_CENTERED_DISPLAY(displayId));
+		SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
 		if (borderless)
-			flags |= SDL_WINDOW_BORDERLESS;
-		m_window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
+			SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_BORDERLESS_BOOLEAN, true);
+		m_window = SDL_CreateWindowWithProperties(props);
+		SDL_DestroyProperties(props);
 		if (m_window == nullptr)
 		{
-			CCT_ASSERT_FALSE("ConcertoGraphics: Glfw initialization failed");
-			throw std::runtime_error("GLFW3 initialization failed");
+			CCT_ASSERT_FALSE("ConcertoGraphics: SDL_CreateWindowWithProperties failed: {}", SDL_GetError());
+			throw std::runtime_error(std::format("ConcertoGraphics: SDL_CreateWindowWithProperties failed: {}", SDL_GetError()));
 		}
 		m_windowID = SDL_GetWindowID(m_window);
 
@@ -509,7 +505,7 @@ namespace cct::gfx
 		CCT_PROFILER_SCOPE();
 		if (m_window != nullptr)
 			SDL_SetWindowHitTest(m_window, nullptr, nullptr);
-		SDL_DelEventWatch(EventHandler, this);
+		SDL_RemoveEventWatch(EventHandler, this);
 		SDL_DestroyWindow(m_window);
 		m_window = nullptr;
 	}
@@ -524,10 +520,9 @@ namespace cct::gfx
 	void Window::SetCursorVisible(bool visible)
 	{
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
-		Int32 result = SDL_ShowCursor(visible);
-		if (result < 0)
+		const bool ok = visible ? SDL_ShowCursor() : SDL_HideCursor();
+		if (!ok)
 			CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
-
 	}
 
 	void Window::SetCursorIcon(const std::string& path)
@@ -540,20 +535,16 @@ namespace cct::gfx
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
 		if (disabled)
 		{
-			Int32 result = SDL_ShowCursor(SDL_DISABLE);
-			if (result < 0)
+			if (!SDL_HideCursor())
 				CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
-			result = SDL_SetRelativeMouseMode(SDL_TRUE);
-			if (result < 0)
+			if (!SDL_SetWindowRelativeMouseMode(m_window, true))
 				CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
 		}
 		else
 		{
-			Int32 result = SDL_ShowCursor(SDL_ENABLE);
-			if (result < 0)
+			if (!SDL_ShowCursor())
 				CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
-			result = SDL_SetRelativeMouseMode(SDL_FALSE);
-			if (result < 0)
+			if (!SDL_SetWindowRelativeMouseMode(m_window, false))
 				CCT_GFX_LOG_WARN("Window", "{}", SDL_GetError());
 		}
 	}
@@ -577,31 +568,35 @@ namespace cct::gfx
 	NativeWindow Window::GetNativeWindow() const
 	{
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
-		SDL_SysWMinfo wmInfo;
-		SDL_VERSION(&wmInfo.version)
-			NativeWindow nativeWindow;
-		if (SDL_GetWindowWMInfo(m_window, &wmInfo)) {
-#if defined(CCT_PLATFORM_WINDOWS)
-			nativeWindow.window = wmInfo.info.win.window;
-			nativeWindow.hinstance = wmInfo.info.win.hinstance;
-#elif defined(CCT_PLATFORM_MACOS)
-			CCT_ASSERT_FALSE("Not implemented");
-#elif defined(CCT_PLATFORM_LINUX)
-			if (wmInfo.subsystem == SDL_SYSWM_X11)
-				nativeWindow.platform = NativeWindow::X11{ wmInfo.info.x11.display, wmInfo.info.x11.window };
-			else if (wmInfo.subsystem == SDL_SYSWM_WAYLAND)
-				nativeWindow.platform = NativeWindow::Wayland{ wmInfo.info.wl.display, wmInfo.info.wl.surface };
-			else
-			{
-				CCT_ASSERT_FALSE("ConcertoGraphics: Unsupported Linux windowing system");
-				throw std::runtime_error("ConcertoGraphics: Unsupported Linux windowing system");
-			}
-#endif
-		}
-		else {
-			CCT_ASSERT_FALSE("ConcertoGraphics: Could not get native window handle message:", SDL_GetError());
+		const SDL_PropertiesID props = SDL_GetWindowProperties(m_window);
+		if (props == 0)
+		{
+			CCT_ASSERT_FALSE("ConcertoGraphics: Could not get window properties message: {}", SDL_GetError());
 			return {};
 		}
+		NativeWindow nativeWindow;
+#if defined(CCT_PLATFORM_WINDOWS)
+		nativeWindow.window = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+		nativeWindow.hinstance = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+#elif defined(CCT_PLATFORM_MACOS)
+		CCT_ASSERT_FALSE("Not implemented");
+#elif defined(CCT_PLATFORM_LINUX)
+		if (void* wlDisplay = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, nullptr))
+		{
+			void* wlSurface = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, nullptr);
+			nativeWindow.platform = NativeWindow::Wayland{ wlDisplay, wlSurface };
+		}
+		else if (void* x11Display = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_X11_DISPLAY_POINTER, nullptr))
+		{
+			const auto x11Window = static_cast<unsigned long>(SDL_GetNumberProperty(props, SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0));
+			nativeWindow.platform = NativeWindow::X11{ x11Display, x11Window };
+		}
+		else
+		{
+			CCT_ASSERT_FALSE("ConcertoGraphics: Unsupported Linux windowing system");
+			throw std::runtime_error("ConcertoGraphics: Unsupported Linux windowing system");
+		}
+#endif
 		return nativeWindow;
 	}
 
@@ -657,9 +652,7 @@ namespace cct::gfx
 
 	PixelFormat Window::GetFormat() const
 	{
-		auto format = static_cast<SDL_PixelFormatEnum>(SDL_GetWindowPixelFormat(m_window));
-
-		return PixelFormatFromSDL(format);
+		return PixelFormatFromSDL(SDL_GetWindowPixelFormat(m_window));
 	}
 
 	void Window::RegisterStateChangeCallback(std::function<void(Window&, WindowState)> callback)
@@ -688,7 +681,7 @@ namespace cct::gfx
 	void Window::ToggleMaximize()
 	{
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
-		const Uint32 flags = SDL_GetWindowFlags(m_window);
+		const SDL_WindowFlags flags = SDL_GetWindowFlags(m_window);
 		const bool isMaximized = (flags & SDL_WINDOW_MAXIMIZED) != 0;
 		const bool isResizable = (flags & SDL_WINDOW_RESIZABLE) != 0;
 		if (isMaximized)
@@ -700,7 +693,7 @@ namespace cct::gfx
 			// SDL_MaximizeWindow is a no-op on non-resizable windows. On Windows the
 			// SDL_WINDOW_BORDERLESS flag silently strips RESIZABLE — re-assert it.
 			if (!isResizable)
-				SDL_SetWindowResizable(m_window, SDL_TRUE);
+				SDL_SetWindowResizable(m_window, true);
 			SDL_MaximizeWindow(m_window);
 		}
 	}
@@ -714,7 +707,7 @@ namespace cct::gfx
 	{
 		if (m_window == nullptr)
 			return WindowState::Normal;
-		const Uint32 flags = SDL_GetWindowFlags(m_window);
+		const SDL_WindowFlags flags = SDL_GetWindowFlags(m_window);
 		if ((flags & SDL_WINDOW_MAXIMIZED) != 0)
 			return WindowState::Maximized;
 		if ((flags & SDL_WINDOW_MINIMIZED) != 0)
@@ -743,7 +736,7 @@ namespace cct::gfx
 		m_titleBarHeight = titleBarHeight;
 		m_nonDraggableRects = std::move(nonDraggableRects);
 		// SDL_SetWindowHitTest is idempotent — calling it again replaces the callback.
-		if (SDL_SetWindowHitTest(m_window, &HitTestThunk, this) != 0)
+		if (!SDL_SetWindowHitTest(m_window, &HitTestThunk, this))
 			CCT_GFX_LOG_WARN("Window", "SDL_SetWindowHitTest failed: {}", SDL_GetError());
 	}
 

@@ -2,7 +2,7 @@
 // Created by arthur on 27/10/2024.
 //
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/Core/DisplayManager/DisplayManager.hpp"
@@ -13,10 +13,10 @@ namespace cct::gfx
 {
 	namespace
 	{
-		PixelFormat PixelFormatFrom(UInt32 pixelFormat)
+		PixelFormat PixelFormatFrom(SDL_PixelFormat pixelFormat)
 		{
 			switch (pixelFormat) {
-			case SDL_PIXELFORMAT_RGB888:
+			case SDL_PIXELFORMAT_XRGB8888:
 				return PixelFormat::RGB8uNorm;
 			case SDL_PIXELFORMAT_RGB24:
 				return PixelFormat::RGB8uNorm;
@@ -24,19 +24,19 @@ namespace cct::gfx
 				return PixelFormat::RGBA8uNorm;
 			case SDL_PIXELFORMAT_ARGB8888:
 				return PixelFormat::BGRA8uNorm; // Assuming BGRA is ARGB
-			case SDL_PIXELFORMAT_BGR888:
+			case SDL_PIXELFORMAT_XBGR8888:
 				return PixelFormat::BGRuNorm;
 			case SDL_PIXELFORMAT_ABGR8888:
 				return PixelFormat::BGRA8uNorm;
 			case SDL_PIXELFORMAT_RGB565:
-				return PixelFormat::RGB8uNorm; // Assuming it�s closest to 8-bit normalized
+				return PixelFormat::RGB8uNorm; // Assuming it's closest to 8-bit normalized
 			case SDL_PIXELFORMAT_RGBA5551:
 				return PixelFormat::RGBA8uNorm;
 			case SDL_PIXELFORMAT_RGB332:
 				return PixelFormat::RGB8uNorm; // Approximated to RGB8
-			case SDL_PIXELFORMAT_RGB444:
+			case SDL_PIXELFORMAT_XRGB4444:
 				return PixelFormat::RGB8uNorm;
-			case SDL_PIXELFORMAT_RGB555:
+			case SDL_PIXELFORMAT_XRGB1555:
 				return PixelFormat::RGB8uNorm;
 			default:
 				throw std::invalid_argument("Unsupported SDL format");
@@ -46,11 +46,10 @@ namespace cct::gfx
 	DisplayManager::DisplayManager()
 	{
 		CCT_PROFILER_SCOPE();
-		int result = SDL_Init(SDL_INIT_VIDEO);
-		if (result < 0)
+		if (!SDL_Init(SDL_INIT_VIDEO))
 		{
-			CCT_ASSERT_FALSE("ConcertoGraphics: SDL initialization failed error code: {}, message {}", result, SDL_GetError());
-			throw std::runtime_error(std::format("SDL initialization failed error code: {}, message {}", result, SDL_GetError()));
+			CCT_ASSERT_FALSE("ConcertoGraphics: SDL initialization failed message: {}", SDL_GetError());
+			throw std::runtime_error(std::format("SDL initialization failed message: {}", SDL_GetError()));
 		}
 	}
 
@@ -63,69 +62,68 @@ namespace cct::gfx
 	{
 		CCT_PROFILER_SCOPE();
 		std::vector<DisplayInfo> displayInfos;
-		const Int32 numDisplay = SDL_GetNumVideoDisplays();
-		if (numDisplay < 0)
+		int numDisplay = 0;
+		SDL_DisplayID* displays = SDL_GetDisplays(&numDisplay);
+		if (displays == nullptr)
 		{
-			CCT_ASSERT_FALSE("ConcertoGraphics: Display enumeration failed code: {}, message: {}", numDisplay, SDL_GetError());
+			CCT_ASSERT_FALSE("ConcertoGraphics: Display enumeration failed message: {}", SDL_GetError());
 			return {};
 		}
+		const SDL_DisplayID primary = SDL_GetPrimaryDisplay();
 
-		for (Int32 displayIndex = 0; displayIndex < numDisplay; ++displayIndex)
+		for (int i = 0; i < numDisplay; ++i)
 		{
 			CCT_PROFILER_SCOPE("Enumerate display");
-			const char* displayName = SDL_GetDisplayName(displayIndex);
+			const SDL_DisplayID displayId = displays[i];
+			const char* displayName = SDL_GetDisplayName(displayId);
 			if (displayName == nullptr)
 			{
 				CCT_ASSERT_FALSE("ConcertoGraphics: Couldn't get display name message: {}", SDL_GetError());
 				continue;
 			}
 			SDL_Rect displayBounds;
-			Int32 result = SDL_GetDisplayBounds(displayIndex, &displayBounds);
-			if (result < 0)
+			if (!SDL_GetDisplayBounds(displayId, &displayBounds))
 			{
-				CCT_ASSERT_FALSE("ConcertoGraphics: Couldn't get display bounds code: {}, message: {}", result, SDL_GetError());
+				CCT_ASSERT_FALSE("ConcertoGraphics: Couldn't get display bounds message: {}", SDL_GetError());
 				continue;
 			}
 			static_assert(sizeof(SDL_Rect) == sizeof(DisplayInfo::Bounds) && "Invalid Bounds size");
 
-
-			Int32 numDisplayMode = SDL_GetNumDisplayModes(displayIndex);
-			if (numDisplayMode < 0)
-			{
-				CCT_ASSERT_FALSE("ConcertoGraphics: Couldn't get display bounds code: {}, message: {}", result, SDL_GetError());
-				continue;
-			}
-
+			int numDisplayMode = 0;
+			SDL_DisplayMode** modes = SDL_GetFullscreenDisplayModes(displayId, &numDisplayMode);
 			std::vector<DisplayInfo::DisplayMode> displayModes;
-			for (Int32 displayModeIndex = 0; displayModeIndex < numDisplayMode; ++displayModeIndex)
+			if (modes != nullptr)
 			{
-				SDL_DisplayMode sdlDisplayMode = {};
-				result = SDL_GetDisplayMode(displayIndex, displayModeIndex, &sdlDisplayMode);
-				if (result < 0)
+				for (int displayModeIndex = 0; displayModeIndex < numDisplayMode; ++displayModeIndex)
 				{
-					CCT_ASSERT_FALSE("ConcertoGraphics: Couldn't get display mode code: {}, message: {}", result, SDL_GetError());
-					continue;
+					const SDL_DisplayMode* sdlDisplayMode = modes[displayModeIndex];
+					DisplayInfo::DisplayMode displayMode = {
+						.displayModeIndex = displayModeIndex,
+						.pixelFormat = PixelFormatFrom(sdlDisplayMode->format),
+						.width = sdlDisplayMode->w,
+						.height = sdlDisplayMode->h,
+						.refreshRate = static_cast<Int32>(sdlDisplayMode->refresh_rate)
+					};
+					displayModes.emplace_back(std::move(displayMode));
 				}
-				DisplayInfo::DisplayMode displayMode = {
-					.displayModeIndex = displayModeIndex,
-					.pixelFormat = PixelFormatFrom(sdlDisplayMode.format),
-					.width = sdlDisplayMode.w,
-					.height = sdlDisplayMode.h,
-					.refreshRate = sdlDisplayMode.refresh_rate
-				};
-				displayModes.emplace_back(std::move(displayMode));
+				SDL_free(modes);
+			}
+			else
+			{
+				CCT_ASSERT_FALSE("ConcertoGraphics: Couldn't get display modes message: {}", SDL_GetError());
 			}
 
 			DisplayInfo displayInfo = {
-				.displayIndex = displayIndex,
+				.displayIndex = static_cast<Int32>(displayId),
 				.displayName = std::string_view(displayName, std::strlen(displayName)),
 				.displayBounds = {}, //filled below with std::memcpy
-				.isPrimary = displayIndex == 0,
+				.isPrimary = (displayId == primary),
 				.displayModes = std::move(displayModes)
 			};
 			std::memcpy(&displayInfo.displayBounds, &displayBounds, sizeof(DisplayInfo::Bounds));
 			displayInfos.emplace_back(std::move(displayInfo));
 		}
+		SDL_free(displays);
 		return displayInfos;
 	}
 

@@ -3,7 +3,7 @@ add_repositories("nazara-repo https://github.com/NazaraEngine/xmake-repo")
 add_requires("volk", {configs = {header_only = true}})
 add_requires("nzsl", {configs = {shared = false}})
 add_requires("vulkan-headers", "vulkan-memory-allocator", "stb", "vulkan-utility-libraries", "parallel-hashmap", "tinyobjloader")
-add_requires("libsdl2", {configs = {wayland = is_plat("linux", "bsd"), x11 = is_plat("linux", "bsd")}})
+add_requires("libsdl3", {configs = {wayland = is_plat("linux", "bsd"), x11 = is_plat("linux", "bsd")}})
 
 option("examples", { description = "Build examples", default = false })
 option("object_debug", { description = "Build with graphics object debugging", default = is_mode("debug") })
@@ -44,7 +44,7 @@ target("concerto-graphics-core", function()
     end
     add_files_to_target("./Core/*.hpp")
     add_deps("concerto-core")
-    add_packages("libsdl2", "vulkan-headers", "nzsl", "imgui", { public = true })
+    add_packages("libsdl3", "vulkan-headers", "nzsl", "imgui", { public = true })
     add_rpathdirs("$ORIGIN")
     if has_config("profiling") then
         add_deps("concerto-profiler", { public = false })
