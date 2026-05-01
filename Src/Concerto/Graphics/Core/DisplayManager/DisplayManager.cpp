@@ -134,6 +134,11 @@ namespace cct::gfx
 		return std::make_unique<Window>(displayIndex, name, width, height);
 	}
 
+	std::unique_ptr<Window> DisplayManager::CreateWindow(Int32 displayIndex, const std::string& name, Int32 width, Int32 height, bool borderless)
+	{
+		return std::make_unique<Window>(displayIndex, name, width, height, borderless);
+	}
+
 	void DisplayManager::DispatchEvents()
 	{
 		SDL_PumpEvents();

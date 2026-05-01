@@ -383,6 +383,12 @@ namespace cct::gfx
 					window->TriggerResize();
 				else if (event->window.event == SDL_WINDOWEVENT_CLOSE)
 					window->SetShouldQuit(true);
+				else if (event->window.event == SDL_WINDOWEVENT_MAXIMIZED)
+					window->FireStateChange(WindowState::Maximized);
+				else if (event->window.event == SDL_WINDOWEVENT_MINIMIZED)
+					window->FireStateChange(WindowState::Minimized);
+				else if (event->window.event == SDL_WINDOWEVENT_RESTORED)
+					window->FireStateChange(WindowState::Normal);
 				return 0;
 			}
 			case SDL_MOUSEMOTION:
@@ -464,16 +470,24 @@ namespace cct::gfx
 	}
 
 	Window::Window(Int32 displayIndex, const std::string& title, Int32 width, Int32 height) :
+		Window(displayIndex, title, width, height, false)
+	{
+	}
+
+	Window::Window(Int32 displayIndex, const std::string& title, Int32 width, Int32 height, bool borderless) :
 		m_title(title),
 		m_width(width),
 		m_height(height),
 		m_window(nullptr),
 		m_windowID(0),
-		m_shouldQuit(false)
+		m_shouldQuit(false),
+		m_titleBarHeight(0)
 	{
 		CCT_PROFILER_SCOPE();
 		Uint32 flags = 0;
 		flags |= SDL_WINDOW_RESIZABLE;
+		if (borderless)
+			flags |= SDL_WINDOW_BORDERLESS;
 		m_window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), SDL_WINDOWPOS_CENTERED_DISPLAY(displayIndex), width, height, flags);
 		if (m_window == nullptr)
 		{
@@ -493,6 +507,8 @@ namespace cct::gfx
 	Window::~Window()
 	{
 		CCT_PROFILER_SCOPE();
+		if (m_window != nullptr)
+			SDL_SetWindowHitTest(m_window, nullptr, nullptr);
 		SDL_DelEventWatch(EventHandler, this);
 		SDL_DestroyWindow(m_window);
 		m_window = nullptr;
@@ -644,5 +660,130 @@ namespace cct::gfx
 		auto format = static_cast<SDL_PixelFormatEnum>(SDL_GetWindowPixelFormat(m_window));
 
 		return PixelFormatFromSDL(format);
+	}
+
+	void Window::RegisterStateChangeCallback(std::function<void(Window&, WindowState)> callback)
+	{
+		m_stateCallback = std::move(callback);
+	}
+
+	void Window::Minimize()
+	{
+		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
+		SDL_MinimizeWindow(m_window);
+	}
+
+	void Window::Maximize()
+	{
+		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
+		SDL_MaximizeWindow(m_window);
+	}
+
+	void Window::Restore()
+	{
+		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
+		SDL_RestoreWindow(m_window);
+	}
+
+	void Window::ToggleMaximize()
+	{
+		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
+		const Uint32 flags = SDL_GetWindowFlags(m_window);
+		const bool isMaximized = (flags & SDL_WINDOW_MAXIMIZED) != 0;
+		const bool isResizable = (flags & SDL_WINDOW_RESIZABLE) != 0;
+		if (isMaximized)
+		{
+			SDL_RestoreWindow(m_window);
+		}
+		else
+		{
+			// SDL_MaximizeWindow is a no-op on non-resizable windows. On Windows the
+			// SDL_WINDOW_BORDERLESS flag silently strips RESIZABLE — re-assert it.
+			if (!isResizable)
+				SDL_SetWindowResizable(m_window, SDL_TRUE);
+			SDL_MaximizeWindow(m_window);
+		}
+	}
+
+	void Window::Close()
+	{
+		m_shouldQuit = true;
+	}
+
+	WindowState Window::GetState() const
+	{
+		if (m_window == nullptr)
+			return WindowState::Normal;
+		const Uint32 flags = SDL_GetWindowFlags(m_window);
+		if ((flags & SDL_WINDOW_MAXIMIZED) != 0)
+			return WindowState::Maximized;
+		if ((flags & SDL_WINDOW_MINIMIZED) != 0)
+			return WindowState::Minimized;
+		return WindowState::Normal;
+	}
+
+	void Window::FireStateChange(WindowState state)
+	{
+		if (m_stateCallback)
+			m_stateCallback(*this, state);
+	}
+
+	namespace
+	{
+		SDL_HitTestResult SDLCALL HitTestThunk(SDL_Window* /*win*/, const SDL_Point* p, void* data)
+		{
+			auto* self = static_cast<Window*>(data);
+			return static_cast<SDL_HitTestResult>(self->HitTest(p->x, p->y));
+		}
+	}
+
+	void Window::SetDraggableRegions(int titleBarHeight, std::vector<DraggableRect> nonDraggableRects)
+	{
+		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
+		m_titleBarHeight = titleBarHeight;
+		m_nonDraggableRects = std::move(nonDraggableRects);
+		// SDL_SetWindowHitTest is idempotent — calling it again replaces the callback.
+		if (SDL_SetWindowHitTest(m_window, &HitTestThunk, this) != 0)
+			CCT_GFX_LOG_WARN("Window", "SDL_SetWindowHitTest failed: {}", SDL_GetError());
+	}
+
+	void Window::ClearDraggableRegions()
+	{
+		m_titleBarHeight = 0;
+		m_nonDraggableRects.clear();
+		if (m_window != nullptr)
+			SDL_SetWindowHitTest(m_window, nullptr, nullptr);
+	}
+
+	HitTestResult Window::HitTest(int x, int y) const
+	{
+		const int W = static_cast<int>(GetWidth());
+		const int H = static_cast<int>(GetHeight());
+		constexpr int kBorder = 6; // resize handle thickness
+
+		const bool L = x < kBorder;
+		const bool R = x >= W - kBorder;
+		const bool T = y < kBorder;
+		const bool B = y >= H - kBorder;
+
+		if (T && L) return HitTestResult::ResizeTopLeft;
+		if (T && R) return HitTestResult::ResizeTopRight;
+		if (B && L) return HitTestResult::ResizeBottomLeft;
+		if (B && R) return HitTestResult::ResizeBottomRight;
+		if (T)      return HitTestResult::ResizeTop;
+		if (B)      return HitTestResult::ResizeBottom;
+		if (L)      return HitTestResult::ResizeLeft;
+		if (R)      return HitTestResult::ResizeRight;
+
+		if (y < m_titleBarHeight)
+		{
+			for (const auto& r : m_nonDraggableRects)
+			{
+				if (x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)
+					return HitTestResult::Normal;
+			}
+			return HitTestResult::Draggable;
+		}
+		return HitTestResult::Normal;
 	}
 }

@@ -282,7 +282,7 @@ int main(int argc, const char** argv)
 		{
 			return EXIT_FAILURE;
 		}
-		
+
 		cct::Logger::Info("Creating plugin registry...");
 		cct::PluginRegistry pluginRegistry;
 		for (const auto& pluginPath : plugins)

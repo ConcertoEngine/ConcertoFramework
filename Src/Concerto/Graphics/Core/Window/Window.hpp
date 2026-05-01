@@ -7,6 +7,7 @@
 
 #include <string>
 #include <functional>
+#include <vector>
 
 #include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/PixelFormat.hpp"
@@ -18,12 +19,41 @@ struct SDL_Window;
 
 namespace cct::gfx
 {
+	enum class WindowState
+	{
+		Normal,
+		Minimized,
+		Maximized
+	};
+
+	enum class HitTestResult : int
+	{
+		Normal             = 0,
+		Draggable          = 1,
+		ResizeTopLeft      = 2,
+		ResizeTop          = 3,
+		ResizeTopRight     = 4,
+		ResizeRight        = 5,
+		ResizeBottomRight  = 6,
+		ResizeBottom       = 7,
+		ResizeBottomLeft   = 8,
+		ResizeLeft         = 9,
+	};
 
 	class CONCERTO_GRAPHICS_CORE_API Window
 	{
 	public:
+		struct DraggableRect
+		{
+			int x;
+			int y;
+			int w;
+			int h;
+		};
+
 		Window() = delete;
 		Window(Int32 displayIndex, const std::string& title, Int32 width, Int32 height);
+		Window(Int32 displayIndex, const std::string& title, Int32 width, Int32 height, bool borderless);
 		~Window();
 
 		Window(Window&&) noexcept = default;
@@ -48,6 +78,7 @@ namespace cct::gfx
 		void RegisterKeyCallback(std::function<void(Window& window, Key button, int scancode, int action, int mods)> callback);
 		void RegisterMouseButtonCallback(std::function<void(Window& window, int button, int action, int mods)> callback);
 		void RegisterCursorPosCallback(std::function<void(Window& window, double xpos, double ypos)> callback);
+		void RegisterStateChangeCallback(std::function<void(Window& window, WindowState state)> callback);
 
 		Input& GetInputManager();
 
@@ -56,7 +87,22 @@ namespace cct::gfx
 		void SetShouldQuit(bool value);
 		void TriggerResize();
 
+		// Window chrome operations.
+		void Minimize();
+		void Maximize();
+		void Restore();
+		void ToggleMaximize();
+		void Close();
+		WindowState GetState() const;
+
+		void SetDraggableRegions(int titleBarHeight, std::vector<DraggableRect> nonDraggableRects);
+		void ClearDraggableRegions();
+
+		HitTestResult HitTest(int x, int y) const;
+
 		PixelFormat GetFormat() const;
+
+		void FireStateChange(WindowState state);
 	private:
 		std::string m_title;
 		std::size_t m_width;
@@ -67,8 +113,11 @@ namespace cct::gfx
 		std::function<void(Window& window, Key key, int scancode, int action, int mods)> m_keyCallback;
 		std::function<void(Window& window, int button, int action, int mods)> m_mouseButtonCallback;
 		std::function<void(Window& window, double xpos, double ypos)> m_cursorPosCallback;
+		std::function<void(Window& window, WindowState state)> m_stateCallback;
 		UInt32 m_windowID;
 		bool m_shouldQuit;
+		int m_titleBarHeight;
+		std::vector<DraggableRect> m_nonDraggableRects;
 	};
 }
 
