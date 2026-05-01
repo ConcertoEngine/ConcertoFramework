@@ -109,6 +109,37 @@ namespace cct::refl
 		return nullptr;
 	}
 
+	const Class* GlobalNamespace::FindClass(std::span<std::string_view> nameSpaceNames, std::string_view className) const
+	{
+		using namespace std::string_view_literals;
+		if (nameSpaceNames.empty())
+			return GetClassByName(className);
+
+		std::span<std::string_view> path = nameSpaceNames;
+		if (path[0] == "::"sv)
+			path = path.subspan(1);
+
+		// Iterate every root namespace matching path[0]. Multiple packages may register the same
+		// root (e.g. "sdk"), so the first matching root may not be the one that holds className.
+		for (auto* ns : m_namespaces)
+		{
+			if (ns->GetName() != path[0])
+				continue;
+
+			const Namespace* leaf = ns;
+			if (path.size() > 1)
+			{
+				leaf = ns->GetNamespace(path.subspan(1));
+				if (!leaf)
+					continue;
+			}
+
+			if (const Class* klass = leaf->GetClass(className))
+				return klass;
+		}
+		return nullptr;
+	}
+
 	void GlobalNamespace::LoadNamespaces() const
 	{
 		for (auto& nameSpace : m_namespaces)

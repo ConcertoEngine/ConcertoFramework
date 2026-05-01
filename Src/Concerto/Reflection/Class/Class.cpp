@@ -299,10 +299,7 @@ namespace cct::refl
 
 	const Class* GetClassByName(std::span<std::string_view> nameSpaceNames, std::string_view name)
 	{
-		auto nameSpace = GlobalNamespace::Get().GetNamespaceByName(nameSpaceNames);
-		if (nameSpace)
-			return nameSpace->GetClass(name);
-		return nullptr;
+		return GlobalNamespace::Get().FindClass(nameSpaceNames, name);
 	}
 
 	const Class* GetClassByName(std::string_view name)

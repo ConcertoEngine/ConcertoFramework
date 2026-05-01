@@ -32,6 +32,8 @@ namespace cct::refl
 		Namespace* GetNamespaceByName(std::string_view nameSpaceName) const;
 		Namespace* GetNamespaceByName(std::span<std::string_view> names) const;
 
+		[[nodiscard]] const Class* FindClass(std::span<std::string_view> nameSpaceNames, std::string_view className) const;
+
 		// These functions are only used inside a generated package
 		void LoadNamespaces() const;
 		void LoadClasses() const;
