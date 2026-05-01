@@ -62,7 +62,6 @@ target("concerto-vulkan-backend", function()
 
     add_defines("CONCERTO_GRAPHICS_VULKAN_BACKEND_BUILD", { public = false })
     add_defines("VK_NO_PROTOTYPES", { public = true })
-    add_files("./Backend/Vulkan/*.cpp")
 
     add_files_to_target("./Backend/Vulkan/*")
     add_files_to_target("./Backend/Vulkan/Wrapper/*")
