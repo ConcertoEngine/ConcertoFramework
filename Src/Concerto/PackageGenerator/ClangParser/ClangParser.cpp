@@ -197,6 +197,12 @@ namespace cct
 	{
 		std::string code;
 
+		code += "#include <Concerto/Core/Defines.hpp>\n";
+		code += "#undef CCT_EXPORT\n";
+		code += "#define CCT_EXPORT\n";
+		code += "#undef CCT_IMPORT\n";
+		code += "#define CCT_IMPORT\n";
+
 		for (auto& src : sources)
 			code += std::format("#include \"{}\"\n", src);
 
@@ -206,6 +212,7 @@ namespace cct
 		args.emplace_back("-std=c++20");
 		args.emplace_back("-xc++");
 		args.emplace_back("-resource-dir=" + resourceDir);
+		args.emplace_back("-fsyntax-only");
 #ifdef CCT_PLATFORM_MACOS
 		args.emplace_back("-isysroot" + sdk);
 #endif
