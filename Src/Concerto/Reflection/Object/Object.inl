@@ -73,7 +73,8 @@ namespace cct::refl
 			if (variable == nullptr)
 				continue; // should never happen
 
-			variable->SetDynamicClass(m->GetType());
+			if (variable->GetDynamicClass() == nullptr)
+				variable->SetDynamicClass(m->GetType());
 			variable->InitializeMemberVariables();
 		}
 	}
