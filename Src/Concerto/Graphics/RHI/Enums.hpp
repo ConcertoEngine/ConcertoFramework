@@ -145,12 +145,25 @@ namespace cct::gfx::rhi
 		UInt32                offset;
 	};
 
+	enum class BlendPreset : UInt8
+	{
+		// Use blendEnable + premultipliedAlpha logic (legacy default).
+		Default = 0,
+		// src + dst (additive). For premultiplied src: result = src.rgb + dst.rgb.
+		Add,
+		// src * dst. result.rgb = src.rgb * dst.rgb.
+		Multiply,
+		// 1 − (1−src)(1−dst). result.rgb = src.rgb + dst.rgb − src.rgb*dst.rgb.
+		Screen,
+	};
+
 	struct PipelineConfig
 	{
 		UInt32                       vertexStride = 0;
 		std::vector<VertexAttribute> vertexAttributes;
 		bool                         blendEnable        = false;
 		bool                         premultipliedAlpha = false;
+		BlendPreset                  blendPreset        = BlendPreset::Default;
 		bool                         depthTestEnable    = true;
 		bool                         depthWriteEnable   = true;
 	};

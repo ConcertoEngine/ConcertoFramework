@@ -309,7 +309,46 @@ namespace cct::gfx::rhi
 		pipelineInfo.m_vertexInputInfo.pVertexAttributeDescriptions = attrDescs.empty() ? nullptr : attrDescs.data();
 
 		// Blend state
-		if (config.blendEnable && config.premultipliedAlpha)
+		const VkColorComponentFlags allChannels =
+			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+
+		if (config.blendPreset == rhi::BlendPreset::Add)
+		{
+			// result = src + dst (additive). Works with premultiplied src out of the box.
+			pipelineInfo.m_colorBlendAttachment.blendEnable = VK_TRUE;
+			pipelineInfo.m_colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			pipelineInfo.m_colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			pipelineInfo.m_colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+			pipelineInfo.m_colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			pipelineInfo.m_colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			pipelineInfo.m_colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+			pipelineInfo.m_colorBlendAttachment.colorWriteMask = allChannels;
+		}
+		else if (config.blendPreset == rhi::BlendPreset::Multiply)
+		{
+			// result.rgb = src.rgb * dst.rgb. (srcFactor=DST_COLOR, dstFactor=ZERO)
+			pipelineInfo.m_colorBlendAttachment.blendEnable = VK_TRUE;
+			pipelineInfo.m_colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_DST_COLOR;
+			pipelineInfo.m_colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;
+			pipelineInfo.m_colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+			pipelineInfo.m_colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			pipelineInfo.m_colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			pipelineInfo.m_colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+			pipelineInfo.m_colorBlendAttachment.colorWriteMask = allChannels;
+		}
+		else if (config.blendPreset == rhi::BlendPreset::Screen)
+		{
+			// result.rgb = src + dst − src*dst. (srcFactor=ONE, dstFactor=ONE_MINUS_SRC_COLOR)
+			pipelineInfo.m_colorBlendAttachment.blendEnable = VK_TRUE;
+			pipelineInfo.m_colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+			pipelineInfo.m_colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR;
+			pipelineInfo.m_colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+			pipelineInfo.m_colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			pipelineInfo.m_colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			pipelineInfo.m_colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+			pipelineInfo.m_colorBlendAttachment.colorWriteMask = allChannels;
+		}
+		else if (config.blendEnable && config.premultipliedAlpha)
 		{
 			pipelineInfo.m_colorBlendAttachment.blendEnable = VK_TRUE;
 			pipelineInfo.m_colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -318,7 +357,7 @@ namespace cct::gfx::rhi
 			pipelineInfo.m_colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 			pipelineInfo.m_colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 			pipelineInfo.m_colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-			pipelineInfo.m_colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			pipelineInfo.m_colorBlendAttachment.colorWriteMask = allChannels;
 		}
 		else if (config.blendEnable)
 		{
@@ -329,7 +368,7 @@ namespace cct::gfx::rhi
 			pipelineInfo.m_colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 			pipelineInfo.m_colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 			pipelineInfo.m_colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
-			pipelineInfo.m_colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+			pipelineInfo.m_colorBlendAttachment.colorWriteMask = allChannels;
 		}
 
 		pipelineInfo.m_rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
