@@ -1,6 +1,7 @@
 add_requires("toml11")
 add_requires("libllvm", {configs = {clang = true} })
 add_requires("cxxopts")
+add_requires("simdjson", { configs = { threads = true, noexceptions = false, logging = false } })
 
 target("concerto-reflection", function()
     set_kind("$(kind)")
@@ -8,6 +9,7 @@ target("concerto-reflection", function()
     add_rpathdirs("$ORIGIN")
     add_defines("CCT_REFLECTION_BUILD", { public = false })
     add_includedirs("../../../Src/", { public = true })
+    add_packages("simdjson")
     if is_kind("static") then
         add_defines("CCT_REFLECTION_STATIC", { public = true })
     end
@@ -22,6 +24,7 @@ target("concerto-reflection", function()
         "EnumValue",
         "GenericClass",
         "GlobalNamespace",
+        "Json",
         "MemberVariable",
         "Method",
         "Namespace",
