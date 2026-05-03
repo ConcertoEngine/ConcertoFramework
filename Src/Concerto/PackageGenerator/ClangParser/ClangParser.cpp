@@ -5,6 +5,8 @@
 #include "Concerto/PackageGenerator/ClangParser/ClangParser.hpp"
 
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
 #include <optional>
 #include <sstream>
 
@@ -20,7 +22,11 @@
 #include <clang/AST/Type.h>
 #include <clang/Basic/DiagnosticOptions.h>
 #include <clang/Frontend/ASTUnit.h>
+#include <clang/Frontend/CompilerInstance.h>
+#include <clang/Frontend/FrontendActions.h>
+#include <clang/Frontend/PreprocessorOutputOptions.h>
 #include <clang/Frontend/TextDiagnosticPrinter.h>
+#include <clang/Frontend/Utils.h>
 #include <clang/Lex/Lexer.h>
 #include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/CompilationDatabase.h>
@@ -33,6 +39,23 @@ using namespace clang::tooling;
 
 namespace
 {
+
+	class MacroExpandAction : public PreprocessorFrontendAction
+	{
+	public:
+		explicit MacroExpandAction(std::string& output) : m_output(output) {}
+
+		void ExecuteAction() override
+		{
+			CompilerInstance& CI = getCompilerInstance();
+			llvm::raw_string_ostream os(m_output);
+			PreprocessorOutputOptions outOpts;
+			DoPrintPreprocessedInput(CI.getPreprocessor(), &os, outOpts);
+		}
+
+	private:
+		std::string& m_output;
+	};
 
 	TomlAttributes GetAttributesOr(TomlAttributes attributes, TomlAttributes defaultValue)
 	{
@@ -205,6 +228,7 @@ namespace cct
 
 		for (auto& src : sources)
 			code += std::format("#include \"{}\"\n", src);
+
 
 		std::vector<std::string> args;
 		args.reserve(defines.size() + includeDirs.size() + 3);
@@ -463,13 +487,11 @@ namespace cct
 		{
 			Enum::Element elem;
 			elem.name = E->getNameAsString();
-			if (E->getInitExpr())
-			{
-				llvm::APSInt val = E->getInitVal();
-				llvm::SmallString<32> s;
-				val.toString(s, /*Radix=*/10);
-				elem.value.assign(s.begin(), s.end());
-			}
+			// getInitVal() is always valid (computed value, explicit or implicit).
+			llvm::APSInt val = E->getInitVal();
+			llvm::SmallString<32> s;
+			val.toString(s, /*Radix=*/10);
+			elem.value.assign(s.begin(), s.end());
 			enm.elements.push_back(std::move(elem));
 		}
 

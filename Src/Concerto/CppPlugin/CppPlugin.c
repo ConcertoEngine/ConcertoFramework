@@ -1119,12 +1119,10 @@ static void AfterPackageGeneration(const CrpPackage* package, CrpGenerationConte
 				crpGenerationContextWrite(ctx, "GlobalNamespace::Get().RemoveClass(\"%s\"sv);", className);
 			}
 
-			for (size_t i = 0; i < nsCount; ++i)
-			{
-				const CrpNamespace* ns = crpPackageGetNamespace(package, i);
-				const char* nsName = crpNamespaceGetName(ns);
-				crpGenerationContextWrite(ctx, "GlobalNamespace::Get().RemoveNamespace(\"%s\"sv);", nsName);
-			}
+			crpGenerationContextWrite(ctx, "for (auto& ns : m_namespaces)");
+			crpGenerationContextEnterScope(ctx);
+			crpGenerationContextWrite(ctx, "GlobalNamespace::Get().RemoveNamespace(ns.get());");
+			crpGenerationContextLeaveScope(ctx, NULL);
 			crpGenerationContextWrite(ctx, "m_namespaces.clear();");
 		}
 		crpGenerationContextLeaveScope(ctx, NULL);
