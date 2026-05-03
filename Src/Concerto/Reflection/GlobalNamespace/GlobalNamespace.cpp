@@ -182,6 +182,11 @@ namespace cct::refl
 					  { return ns->GetName() == name; });
 	}
 
+	void GlobalNamespace::RemoveNamespace(const Namespace* ns)
+	{
+		std::erase(m_namespaces, ns);
+	}
+
 	void GlobalNamespace::RemoveClass(std::string_view name)
 	{
 		std::erase_if(m_classes, [&](const Class* ns)

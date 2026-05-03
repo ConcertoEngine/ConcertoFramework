@@ -41,6 +41,7 @@ namespace cct::refl
 		void AddNamespace(Namespace* namespace_);
 		void AddClass(const Class* klass);
 		void RemoveNamespace(std::string_view name);
+		void RemoveNamespace(const Namespace* ns);
 		void RemoveClass(std::string_view name);
 
 	private:
