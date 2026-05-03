@@ -7,6 +7,7 @@
 
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
+#include <Concerto/Reflection/Int32/Int32.refl.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -22,7 +23,7 @@ SCENARIO("Class metadata verification")
 			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionTestsPackage()));
 			packageLoader.LoadPackages();
 
-			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 15);
+			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 16);
 			CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 1);
 
 			THEN("We are getting the class Object")
