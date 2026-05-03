@@ -18,12 +18,19 @@ target("concerto-reflection", function()
     end
     local files = {
         ".",
+        "Boolean",
         "Class",
         "Enumeration",
         "EnumIterator",
         "EnumValue",
+        "Float32",
+        "Float64",
         "GenericClass",
         "GlobalNamespace",
+        "Int8",
+        "Int16",
+        "Int32",
+        "Int64",
         "Json",
         "MemberVariable",
         "Method",
@@ -35,6 +42,10 @@ target("concerto-reflection", function()
         "TemplateClass",
         "Signal",
         "String",
+        "UInt8",
+        "UInt16",
+        "UInt32",
+        "UInt64",
         "Vector",
     }
     for _, dir in ipairs(files) do
