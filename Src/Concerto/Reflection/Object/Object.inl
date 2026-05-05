@@ -43,8 +43,16 @@ namespace cct::refl
 
 	inline void Object::SetDynamicClass(const Class* klass)
 	{
-		CCT_ASSERT(m_dynamicClass == nullptr, "Dynamic class variable already set");
+		if (m_dynamicClass == klass)
+			return;
 		m_dynamicClass = klass;
+	}
+
+	inline void Object::InitReflection(const Class* cls) noexcept
+	{
+		m_dynamicClass = cls;
+		if (cls)
+			InitializeMemberVariables();
 	}
 
 	inline bool Object::HasRegistry() const

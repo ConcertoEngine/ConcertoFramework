@@ -13,16 +13,17 @@
 #include "Concerto/Reflection/Defines.hpp"
 #include "Concerto/Core/Signal/Signal.hpp"
 
-#define CCT_OBJECT(className)                      \
-public:                                            \
-	static const cct::refl::Class* GetClass()      \
-	{                                              \
-		return m_class;                            \
-	}                                              \
-                                                   \
-private:                                           \
-	inline static const cct::refl::Class* m_class; \
-	friend class Internal##className##Class
+#define CCT_OBJECT(className)                                                           \
+public:                                                                                 \
+	static const cct::refl::Class* GetClass()                                           \
+	{                                                                                   \
+		return m_class;                                                                 \
+	}                                                                                   \
+                                                                                        \
+private:                                                                                \
+	inline static const cct::refl::Class* m_class;                                      \
+	friend class Internal##className##Class;                                            \
+	int PrivateReflInitClass##className = (this->InitReflection(m_class), 0)
 
 struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflection Standard Package\"") ConcertoReflection
 {
@@ -107,6 +108,16 @@ namespace cct::refl
 	protected:
 		const cct::refl::Class* m_dynamicClass;
 		Registry* m_registry;
+
+		/* 
+		* Default member initializer, evaluated by the compiler for every constructor of
+		* className (including make_shared<T>, new T, etc.), in member declaration order.
+		* Because CCT_OBJECT is placed last in the class body, this runs after all other
+		* members are initialized but before the constructor body. In an inheritance chain
+		* each class level calls InitReflection with its own m_class, so the most-derived
+		* call wins and m_dynamicClass ends up set to the concrete type.
+		*/
+		inline void InitReflection(const Class* cls) noexcept;
 	};
 } // namespace cct::refl
 
