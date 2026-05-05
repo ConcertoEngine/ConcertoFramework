@@ -194,7 +194,7 @@ namespace cct::refl
 	{
 		if (!m_baseClass)
 		{
-			CCT_ASSERT_FALSE("Invalid base class, it should at least derive from cct::refl::Object");
+			CCT_ASSERT(m_name == "Object", "Invalid base class, it should at least derive from cct::refl::Object");
 			return false;
 		}
 		if (other == *m_baseClass)
