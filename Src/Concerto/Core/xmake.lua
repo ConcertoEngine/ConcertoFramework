@@ -5,6 +5,8 @@ option("static", { description = "Build static library", default = false })
 option("asserts", { description = "Enable asserts", default = false })
 option("enet", { description = "Enable ENet support", default = true })
 
+add_requires("stduuid")
+
 if is_plat("windows") then  
     add_requires("enet",      {configs = {shared = false,      runtimes = is_mode("debug") and "MDd" or "MD"}})  
     add_requires("spdlog",    {configs = {header_only = false, runtimes = is_mode("debug") and "MDd" or "MD"}})  
@@ -70,6 +72,8 @@ for targetName, targetConfig in pairs(concerto_core) do
             add_packages(pkg, {public = true})
         end
 
+        add_packages("stduuid")
+
         for configName, config in pairs(targetConfig.configs) do
             if has_config(configName) then
                 for _, define in ipairs(config.defines or {}) do
@@ -122,6 +126,7 @@ for targetName, targetConfig in pairs(concerto_core) do
             "ThreadPool",
             "TypeInfo",
             "Types",
+            "Uuid",
         }
 
         for _, file in ipairs(files) do
@@ -131,7 +136,7 @@ for targetName, targetConfig in pairs(concerto_core) do
         add_cxxflags("cl::/wd4251")
 
         if is_plat("windows", "mingw") then
-            add_syslinks("ws2_32", "Kernel32")
+            add_syslinks("ws2_32", "Kernel32", "Ole32")
         end
 
         if is_plat("linux") then
