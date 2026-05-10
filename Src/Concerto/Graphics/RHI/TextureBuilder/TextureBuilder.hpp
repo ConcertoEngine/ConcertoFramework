@@ -5,12 +5,14 @@
 #ifndef CONCERTO_GRAPHICS_RHI_TEXTUREBUILDER_HPP
 #define CONCERTO_GRAPHICS_RHI_TEXTUREBUILDER_HPP
 
+#include <cstddef>
 #include <memory>
 #include <vector>
 #include <string>
 #include <utility>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/RHI/Texture.hpp"
 
 namespace cct::gfx::rhi
@@ -34,6 +36,7 @@ namespace cct::gfx::rhi
 		static TextureBuilder& Instance();
 
 		std::shared_ptr<Texture> BuildTexture(const std::string& path);
+		std::shared_ptr<Texture> BuildTextureFromMemory(const std::byte* pixels, UInt32 width, UInt32 height, PixelFormat format);
 		void Commit();
 	private:
 		Device& m_device;

@@ -91,6 +91,29 @@ namespace cct::gfx::rhi
 		return texture;
 	}
 
+	std::shared_ptr<Texture> TextureBuilder::BuildTextureFromMemory(
+		const std::byte* pixels, UInt32 width, UInt32 height, PixelFormat format)
+	{
+		const UInt32 allocationSize = width * height * 4;
+		auto buffer = m_device.CreateBuffer(
+			static_cast<rhi::BufferUsageFlags>(BufferUsage::TransferSrc), allocationSize, true);
+		if (!buffer)
+			return nullptr;
+
+		Byte* data = nullptr;
+		if (!buffer->Map(&data))
+			return nullptr;
+		std::memcpy(data, pixels, allocationSize);
+		buffer->UnMap();
+
+		auto texture = m_device.CreateTexture(format, static_cast<Int32>(width), static_cast<Int32>(height));
+		if (!texture)
+			return nullptr;
+
+		m_pendingUploads.insert_or_assign(reinterpret_cast<size_t>(texture.get()), std::move(buffer));
+		return texture;
+	}
+
 	void TextureBuilder::Commit()
 	{
 		CCT_PROFILER_SCOPE();
