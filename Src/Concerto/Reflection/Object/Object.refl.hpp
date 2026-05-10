@@ -23,6 +23,7 @@ public:                                                                         
 private:                                                                                \
 	inline static const cct::refl::Class* m_class;                                      \
 	friend class Internal##className##Class;                                            \
+	friend class Internal##className##GenericClass;                                     \
 	int PrivateReflInitClass##className = (this->InitReflection(m_class), 0)
 
 struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflection Standard Package\"") ConcertoReflection
