@@ -49,6 +49,7 @@ namespace cct::gfx::rhi
 
 		Queue& GetQueue(rhi::QueueFamily family) override;
 		std::unique_ptr<Fence> CreateFence() override;
+		std::unique_ptr<QueryPool> CreateQueryPool() override;
 
 		Dx12RHIDescriptorPool& GetDescriptorPool();
 

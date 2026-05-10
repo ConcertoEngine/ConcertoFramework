@@ -51,6 +51,8 @@ namespace cct::gfx::rhi
 
 		Queue& GetQueue(rhi::QueueFamily family) override;
 		std::unique_ptr<Fence> CreateFence() override;
+		std::unique_ptr<QueryPool> CreateQueryPool() override;
+		std::shared_ptr<Texture> ImportTexture(const rhi::TextureImportInfo& info) override;
 
 		vk::UploadContext& GetUploadContext();
 		vk::Instance& GetVkInstance() const;

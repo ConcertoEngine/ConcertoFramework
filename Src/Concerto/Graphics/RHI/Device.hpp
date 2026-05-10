@@ -22,6 +22,7 @@
 #include "Concerto/Graphics/RHI/GpuMesh.hpp"
 #include "Concerto/Graphics/RHI/Queue.hpp"
 #include "Concerto/Graphics/RHI/Fence.hpp"
+#include "Concerto/Graphics/RHI/QueryPool.hpp"
 #include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 #include "Concerto/Graphics/RHI/TextureImportInfo.hpp"
 
@@ -80,6 +81,7 @@ namespace cct::gfx::rhi
 
 		virtual Queue& GetQueue(rhi::QueueFamily family) = 0;
 		virtual std::unique_ptr<Fence> CreateFence() = 0;
+		virtual std::unique_ptr<QueryPool> CreateQueryPool() { return nullptr; }
 		virtual std::shared_ptr<Texture> ImportTexture(const TextureImportInfo& /*info*/) { return nullptr; }
 	};
 }

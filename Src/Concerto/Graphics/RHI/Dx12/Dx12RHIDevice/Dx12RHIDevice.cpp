@@ -17,6 +17,7 @@
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipeline/Dx12RHIPipeline.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueryPool/Dx12RHIQueryPool.hpp"
 #include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
 #include "Concerto/Graphics/RHI/DescriptorSet.hpp"
 #include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
@@ -316,5 +317,10 @@ namespace cct::gfx::rhi
 	std::unique_ptr<Fence> Dx12RHIDevice::CreateFence()
 	{
 		return std::make_unique<Dx12RHIFence>(*this);
+	}
+
+	std::unique_ptr<QueryPool> Dx12RHIDevice::CreateQueryPool()
+	{
+		return std::make_unique<Dx12RHIQueryPool>(*this);
 	}
 }

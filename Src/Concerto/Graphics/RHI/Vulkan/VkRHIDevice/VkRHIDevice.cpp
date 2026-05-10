@@ -30,6 +30,10 @@
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIQueue/VkRHIQueue.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIFence/VkRHIFence.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIQueryPool/VkRHIQueryPool.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
+
+#include <Concerto/Core/Assert.hpp>
 
 
 namespace cct::gfx::rhi
@@ -435,6 +439,36 @@ namespace cct::gfx::rhi
 	std::unique_ptr<Fence> VkRHIDevice::CreateFence()
 	{
 		return std::make_unique<VkRHIFence>(*this);
+	}
+
+	std::shared_ptr<Texture> VkRHIDevice::ImportTexture(const rhi::TextureImportInfo& info)
+	{
+		switch (info.handleType)
+		{
+#ifdef CCT_PLATFORM_WINDOWS
+		case rhi::ExternalHandleType::D3D11NtHandle:
+		{
+			const VkExtent2D extent{static_cast<UInt32>(info.width), static_cast<UInt32>(info.height)};
+			auto image = vk::Image::ImportFromWin32Handle(
+				*this, extent, Converters::ToVulkan(info.format), static_cast<HANDLE>(info.handle));
+			if (!image)
+			{
+				CCT_ASSERT_FALSE("VkRHIDevice::ImportTexture: ImportFromWin32Handle failed");
+				return nullptr;
+			}
+			return std::make_shared<VkRHITexture>(*this, std::move(*image));
+		}
+#endif
+		default:
+			CCT_ASSERT_FALSE("VkRHIDevice::ImportTexture: unsupported ExternalHandleType {}",
+				static_cast<UInt32>(info.handleType));
+			return nullptr;
+		}
+	}
+
+	std::unique_ptr<QueryPool> VkRHIDevice::CreateQueryPool()
+	{
+		return std::make_unique<VkRHIQueryPool>(*this);
 	}
 
 } //cct::Graphics::RHI

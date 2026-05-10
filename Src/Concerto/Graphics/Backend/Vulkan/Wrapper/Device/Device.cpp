@@ -2,20 +2,19 @@
 // Created by arthur on 25/10/2022.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
+
 #include <stdexcept>
+#include <volk.h> // must be under this ^ include
 
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include <volk.h> // must be under this ^ include
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
-
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ObjectDebug/ObjectDebug.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 
 namespace cct::gfx::vk
 {
