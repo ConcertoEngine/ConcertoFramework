@@ -78,6 +78,21 @@ namespace cct::refl
 		/// Emits OnCleared (before removal) then OnValueChanged.
 		void Clear();
 
+		/// Moves the element at `from` to position `to`, shifting elements in between.
+		/// No-op if from == to or either index is out of range.
+		/// Emits OnValueChanged.
+		void Move(std::size_t from, std::size_t to);
+
+		/// Removes the element at `index` from this vector and returns ownership of it.
+		/// Use this to transfer an element to another Vector (cf. Insert).
+		/// Emits OnRemoved (before extraction) then OnValueChanged.
+		std::unique_ptr<Object> Extract(std::size_t index);
+
+		/// Inserts `element` at `index`, taking ownership. Out-of-range index is clamped to size().
+		/// Validates that the element's dynamic class matches m_elementType (if set).
+		/// Emits OnInserted then OnValueChanged.
+		void Insert(std::size_t index, std::unique_ptr<Object> element);
+
 		// ── Read access ───────────────────────────────────────────────────
 		[[nodiscard]] Object* Get(std::size_t index);
 		[[nodiscard]] const Object* Get(std::size_t index) const;

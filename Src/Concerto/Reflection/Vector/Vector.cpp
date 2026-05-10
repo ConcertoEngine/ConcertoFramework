@@ -2,11 +2,10 @@
 // Created by arthur on 27/02/2026.
 //
 
-#include "Concerto/Reflection/Vector/Vector.refl.hpp"
-
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Reflection/Class/Class.hpp"
+#include "Concerto/Reflection/Vector/Vector.refl.hpp"
 
 namespace cct::refl
 {
@@ -87,6 +86,52 @@ namespace cct::refl
 		OnCleared.Emit();
 
 		m_elements.clear();
+		OnValueChanged.Emit();
+	}
+
+	void Vector::Move(std::size_t from, std::size_t to)
+	{
+		const std::size_t count = m_elements.size();
+		if (from == to || from >= count || to >= count)
+			return;
+
+		auto elem = std::move(m_elements[from]);
+		m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(from));
+		m_elements.insert(m_elements.begin() + static_cast<std::ptrdiff_t>(to), std::move(elem));
+
+		OnValueChanged.Emit();
+	}
+
+	std::unique_ptr<Object> Vector::Extract(std::size_t index)
+	{
+		if (index >= m_elements.size())
+			return nullptr;
+
+		OnRemoved.Emit(index, *m_elements[index]);
+		auto elem = std::move(m_elements[index]);
+		m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(index));
+		OnValueChanged.Emit();
+		return elem;
+	}
+
+	void Vector::Insert(std::size_t index, std::unique_ptr<Object> element)
+	{
+		if (!element)
+			return;
+
+		if (m_elementType && element->GetDynamicClass() != m_elementType)
+		{
+			CCT_ASSERT_FALSE("Vector::Insert type mismatch: expected '{}', got '{}'",
+							 m_elementType->GetName(),
+							 element->GetDynamicClass() ? element->GetDynamicClass()->GetName() : "<null>");
+			return;
+		}
+
+		if (index > m_elements.size())
+			index = m_elements.size();
+
+		m_elements.insert(m_elements.begin() + static_cast<std::ptrdiff_t>(index), std::move(element));
+		OnInserted.Emit(index, *m_elements[index]);
 		OnValueChanged.Emit();
 	}
 
