@@ -32,6 +32,16 @@ namespace cct::refl
 		return m_name;
 	}
 
+	std::string Class::GetFullyQualifiedName() const
+	{
+		if (!m_namespace)
+			return m_name;
+		std::string ns = m_namespace->GetFullName();
+		if (ns.empty())
+			return m_name;
+		return ns + "::" + m_name;
+	}
+
 	std::string_view Class::GetNamespaceName() const
 	{
 		if (m_namespace == nullptr)
@@ -65,6 +75,12 @@ namespace cct::refl
 	std::size_t Class::GetNativeMemberVariableCount() const
 	{
 		return m_nativeMemberVariables.size();
+	}
+
+	std::size_t Class::GetTotalNativeMemberCount() const
+	{
+		std::size_t baseCount = m_baseClass ? m_baseClass->GetTotalNativeMemberCount() : 0;
+		return baseCount + m_nativeMemberVariables.size();
 	}
 
 	std::size_t Class::GetMethodCount() const
@@ -123,16 +139,18 @@ namespace cct::refl
 			if (variable->GetName() == name)
 				return variable.get();
 		}
-		return nullptr;
+		return m_baseClass ? m_baseClass->GetMemberVariable(name) : nullptr;
 	}
 
 	const NativeMemberVariable* Class::GetNativeMemberVariable(std::size_t index) const
 	{
-		if (m_nativeMemberVariables.empty())
+		const std::size_t baseCount = m_baseClass != nullptr ? m_baseClass->GetTotalNativeMemberCount() : 0;
+		if (index < baseCount)
+			return m_baseClass != nullptr ? m_baseClass->GetNativeMemberVariable(index) : nullptr;
+		const std::size_t localPos = index - baseCount;
+		if (localPos >= m_nativeMemberVariables.size())
 			return nullptr;
-		if (index > m_nativeMemberVariables.size())
-			return nullptr;
-		return m_nativeMemberVariables[index].get();
+		return m_nativeMemberVariables[localPos].get();
 	}
 
 	const NativeMemberVariable* Class::GetNativeMemberVariable(std::string_view name) const
@@ -142,23 +160,35 @@ namespace cct::refl
 			if (variable->GetName() == name)
 				return variable.get();
 		}
+		// Walk base class chain so inherited native members are found.
+		if (m_baseClass != nullptr)
+			return m_baseClass->GetNativeMemberVariable(name);
 		return nullptr;
 	}
 
 	cct::refl::Object* Class::GetMemberVariable(std::string_view name, const cct::refl::Object& self) const
 	{
-		auto* memberVariable = GetMemberVariable(name);
-		if (memberVariable == nullptr)
-			return nullptr;
-		return GetMemberVariable(memberVariable->GetIndex(), self);
+		for (const auto& variable : m_memberVariables)
+		{
+			if (variable->GetName() == name)
+				return GetMemberVariable(variable->GetIndex(), self);
+		}
+
+		if (m_baseClass != nullptr)
+			return m_baseClass->GetMemberVariable(name, self);
+		return nullptr;
 	}
 
 	void* Class::GetNativeMemberVariable(std::string_view name, const cct::refl::Object& self) const
 	{
-		auto* memberVariable = GetNativeMemberVariable(name);
-		if (memberVariable == nullptr)
-			return nullptr;
-		return GetNativeMemberVariable(memberVariable->GetIndex(), self);
+		for (const auto& variable : m_nativeMemberVariables)
+		{
+			if (variable->GetName() == name)
+				return GetNativeMemberVariable(variable->GetIndex(), self);
+		}
+		if (m_baseClass != nullptr)
+			return m_baseClass->GetNativeMemberVariable(name, self);
+		return nullptr;
 	}
 
 	const Method* Class::GetMethod(std::size_t index) const
@@ -182,7 +212,11 @@ namespace cct::refl
 
 	bool Class::HasMemberVariable(std::string_view name) const
 	{
-		return GetMemberVariable(name) != nullptr;
+		for (const auto& variable : m_memberVariables)
+			if (variable->GetName() == name) return true;
+		if (m_baseClass != nullptr)
+			return m_baseClass->HasMemberVariable(name);
+		return false;
 	}
 
 	bool Class::HasMethod(std::string_view name) const
@@ -261,7 +295,8 @@ namespace cct::refl
 	void Class::AddNativeMemberVariable(std::string_view name, UInt64 typeId)
 	{
 		CCT_ASSERT(!GetNativeMemberVariable(name), "Member variable already exists");
-		m_nativeMemberVariables.emplace_back(std::make_unique<NativeMemberVariable>(std::string(name), typeId, m_nativeMemberVariables.size()));
+		std::size_t baseCount = m_baseClass ? m_baseClass->GetTotalNativeMemberCount() : 0;
+		m_nativeMemberVariables.emplace_back(std::make_unique<NativeMemberVariable>(std::string(name), typeId, baseCount + m_nativeMemberVariables.size()));
 	}
 
 	void Class::AddMemberFunction(std::unique_ptr<Method> method)

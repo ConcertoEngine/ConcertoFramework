@@ -35,12 +35,14 @@ namespace cct::refl
 		Class& operator=(Class&&) = default;
 
 		[[nodiscard]] std::string_view GetName() const;
+		[[nodiscard]] std::string GetFullyQualifiedName() const;
 		[[nodiscard]] std::string_view GetNamespaceName() const;
 		[[nodiscard]] const Namespace& GetNamespace() const;
 		[[nodiscard]] std::size_t GetHash() const;
 
 		[[nodiscard]] std::size_t GetMemberVariableCount() const;
 		[[nodiscard]] std::size_t GetNativeMemberVariableCount() const;
+		[[nodiscard]] std::size_t GetTotalNativeMemberCount() const;
 		[[nodiscard]] std::size_t GetMethodCount() const;
 
 		[[nodiscard]] const Class* GetBaseClass() const;
