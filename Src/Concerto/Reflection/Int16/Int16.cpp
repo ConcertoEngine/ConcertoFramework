@@ -43,4 +43,5 @@ namespace cct::refl
 	bool Int16::operator!=(const Int16& other) const { return m_value != other.m_value; }
 	bool Int16::operator==(cct::Int16 other) const { return m_value == other; }
 	bool Int16::operator!=(cct::Int16 other) const { return m_value != other; }
+	std::string Int16::ToString() const { return std::to_string(static_cast<int>(m_value)); }
 } // namespace cct::refl

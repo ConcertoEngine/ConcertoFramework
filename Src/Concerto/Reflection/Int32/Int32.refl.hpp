@@ -32,6 +32,8 @@ namespace cct::refl
 		[[nodiscard]] bool operator==(cct::Int32 other) const;
 		[[nodiscard]] bool operator!=(cct::Int32 other) const;
 
+		[[nodiscard]] std::string ToString() const override;
+
 		CCT_OBJECT(Int32);
 
 	private:

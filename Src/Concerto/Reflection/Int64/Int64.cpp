@@ -43,4 +43,5 @@ namespace cct::refl
 	bool Int64::operator!=(const Int64& other) const { return m_value != other.m_value; }
 	bool Int64::operator==(cct::Int64 other) const { return m_value == other; }
 	bool Int64::operator!=(cct::Int64 other) const { return m_value != other; }
+	std::string Int64::ToString() const { return std::to_string(m_value); }
 } // namespace cct::refl

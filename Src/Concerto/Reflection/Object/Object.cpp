@@ -50,6 +50,12 @@ namespace cct::refl
 
 		return *this;
 	}
+
+	std::string Object::ToString() const
+	{
+		return "";
+	}
+
 	const cct::Uuid& Object::GetUuid() const
 	{
 		return m_uuid;

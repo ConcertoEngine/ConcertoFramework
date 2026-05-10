@@ -82,4 +82,9 @@ namespace cct::refl
 	{
 		return m_value != other;
 	}
+
+	std::string Boolean::ToString() const
+	{
+		return m_value ? "true" : "false";
+	}
 } // namespace cct::refl
