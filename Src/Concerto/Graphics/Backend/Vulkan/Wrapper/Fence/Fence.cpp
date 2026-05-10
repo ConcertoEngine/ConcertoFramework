@@ -2,10 +2,10 @@
 // Created by arthur on 15/06/22.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
+
 #include <cassert>
 #include <stdexcept>
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
 
 #include <Concerto/Core/Assert.hpp>
 
@@ -14,7 +14,8 @@
 
 namespace cct::gfx::vk
 {
-	Fence::Fence(Device& device, bool signaled) : Object(device)
+	Fence::Fence(Device& device, bool signaled) :
+		Object(device)
 	{
 		if (Create(device, signaled) != VK_SUCCESS)
 			throw VkException(GetLastResult());

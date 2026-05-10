@@ -19,7 +19,14 @@
 
 namespace cct::gfx::vk
 {
-	std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_DEBUG_MARKER_EXTENSION_NAME };
+	std::vector<const char*> deviceExtensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		VK_EXT_DEBUG_MARKER_EXTENSION_NAME,
+#ifdef CCT_PLATFORM_WINDOWS
+		VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+		VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
+#endif
+	};
 
 	Device::Device(PhysicalDevice& physicalDevice) :
 		m_physicalDevice(&physicalDevice),
