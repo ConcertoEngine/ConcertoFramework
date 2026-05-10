@@ -9,6 +9,7 @@
 #include <fstream>
 #include <optional>
 #include <sstream>
+#include <system_error>
 
 #include <Concerto/Core/Logger/Logger.hpp>
 #include <Concerto/Profiler/Profiler.hpp>
@@ -218,6 +219,14 @@ namespace cct
 								const std::string& resourceDir,
 								const std::string& sdk)
 	{
+		m_sourcePaths.clear();
+		for (const auto& src : sources)
+		{
+			std::error_code ec;
+			auto canonical = std::filesystem::weakly_canonical(src, ec);
+			m_sourcePaths.insert(ec ? src : canonical.string());
+		}
+
 		std::string code;
 
 		code += "#include <Concerto/Core/Defines.hpp>\n";
@@ -280,10 +289,28 @@ namespace cct
 		return &m_package;
 	}
 
+	bool ClangParser::IsInSourceFile(const clang::Decl* decl) const
+	{
+		if (m_sourcePaths.empty())
+			return true;
+		auto loc = decl->getLocation();
+		if (!loc.isValid())
+			return false;
+		auto presumedLoc = m_sourceManager->getPresumedLoc(loc);
+		if (presumedLoc.isInvalid())
+			return false;
+		std::error_code ec;
+		auto canonical = std::filesystem::weakly_canonical(presumedLoc.getFilename(), ec);
+		const std::string filePath = ec ? presumedLoc.getFilename() : canonical.string();
+		return m_sourcePaths.count(filePath) > 0;
+	}
+
 	void ClangParser::ProcessRecord(const CXXRecordDecl* recordDeclaration)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
 		if (!recordDeclaration || !recordDeclaration->isThisDeclarationADefinition())
+			return;
+		if (!IsInSourceFile(recordDeclaration))
 			return;
 
 		std::optional<std::pair<std::string, TomlAttributes>> classAttr;
@@ -460,6 +487,8 @@ namespace cct
 		CCT_AUTO_PROFILER_SCOPE();
 		if (!enumDeclaration || !enumDeclaration->isThisDeclarationADefinition())
 			return;
+		if (!IsInSourceFile(enumDeclaration))
+			return;
 		bool hasAttr = false;
 		TomlAttributes enumAttrs;
 		for (const auto* A : enumDeclaration->attrs())
@@ -549,6 +578,8 @@ namespace cct
 	{
 		CCT_AUTO_PROFILER_SCOPE();
 		if (!templateDeclaration)
+			return;
+		if (!IsInSourceFile(templateDeclaration))
 			return;
 
 		const auto* recordDecl = templateDeclaration->getTemplatedDecl();

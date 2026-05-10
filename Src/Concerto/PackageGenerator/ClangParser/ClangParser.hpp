@@ -6,6 +6,7 @@
 
 #include <string>
 #include <string_view>
+#include <unordered_set>
 #include <vector>
 
 #include "Concerto/PackageGenerator/Defines.hpp"
@@ -36,7 +37,9 @@ namespace cct
 		clang::SourceManager* m_sourceManager = nullptr;
 		const clang::LangOptions* m_langOptions = nullptr;
 		clang::ASTContext* m_astContext = nullptr;
+		std::unordered_set<std::string> m_sourcePaths;
 
 		void RemoveEmptyNamespaces(std::vector<Namespace>& namespaces);
+		bool IsInSourceFile(const clang::Decl* decl) const;
 	};
 } // namespace cct
