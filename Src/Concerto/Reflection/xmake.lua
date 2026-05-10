@@ -25,6 +25,7 @@ target("concerto-reflection", function()
         "EnumValue",
         "Float32",
         "Float64",
+        "Folder",
         "GenericClass",
         "GlobalNamespace",
         "Int8",
