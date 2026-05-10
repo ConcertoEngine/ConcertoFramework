@@ -43,6 +43,8 @@ namespace cct::refl
 		[[nodiscard]] bool operator==(std::string_view other) const;
 		[[nodiscard]] bool operator!=(std::string_view other) const;
 
+		[[nodiscard]] std::string ToString() const override;
+
 		CCT_OBJECT(String);
 
 	private:

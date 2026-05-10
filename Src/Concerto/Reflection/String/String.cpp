@@ -109,4 +109,9 @@ namespace cct::refl
 	{
 		return m_value != other;
 	}
+
+	std::string String::ToString() const
+	{
+		return m_value;
+	}
 } // namespace cct::refl
