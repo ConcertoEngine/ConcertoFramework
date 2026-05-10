@@ -64,7 +64,18 @@ namespace cct::refl
 
 	void Namespace::AddNamespace(std::unique_ptr<Namespace> nameSpace)
 	{
+		nameSpace->m_parent = this;
 		m_namespaces.emplace_back(std::move(nameSpace));
+	}
+
+	std::string Namespace::GetFullName() const
+	{
+		if (!m_parent)
+			return m_name;
+		std::string parent = m_parent->GetFullName();
+		if (parent.empty())
+			return m_name;
+		return parent + "::" + m_name;
 	}
 
 	Namespace* Namespace::GetNamespace(std::string_view name) const

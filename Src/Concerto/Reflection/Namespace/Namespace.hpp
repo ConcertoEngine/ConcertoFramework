@@ -28,6 +28,7 @@ namespace cct::refl
 		Namespace& operator=(Namespace&&) = default;
 
 		[[nodiscard]] inline std::string_view GetName() const;
+		[[nodiscard]] std::string GetFullName() const;
 		[[nodiscard]] inline std::size_t GetHash() const;
 
 		[[nodiscard]] inline std::size_t GetClassCount() const;
@@ -54,6 +55,7 @@ namespace cct::refl
 		std::vector<std::unique_ptr<Class>> m_classes;
 		std::vector<std::unique_ptr<Namespace>> m_namespaces;
 		std::size_t m_hash;
+		Namespace* m_parent = nullptr;
 	};
 } // namespace cct::refl
 
