@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIDESCRIPTORSET_HPP
 
 #include <memory>
+#include <unordered_map>
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/DescriptorSet.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSet/DescriptorSet.hpp"
@@ -34,8 +35,8 @@ namespace cct::gfx::rhi
 	private:
 		vk::DescriptorSetPtr m_vkDescriptorSet;
 		std::shared_ptr<DescriptorSetLayout> m_layout;
-		// Keep alive any Vulkan objects created while writing descriptors (e.g. samplers)
-		std::vector<std::unique_ptr<vk::Sampler>> m_ownedSamplers;
+		// One sampler per binding, created once and reused every frame.
+		std::unordered_map<UInt32, std::unique_ptr<vk::Sampler>> m_samplerCache;
 	};
 }
 

@@ -69,8 +69,12 @@ namespace cct::gfx::rhi
 		auto* device = m_vkDescriptorSet->GetDevice();
 		CCT_ASSERT(device, "DescriptorSet device is null");
 
-		// Create a sampler if needed and keep it alive
-		auto sampler = std::make_unique<vk::Sampler>(*device, VK_FILTER_LINEAR);
+		auto& sampler = m_samplerCache[binding];
+		if (!sampler)
+		{
+			sampler = std::make_unique<vk::Sampler>(*device, VK_FILTER_LINEAR);
+		}
+
 		VkDescriptorImageInfo imageInfo{};
 		imageInfo.sampler = *sampler->Get();
 		imageInfo.imageView = *vkTexture->GetImageView().Get();
@@ -78,8 +82,6 @@ namespace cct::gfx::rhi
 
 		const VkWriteDescriptorSet write = VulkanInitializer::WriteDescriptorImage(vkDescriptorType, *m_vkDescriptorSet->Get(), &imageInfo, binding);
 		device->vkUpdateDescriptorSets(*device->Get(), 1, &write, 0, nullptr);
-
-		m_ownedSamplers.push_back(std::move(sampler));
 	}
 
 	const std::shared_ptr<DescriptorSetLayout>& VkRHIDescriptorSet::GetLayout() const
