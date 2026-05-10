@@ -6,9 +6,11 @@
 #define CONCERTO_REFLECTION_OBJECT_HPP
 
 #include <memory>
+#include <string>
 #include <string_view>
 
 #include <Concerto/Core/EnumFlags/EnumFlags.hpp>
+#include <Concerto/Core/Uuid/Uuid.hpp>
 
 #include "Concerto/Reflection/Defines.hpp"
 #include "Concerto/Core/Signal/Signal.hpp"
@@ -95,6 +97,12 @@ namespace cct::refl
 		template<typename T>
 		[[nodiscard]] const T* GetNativeMemberVariable(std::string_view name) const;
 
+		[[nodiscard]] virtual std::string ToString() const;
+
+		[[nodiscard]] const cct::Uuid& GetUuid() const;
+		void SetUuid(const cct::Uuid& uuid);
+		void RegenerateUuid();
+
 		[[nodiscard]] inline const cct::refl::Class* GetDynamicClass() const;
 		inline void SetDynamicClass(const Class* klass);
 
@@ -109,6 +117,9 @@ namespace cct::refl
 	protected:
 		const cct::refl::Class* m_dynamicClass;
 		Registry* m_registry;
+
+		CCT_NATIVE_MEMBER()
+		cct::Uuid m_uuid;
 
 		/* 
 		* Default member initializer, evaluated by the compiler for every constructor of
