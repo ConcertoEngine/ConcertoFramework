@@ -7,8 +7,8 @@ option("enet", { description = "Enable ENet support", default = true })
 
 add_requires("stduuid")
 
-if is_plat("windows") then  
-    add_requires("enet",      {configs = {shared = false,      runtimes = is_mode("debug") and "MDd" or "MD"}})  
+if is_plat("windows") then
+    add_requires("enet",      {configs = {shared = false,      runtimes = is_mode("debug") and "MDd" or "MD"}})
     add_requires("spdlog",    {configs = {header_only = false, runtimes = is_mode("debug") and "MDd" or "MD"}})  
 
     if has_config("reflection") then
