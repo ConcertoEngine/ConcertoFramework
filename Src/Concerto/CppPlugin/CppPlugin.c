@@ -211,6 +211,7 @@ static void BeforeMethodGeneration(const CrpClassMethod* method, CrpGenerationCo
 static void BeforeEnumGeneration(const CrpEnum* enumeration, CrpGenerationContext* ctx)
 {
 	const char* enumName = crpEnumGetName(enumeration);
+	const char* nsPath = crpGenerationContextGetNamespacePath(ctx);
 
 	crpGenerationContextWrite(ctx, "class Internal%sEnumerationClass : public cct::refl::EnumerationClass", enumName);
 	crpGenerationContextEnterScope(ctx);
@@ -229,6 +230,16 @@ static void BeforeEnumGeneration(const CrpEnum* enumeration, CrpGenerationContex
 		crpGenerationContextNewLine(ctx);
 		crpGenerationContextWrite(ctx, "void Initialize() override");
 		crpGenerationContextEnterScope(ctx);
+		{
+			if (nsPath && nsPath[0] != '\0')
+				crpGenerationContextWrite(ctx, "SetNamespace(GlobalNamespace::Get().GetNamespaceByName(\"%s\"sv));", nsPath);
+
+			crpGenerationContextWrite(ctx, "const Class* baseClass = GetClassByName(\"cct::refl::Object\"sv);");
+			crpGenerationContextWrite(ctx, "CCT_ASSERT(baseClass != nullptr, \"Could not find class 'cct::refl::Object'\");");
+			crpGenerationContextWrite(ctx, "SetBaseClass(baseClass);");
+
+			crpGenerationContextNewLine(ctx);
+		}
 	}
 }
 
@@ -656,22 +667,31 @@ static void AfterClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx)
 	crpGenerationContextWrite(ctx, "void* GetNativeMemberVariable(std::size_t index, const cct::refl::Object& self) const override");
 	crpGenerationContextEnterScope(ctx);
 	{
+		crpGenerationContextWrite(ctx, "const cct::refl::Class* baseKlass = GetBaseClass();");
+		crpGenerationContextWrite(ctx, "const std::size_t baseCount = baseKlass ? baseKlass->GetTotalNativeMemberCount() : 0;");
+		crpGenerationContextWrite(ctx, "if (index < baseCount)");
+		crpGenerationContextEnterScope(ctx);
+		crpGenerationContextWrite(ctx, "return baseKlass ? const_cast<cct::refl::Class*>(baseKlass)->GetNativeMemberVariable(index, self) : nullptr;");
+		crpGenerationContextLeaveScope(ctx, NULL);
+		crpGenerationContextWrite(ctx, "const std::size_t localIdx = index - baseCount;");
+
 		size_t nativeIndex = 0;
 		size_t memberCount = crpClassGetMemberCount(cls);
 		for (size_t i = 0; i < memberCount; ++i)
 		{
 			const CrpClassMember* member = crpClassGetMember(cls, i);
 			if (!crpClassMemberIsNative(member))
+			{
 				continue;
+			}
 
 			const char* memberName = crpClassMemberGetName(member);
-			crpGenerationContextWrite(ctx, "if (index == %zu)", nativeIndex);
+			crpGenerationContextWrite(ctx, "if (localIdx == %zu)", nativeIndex);
 			crpGenerationContextEnterScope(ctx);
 			crpGenerationContextWrite(ctx, "return &const_cast<%s&>(static_cast<const %s&>(self)).%s;", className, className, memberName);
 			crpGenerationContextLeaveScope(ctx, NULL);
 			nativeIndex++;
 		}
-		crpGenerationContextWrite(ctx, "CCT_ASSERT_FALSE(\"Invalid index\");");
 		crpGenerationContextWrite(ctx, "return nullptr;");
 	}
 	crpGenerationContextLeaveScope(ctx, NULL);
@@ -692,6 +712,23 @@ static void BeforeGenericClassGeneration(const CrpClass* cls, CrpGenerationConte
 		crpGenerationContextWrite(ctx, "public:");
 		crpGenerationContextWrite(ctx, "Internal%sGenericClass() : cct::refl::GenericClass(nullptr, \"%s\"s, nullptr)", className, className);
 		crpGenerationContextEnterScope(ctx);
+		{
+			crpGenerationContextWrite(ctx, "if (%s::m_class != nullptr)", className);
+			crpGenerationContextEnterScope(ctx);
+			{
+				crpGenerationContextWrite(ctx, "CCT_ASSERT_FALSE(\"Class already created\");");
+				crpGenerationContextWrite(ctx, "return;");
+			}
+			crpGenerationContextLeaveScope(ctx, NULL);
+			crpGenerationContextWrite(ctx, "%s::m_class = this;", className);
+		}
+		crpGenerationContextLeaveScope(ctx, NULL);
+
+		crpGenerationContextWrite(ctx, "~Internal%sGenericClass() override", className);
+		crpGenerationContextEnterScope(ctx);
+		{
+			crpGenerationContextWrite(ctx, "%s::m_class = nullptr;", className);
+		}
 		crpGenerationContextLeaveScope(ctx, NULL);
 
 		crpGenerationContextNewLine(ctx);
