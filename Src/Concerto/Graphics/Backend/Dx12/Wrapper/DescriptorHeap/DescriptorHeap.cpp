@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/DescriptorHeap/DescriptorHeap.hpp"
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::dx12
@@ -21,8 +22,7 @@ namespace cct::gfx::dx12
 			.Type = type,
 			.NumDescriptors = numDescriptors,
 			.Flags = flags,
-			.NodeMask = 0
-		};
+			.NodeMask = 0};
 
 		m_lastResult = device->CreateDescriptorHeap(&descriptorHeapDesc, IID_PPV_ARGS(&m_handle));
 		CCT_ASSERT(SUCCEEDED(m_lastResult), "ConcertoGraphics: CreateDescriptorHeap failed HRESULT={}", m_lastResult);

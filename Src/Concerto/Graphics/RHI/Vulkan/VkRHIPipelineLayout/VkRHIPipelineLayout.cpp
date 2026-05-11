@@ -29,4 +29,4 @@ namespace cct::gfx::rhi
 	{
 		return m_descriptorSetLayouts;
 	}
-}
+} // namespace cct::gfx::rhi

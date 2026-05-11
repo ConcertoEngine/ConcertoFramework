@@ -3,11 +3,12 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueryPool/Dx12RHIQueryPool.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandList/CommandList.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -23,14 +24,14 @@ namespace cct::gfx::rhi
 
 		// Query heap — 4 slots: 2 frames × 2 timestamps
 		D3D12_QUERY_HEAP_DESC heapDesc{};
-		heapDesc.Type     = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
-		heapDesc.Count    = 4;
+		heapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+		heapDesc.Count = 4;
 		heapDesc.NodeMask = 0;
 		HRESULT hr = d3dDevice->CreateQueryHeap(&heapDesc, IID_PPV_ARGS(&m_queryHeap));
 		if (FAILED(hr))
 		{
 			CCT_RHI_LOG_WARN("Dx12RHIQueryPool: CreateQueryHeap failed ({:#x}); GPU timing unavailable",
-			                static_cast<unsigned>(hr));
+							 static_cast<unsigned>(hr));
 			return;
 		}
 
@@ -39,13 +40,13 @@ namespace cct::gfx::rhi
 		heapProps.Type = D3D12_HEAP_TYPE_READBACK;
 
 		D3D12_RESOURCE_DESC resDesc{};
-		resDesc.Dimension        = D3D12_RESOURCE_DIMENSION_BUFFER;
-		resDesc.Width            = sizeof(uint64_t) * 4;
-		resDesc.Height           = 1;
+		resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		resDesc.Width = sizeof(uint64_t) * 4;
+		resDesc.Height = 1;
 		resDesc.DepthOrArraySize = 1;
-		resDesc.MipLevels        = 1;
+		resDesc.MipLevels = 1;
 		resDesc.SampleDesc.Count = 1;
-		resDesc.Layout           = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 		hr = d3dDevice->CreateCommittedResource(
 			&heapProps, D3D12_HEAP_FLAG_NONE,
@@ -54,7 +55,7 @@ namespace cct::gfx::rhi
 		if (FAILED(hr))
 		{
 			CCT_RHI_LOG_WARN("Dx12RHIQueryPool: CreateCommittedResource failed ({:#x}); GPU timing unavailable",
-			                static_cast<unsigned>(hr));
+							 static_cast<unsigned>(hr));
 			m_queryHeap.Reset();
 			return;
 		}
@@ -64,7 +65,7 @@ namespace cct::gfx::rhi
 		if (FAILED(hr))
 		{
 			CCT_RHI_LOG_WARN("Dx12RHIQueryPool: Map failed ({:#x}); GPU timing unavailable",
-			                static_cast<unsigned>(hr));
+							 static_cast<unsigned>(hr));
 			m_queryHeap.Reset();
 			m_readbackBuffer.Reset();
 			return;
@@ -93,9 +94,9 @@ namespace cct::gfx::rhi
 		auto& cmdList = static_cast<dx12::CommandList&>(static_cast<Dx12RHICommandBuffer&>(cmd));
 
 		// Read previous frame from persistently-mapped readback buffer
-		const int prev      = 1 - m_frameIndex;
-		const uint64_t t0   = m_mappedData[prev * 2];
-		const uint64_t t1   = m_mappedData[prev * 2 + 1];
+		const int prev = 1 - m_frameIndex;
+		const uint64_t t0 = m_mappedData[prev * 2];
+		const uint64_t t1 = m_mappedData[prev * 2 + 1];
 		if (t1 > t0 && m_timestampFreq > 0)
 			m_lastMs = static_cast<float>((t1 - t0) * 1000.0 / static_cast<double>(m_timestampFreq));
 
@@ -119,10 +120,10 @@ namespace cct::gfx::rhi
 
 		// Resolve both timestamps to the readback buffer
 		d3dCmd->ResolveQueryData(m_queryHeap.Get(), D3D12_QUERY_TYPE_TIMESTAMP,
-		                         cur, 2,
-		                         m_readbackBuffer.Get(),
-		                         static_cast<UINT64>(cur) * sizeof(uint64_t));
+								 cur, 2,
+								 m_readbackBuffer.Get(),
+								 static_cast<UINT64>(cur) * sizeof(uint64_t));
 
 		m_frameIndex ^= 1;
 	}
-}
+} // namespace cct::gfx::rhi

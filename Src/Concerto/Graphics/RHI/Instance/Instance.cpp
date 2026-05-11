@@ -2,8 +2,9 @@
 // Created by arthur on 12/05/2024.
 //
 
-#include <Concerto/Core/Assert.hpp>
 #include "Concerto/Graphics/RHI/Instance/Instance.hpp"
+
+#include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/RHI/Instance/APIImpl.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHI/VkRHI.hpp"
@@ -20,21 +21,21 @@ namespace cct::gfx::rhi
 		CCT_PROFILER_SCOPE();
 		switch (backend)
 		{
-		case Backend::Vulkan:
-		{
-			if (Logger::GetContext())
-				VkRHI::SetLogger(*Logger::GetContext());
-			m_apiImpl = std::make_unique<VkRHI>();
-			break;
-		}
+			case Backend::Vulkan:
+			{
+				if (Logger::GetContext())
+					VkRHI::SetLogger(*Logger::GetContext());
+				m_apiImpl = std::make_unique<VkRHI>();
+				break;
+			}
 #ifdef CCT_PLATFORM_WINDOWS
-		case Backend::DirectX12:
-		{
-			if (Logger::GetContext())
-				Dx12RHI::SetLogger(*Logger::GetContext());
-			m_apiImpl = std::make_unique<Dx12RHI>();
-			break;
-		}
+			case Backend::DirectX12:
+			{
+				if (Logger::GetContext())
+					Dx12RHI::SetLogger(*Logger::GetContext());
+				m_apiImpl = std::make_unique<Dx12RHI>();
+				break;
+			}
 #endif
 		}
 		m_apiImpl->Create(validationLevel);
@@ -62,4 +63,4 @@ namespace cct::gfx::rhi
 	{
 		Logger::SetContext(&logger);
 	}
-}
+} // namespace cct::gfx::rhi

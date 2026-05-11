@@ -7,10 +7,10 @@
 namespace cct::gfx::rhi
 {
 	Dx12RHIFrameBuffer::Dx12RHIFrameBuffer(UInt32 width, UInt32 height,
-	                                        std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles,
-	                                        std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetResources,
-	                                        std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandle,
-	                                        Microsoft::WRL::ComPtr<ID3D12Resource> depthResource) :
+										   std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles,
+										   std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetResources,
+										   std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandle,
+										   Microsoft::WRL::ComPtr<ID3D12Resource> depthResource) :
 		m_width(width),
 		m_height(height),
 		m_rtvHandles(std::move(rtvHandles)),
@@ -19,4 +19,4 @@ namespace cct::gfx::rhi
 		m_depthResource(std::move(depthResource))
 	{
 	}
-}
+} // namespace cct::gfx::rhi

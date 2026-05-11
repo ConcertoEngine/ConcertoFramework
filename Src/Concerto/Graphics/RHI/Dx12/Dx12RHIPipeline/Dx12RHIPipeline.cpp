@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipeline/Dx12RHIPipeline.hpp"
+
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
 
 namespace cct::gfx::rhi
@@ -14,4 +15,4 @@ namespace cct::gfx::rhi
 		CCT_ASSERT(m_pipelineState, "ConcertoGraphics: Invalid DX12 pipeline state");
 		CCT_ASSERT(m_pipelineLayout, "ConcertoGraphics: Invalid DX12 pipeline layout");
 	}
-}
+} // namespace cct::gfx::rhi

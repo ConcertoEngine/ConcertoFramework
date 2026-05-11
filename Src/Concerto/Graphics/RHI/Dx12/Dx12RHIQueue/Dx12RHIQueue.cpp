@@ -2,9 +2,10 @@
 // Created by arthur on 09/04/2026.
 //
 
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueue/Dx12RHIQueue.hpp"
+
 #include <Concerto/Core/Cast.hpp>
 
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueue/Dx12RHIQueue.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIFence/Dx12RHIFence.hpp"
 
@@ -20,7 +21,7 @@ namespace cct::gfx::rhi
 	{
 		const auto& dx12CmdBuf = Cast<const Dx12RHICommandBuffer&>(cmdBuf);
 
-		ID3D12CommandList* cmdLists[] = { dx12CmdBuf.Get() };
+		ID3D12CommandList* cmdLists[] = {dx12CmdBuf.Get()};
 		m_queue->ExecuteCommandLists(1, cmdLists);
 
 		if (fence)
@@ -30,4 +31,4 @@ namespace cct::gfx::rhi
 			m_queue->Signal(dx12RHIFence.GetFence().Get(), signalValue);
 		}
 	}
-}
+} // namespace cct::gfx::rhi

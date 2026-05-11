@@ -2,9 +2,10 @@
 // Created by arthur on 01/09/2025.
 //
 
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHISwapChain/Dx12RHISwapChain.hpp"
+
 #include <Concerto/Core/Cast.hpp>
 
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHISwapChain/Dx12RHISwapChain.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandList/CommandList.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
@@ -118,8 +119,8 @@ namespace cct::gfx::rhi
 		m_commandBuffer(Cast<Dx12RHICommandPool&>(owner.GetCommandPool()), D3D12_COMMAND_LIST_TYPE_DIRECT, *owner.m_rhiDevice),
 		m_frameBuffer(
 			owner.GetExtent().X(), owner.GetExtent().Y(),
-			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>{ owner.GetRenderTargetViewHandles()[imageIndex] },
-			std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>{ owner.GetRenderTargets()[imageIndex] },
+			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>{owner.GetRenderTargetViewHandles()[imageIndex]},
+			std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>{owner.GetRenderTargets()[imageIndex]},
 			owner.m_dsvHandle,
 			owner.m_depthBuffer)
 	{
@@ -128,8 +129,7 @@ namespace cct::gfx::rhi
 	void Dx12RHISwapChain::SwapChainFrame::Present()
 	{
 		std::array<ID3D12CommandList*, 1> commandLists = {
-			m_commandBuffer.Get()
-		};
+			m_commandBuffer.Get()};
 		m_owner->GetCommandQueue()->ExecuteCommandLists(static_cast<UINT>(commandLists.size()), commandLists.data());
 		m_owner->dx12::SwapChain::Get()->Present(1, 0);
 		CCT_FRAME_MARK();
@@ -160,4 +160,4 @@ namespace cct::gfx::rhi
 	{
 		return m_renderFence;
 	}
-}
+} // namespace cct::gfx::rhi

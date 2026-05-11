@@ -4,17 +4,19 @@
 
 #ifdef CCT_ENABLE_ENET
 
-#include <cstring>
-
 #include "Concerto/Core/Network/ENet/Packet/Packet.hpp"
+
+#include <cstring>
 
 namespace cct::net
 {
-	ENetPacket::ENetPacket() : Stream()
+	ENetPacket::ENetPacket() :
+		Stream()
 	{
 	}
 
-	ENetPacket::ENetPacket(const void* data, std::size_t size) : Stream(size)
+	ENetPacket::ENetPacket(const void* data, std::size_t size) :
+		Stream(size)
 	{
 		std::memcpy(_buffer.data(), data, size);
 		_cursorPos = size;
@@ -37,10 +39,10 @@ namespace cct::net
 		return std::memcmp(GetData(), value.GetData(), GetSize()) == 0;
 	}
 
-	bool ENetPacket::operator != (const ENetPacket& value) const
+	bool ENetPacket::operator!=(const ENetPacket& value) const
 	{
 		return !operator==(value);
 	}
-}
+} // namespace cct::net
 
 #endif // CCT_ENABLE_ENET

@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSetLayout/Dx12RHIDescriptorSetLayout.hpp"
+
 #include "Concerto/Graphics/Backend/Dx12/Dx12Helpers.hpp"
 
 namespace cct::gfx::rhi
@@ -76,4 +77,4 @@ namespace cct::gfx::rhi
 
 		m_shaderVisibility = dx12::ShaderStageToVisibility(combinedStageFlags);
 	}
-}
+} // namespace cct::gfx::rhi

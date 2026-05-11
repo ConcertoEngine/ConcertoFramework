@@ -2,11 +2,11 @@
 // Created by arthur on 15/06/22.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
+
 #include <stdexcept>
 
 #include <Concerto/Core/Assert.hpp>
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
@@ -14,7 +14,8 @@
 namespace cct::gfx::vk
 {
 
-	Semaphore::Semaphore(Device& device) : Object(device)
+	Semaphore::Semaphore(Device& device) :
+		Object(device)
 	{
 		if (Create(device) != VK_SUCCESS)
 			throw VkException(GetLastResult());
@@ -34,8 +35,7 @@ namespace cct::gfx::vk
 		VkSemaphoreCreateInfo info = {
 			info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
 			info.pNext = nullptr,
-			info.flags = 0
-		};
+			info.flags = 0};
 
 		m_lastResult = m_device->vkCreateSemaphore(*m_device->Get(), &info, nullptr, &m_handle);
 		CCT_ASSERT(m_lastResult == VK_SUCCESS, "ConcertoGraphics: vkCreateSemaphore failed VkResult={}", static_cast<const int>(m_lastResult));
@@ -48,7 +48,7 @@ namespace cct::gfx::vk
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 
 		UInt64 value;
-		VkResult result = m_device->vkGetSemaphoreCounterValue(*m_device->Get(), *Get(), & value);
+		VkResult result = m_device->vkGetSemaphoreCounterValue(*m_device->Get(), *Get(), &value);
 		if (result == VK_SUCCESS)
 			return value;
 		return result;

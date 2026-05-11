@@ -12,20 +12,20 @@
 #include <Concerto/Core/EnumFlags/EnumFlags.hpp>
 #include <Concerto/Core/Uuid/Uuid.hpp>
 
-#include "Concerto/Reflection/Defines.hpp"
 #include "Concerto/Core/Signal/Signal.hpp"
+#include "Concerto/Reflection/Defines.hpp"
 
-#define CCT_OBJECT(className)                                                           \
-public:                                                                                 \
-	static const cct::refl::Class* GetClass()                                           \
-	{                                                                                   \
-		return m_class;                                                                 \
-	}                                                                                   \
-                                                                                        \
-private:                                                                                \
-	inline static const cct::refl::Class* m_class;                                      \
-	friend class Internal##className##Class;                                            \
-	friend class Internal##className##GenericClass;                                     \
+#define CCT_OBJECT(className)                       \
+public:                                             \
+	static const cct::refl::Class* GetClass()       \
+	{                                               \
+		return m_class;                             \
+	}                                               \
+                                                    \
+private:                                            \
+	inline static const cct::refl::Class* m_class;  \
+	friend class Internal##className##Class;        \
+	friend class Internal##className##GenericClass; \
 	int PrivateReflInitClass##className = (this->InitReflection(m_class), 0)
 
 struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflection Standard Package\"") ConcertoReflection
@@ -121,14 +121,14 @@ namespace cct::refl
 		CCT_NATIVE_MEMBER()
 		cct::Uuid m_uuid;
 
-		/* 
-		* Default member initializer, evaluated by the compiler for every constructor of
-		* className (including make_shared<T>, new T, etc.), in member declaration order.
-		* Because CCT_OBJECT is placed last in the class body, this runs after all other
-		* members are initialized but before the constructor body. In an inheritance chain
-		* each class level calls InitReflection with its own m_class, so the most-derived
-		* call wins and m_dynamicClass ends up set to the concrete type.
-		*/
+		/*
+		 * Default member initializer, evaluated by the compiler for every constructor of
+		 * className (including make_shared<T>, new T, etc.), in member declaration order.
+		 * Because CCT_OBJECT is placed last in the class body, this runs after all other
+		 * members are initialized but before the constructor body. In an inheritance chain
+		 * each class level calls InitReflection with its own m_class, so the most-derived
+		 * call wins and m_dynamicClass ends up set to the concrete type.
+		 */
 		inline void InitReflection(const Class* cls) noexcept;
 	};
 } // namespace cct::refl

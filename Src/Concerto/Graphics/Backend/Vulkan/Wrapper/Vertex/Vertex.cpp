@@ -3,15 +3,16 @@
 //
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Vertex/Vertex.hpp"
+
 #include "Concerto/Graphics/Core/Vertex.hpp"
 
 namespace cct::gfx::vk
 {
 	VertexInputDescription GetVertexDescription()
 	{
-		VertexInputDescription description {};
+		VertexInputDescription description{};
 
-		//we will have just 1 vertex buffer binding, with a per-vertex rate
+		// we will have just 1 vertex buffer binding, with a per-vertex rate
 		VkVertexInputBindingDescription mainBinding = {};
 		mainBinding.binding = 0;
 		mainBinding.stride = sizeof(Vertex);
@@ -26,21 +27,21 @@ namespace cct::gfx::vk
 		positionAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
 		positionAttribute.offset = offsetof(Vertex, position);
 
-		//Normal will be stored at Location 1
+		// Normal will be stored at Location 1
 		VkVertexInputAttributeDescription normalAttribute = {};
 		normalAttribute.binding = 0;
 		normalAttribute.location = 1;
 		normalAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
 		normalAttribute.offset = offsetof(Vertex, normal);
 
-		//Color will be stored at Location 2
+		// Color will be stored at Location 2
 		VkVertexInputAttributeDescription colorAttribute = {};
 		colorAttribute.binding = 0;
 		colorAttribute.location = 2;
 		colorAttribute.format = VK_FORMAT_R32G32B32_SFLOAT;
 		colorAttribute.offset = offsetof(Vertex, color);
 
-		//UV will be stored at Location 3
+		// UV will be stored at Location 3
 		VkVertexInputAttributeDescription uvAttribute = {};
 		uvAttribute.binding = 0;
 		uvAttribute.location = 3;
@@ -53,4 +54,4 @@ namespace cct::gfx::vk
 		description.attributes.push_back(uvAttribute);
 		return description;
 	}
-}
+} // namespace cct::gfx::vk

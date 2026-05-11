@@ -3,17 +3,18 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorPool/Dx12RHIDescriptorPool.hpp"
+
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSet/Dx12RHIDescriptorSet.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSetLayout/Dx12RHIDescriptorSetLayout.hpp"
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::rhi
 {
 	void Dx12RHIDescriptorPool::Initialize(dx12::Device& device,
-	                                        UINT maxSets,
-	                                        UINT gpuHeapSize,
-	                                        UINT samplerHeapSize,
-	                                        UINT framesInFlight)
+										   UINT maxSets,
+										   UINT gpuHeapSize,
+										   UINT samplerHeapSize,
+										   UINT framesInFlight)
 	{
 		m_device = &device;
 
@@ -61,8 +62,7 @@ namespace cct::gfx::rhi
 			std::make_shared<Dx12RHIDescriptorSetLayout>(dx12Layout.GetBindings()),
 			gpuRange,
 			samplerRange,
-			m_device
-		);
+			m_device);
 	}
 
 	void Dx12RHIDescriptorPool::BeginFrame(UINT frameIndex)
@@ -70,4 +70,4 @@ namespace cct::gfx::rhi
 		m_gpuAllocator.BeginFrame(frameIndex);
 		m_samplerAllocator.BeginFrame(frameIndex);
 	}
-}
+} // namespace cct::gfx::rhi

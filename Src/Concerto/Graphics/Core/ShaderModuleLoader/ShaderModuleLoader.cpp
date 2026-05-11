@@ -5,16 +5,17 @@
 #include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
 
 #include <ranges>
-#include <NZSL/Parser.hpp>
-#include <NZSL/SpirvWriter.hpp>
-#include <NZSL/Ast/ReflectVisitor.hpp>
+
+#include <Concerto/Core/Assert.hpp>
+
 #include <NZSL/Ast/Cloner.hpp>
-#include <NZSL/Ast/TransformerExecutor.hpp>
+#include <NZSL/Ast/ReflectVisitor.hpp>
 #include <NZSL/Ast/Transformations/BindingResolverTransformer.hpp>
 #include <NZSL/Ast/Transformations/ResolveTransformer.hpp>
 #include <NZSL/Ast/Transformations/ValidationTransformer.hpp>
-
-#include <Concerto/Core/Assert.hpp>
+#include <NZSL/Ast/TransformerExecutor.hpp>
+#include <NZSL/Parser.hpp>
+#include <NZSL/SpirvWriter.hpp>
 
 namespace cct::gfx
 {
@@ -24,17 +25,17 @@ namespace cct::gfx
 		{
 			switch (stageType)
 			{
-			case nzsl::ShaderStageType::Vertex:
-				return ShaderStage::Vertex;
-			case nzsl::ShaderStageType::Fragment:
-				return ShaderStage::Fragment;
-			case nzsl::ShaderStageType::Compute:
-				return ShaderStage::Compute;
+				case nzsl::ShaderStageType::Vertex:
+					return ShaderStage::Vertex;
+				case nzsl::ShaderStageType::Fragment:
+					return ShaderStage::Fragment;
+				case nzsl::ShaderStageType::Compute:
+					return ShaderStage::Compute;
 			}
 			CCT_ASSERT_FALSE("ConcertoGraphics: Unexpected shader stage type");
 			return ShaderStage::Vertex;
 		}
-	}
+	} // namespace
 
 	ResolvedShaderModule ShaderModuleLoader::ResolveShaderModule(const std::string& path)
 	{
@@ -42,7 +43,7 @@ namespace cct::gfx
 
 		nzsl::Ast::TransformerExecutor executor;
 		executor.AddPass<nzsl::Ast::ResolveTransformer>();
-		executor.AddPass<nzsl::Ast::BindingResolverTransformer>({ .forceAutoBindingResolve = true });
+		executor.AddPass<nzsl::Ast::BindingResolverTransformer>({.forceAutoBindingResolve = true});
 		executor.AddPass<nzsl::Ast::ValidationTransformer>();
 
 		nzsl::Ast::TransformerContext context;
@@ -56,12 +57,14 @@ namespace cct::gfx
 
 		nzsl::Ast::ReflectVisitor reflectVisitor;
 		nzsl::Ast::ReflectVisitor::Callbacks callbacks;
-		callbacks.onEntryPointDeclaration = [&](nzsl::ShaderStageType stageType, const std::string& functionName) {
+		callbacks.onEntryPointDeclaration = [&](nzsl::ShaderStageType stageType, const std::string& functionName)
+		{
 			resolved.stage = ToShaderStage(stageType);
 			resolved.entryPointName = functionName;
 		};
 
-		callbacks.onExternalDeclaration = [&](const nzsl::Ast::DeclareExternalStatement& extDecl) {
+		callbacks.onExternalDeclaration = [&](const nzsl::Ast::DeclareExternalStatement& extDecl)
+		{
 			for (auto& externalVariable : extDecl.externalVars)
 			{
 				const auto* varType = &externalVariable.type.GetResultingValue();
@@ -76,7 +79,7 @@ namespace cct::gfx
 
 				auto layoutBindings = resolved.bindings.find(bindingSet);
 				if (layoutBindings == resolved.bindings.end())
-					resolved.bindings[bindingSet] = std::vector{ descriptorSetLayoutBinding };
+					resolved.bindings[bindingSet] = std::vector{descriptorSetLayoutBinding};
 				else
 					layoutBindings->second.push_back(descriptorSetLayoutBinding);
 			}
@@ -101,8 +104,7 @@ namespace cct::gfx
 		nzsl::SpirvWriter spirvWriter;
 		nzsl::SpirvWriter::Environment env = {
 			.spvMajorVersion = 1,
-			.spvMinorVersion = 3
-		};
+			.spvMinorVersion = 3};
 		spirvWriter.SetEnv(env);
 		std::vector<UInt32> spirv = spirvWriter.Generate(*resolved.resolvedAst);
 
@@ -127,4 +129,4 @@ namespace cct::gfx
 		CCT_ASSERT_FALSE("ConcertoGraphics: Unexpected type {}", nzsl::Ast::ToString(varType));
 		throw std::runtime_error("unexpected type " + nzsl::Ast::ToString(varType));
 	}
-}
+} // namespace cct::gfx

@@ -65,7 +65,7 @@ namespace cct::gfx::vk
 #define CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func) this->func = std::exchange(other.func, nullptr);
 #define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_BEGIN(ext)
 #define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_FUNCTION(func, ...) this->func = std::exchange(other.func, nullptr);
-#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_END 
+#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_END
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/DeviceFunction.hpp"
 	}
@@ -80,7 +80,7 @@ namespace cct::gfx::vk
 #define CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func) std::swap(func, other.func);
 #define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_BEGIN(ext)
 #define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_FUNCTION(func, ...) std::swap(func, other.func);
-#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_END 
+#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_END
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/DeviceFunction.hpp"
 
@@ -132,17 +132,16 @@ namespace cct::gfx::vk
 		volkLoadDeviceTable(&deviceTable, m_handle);
 #define CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func) this->func = deviceTable.func;
 
-#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_BEGIN(ext)											\
-					if(IsExtensionEnabled(#ext))												\
-					{
-#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_FUNCTION(func, ...)									\
-						CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func)							\
-						if (this->func == nullptr)												\
-						{																		\
-							CCT_ASSERT_FALSE("ConcertoGraphics: Function: "						\
-							#func																\
-							" is null but the extension has been reported has supported");		\
-						}
+#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_BEGIN(ext) \
+	if (IsExtensionEnabled(#ext))                     \
+	{
+#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_FUNCTION(func, ...)                          \
+	CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func)                                       \
+	if (this->func == nullptr)                                                          \
+	{                                                                                   \
+		CCT_ASSERT_FALSE("ConcertoGraphics: Function: " #func                           \
+						 " is null but the extension has been reported has supported"); \
+	}
 #define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_END }
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/DeviceFunction.hpp"
@@ -251,4 +250,4 @@ namespace cct::gfx::vk
 		CCT_ASSERT(m_allocator != nullptr, "ConcertoGraphics: Cannot create allocator");
 	}
 
-} // cct::gfx::vk
+} // namespace cct::gfx::vk

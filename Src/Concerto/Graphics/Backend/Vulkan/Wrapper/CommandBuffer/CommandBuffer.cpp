@@ -2,20 +2,21 @@
 // Created by arthur on 14/06/22.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
+
 #include <utility>
 
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandPool/CommandPool.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Queue/Queue.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSet/DescriptorSet.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Utils.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandPool/CommandPool.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSet/DescriptorSet.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Queue/Queue.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
 
 namespace cct::gfx::vk
 {
@@ -119,8 +120,7 @@ namespace cct::gfx::vk
 				.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT,
 				.pNext = nullptr,
 				.pMarkerName = ObjectDebug::GetDebugName().data(),
-				.color = {1.f, 1.f, 0.f}
-			};
+				.color = {1.f, 1.f, 0.f}};
 			m_device->vkCmdDebugMarkerBeginEXT(m_handle, &markerInfo);
 		}
 #endif
@@ -312,8 +312,7 @@ namespace cct::gfx::vk
 		const VkBufferCopy copyRegion = {
 			.srcOffset = srcOffset,
 			.dstOffset = dstOffset,
-			.size = size
-		};
+			.size = size};
 		m_device->vkCmdCopyBuffer(m_handle, *src.Get(), *dest.Get(), 1, &copyRegion);
 	}
 
@@ -330,4 +329,4 @@ namespace cct::gfx::vk
 
 		m_device->vkCmdSetScissor(m_handle, 0, 1, &scissor);
 	}
-}
+} // namespace cct::gfx::vk

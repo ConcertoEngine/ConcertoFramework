@@ -2,9 +2,9 @@
 // Created by arthur on 17/08/2022.
 //
 
-#include <chrono>
-
 #include "Concerto/Graphics/Core/Input/Input.hpp"
+
+#include <chrono>
 
 namespace cct
 {
@@ -28,7 +28,7 @@ namespace cct
 		const auto it = m_mouseCallback.find(name);
 		if (it == m_mouseCallback.end())
 		{
-			std::vector<MouseEventCallback> vec = { callback };
+			std::vector<MouseEventCallback> vec = {callback};
 			auto pair = std::make_pair(key, std::move(vec));
 			m_mouseCallback.emplace(name, std::move(pair));
 			return;
@@ -38,7 +38,7 @@ namespace cct
 
 	void Input::Trigger(const std::vector<Event>& events)
 	{
-		for (const auto& [type, name, data]: events)
+		for (const auto& [type, name, data] : events)
 		{
 			if (type == Event::Type::Key)
 				TriggerKeyEvent(std::get<KeyEvent>(data));
@@ -49,7 +49,7 @@ namespace cct
 
 	void Input::TriggerKeyEvent(const KeyEvent& keyEvent)
 	{
-		for (auto& [key, bindingCallback]: m_keyCallbacks)
+		for (auto& [key, bindingCallback] : m_keyCallbacks)
 		{
 			const auto keyIndex = static_cast<std::size_t>(keyEvent.key);
 			if (!bindingCallback.first.Has(keyIndex) || !bindingCallback.first[keyIndex])
@@ -57,22 +57,22 @@ namespace cct
 			auto it = bindingCallback.second.find(keyEvent.triggerType);
 			if (it == bindingCallback.second.end())
 				continue;
-			for (auto& callback: it->second)
+			for (auto& callback : it->second)
 				callback();
 		}
 	}
 
 	void Input::TriggerMouseEvent(const MouseEvent& mouseEvent)
 	{
-		for (const auto& [key, callbacks]: m_mouseCallback)
+		for (const auto& [key, callbacks] : m_mouseCallback)
 		{
 			if (callbacks.first != mouseEvent.type)
 				continue;
-			for (auto& callback: callbacks.second)
+			for (auto& callback : callbacks.second)
 			{
 				if (callback)
 					callback(mouseEvent);
 			}
 		}
 	}
-}
+} // namespace cct

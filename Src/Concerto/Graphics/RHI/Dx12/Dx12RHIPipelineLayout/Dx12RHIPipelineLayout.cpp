@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
+
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSetLayout/Dx12RHIDescriptorSetLayout.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
 
@@ -53,4 +54,4 @@ namespace cct::gfx::rhi
 	{
 		return m_descriptorSetLayouts;
 	}
-}
+} // namespace cct::gfx::rhi

@@ -4,11 +4,11 @@
 
 #ifdef CCT_ENABLE_ENET
 
-#include <enet/enet.h>
-
-#include "Concerto/Core/Logger/Logger.hpp"
-#include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Network/ENet/ENet/ENet.hpp"
+
+#include "Concerto/Core/Assert.hpp"
+#include "Concerto/Core/Logger/Logger.hpp"
+#include <enet/enet.h>
 
 namespace cct::net
 {
@@ -19,11 +19,11 @@ namespace cct::net
 			return;
 		CCT_ASSERT_FALSE("An error occurred while initializing Enet: {}", res);
 	}
-	
+
 	void ENet::Deinitialize()
 	{
-		enet_deinitialize();		
+		enet_deinitialize();
 	}
-}// namespace cct::net
+} // namespace cct::net
 
 #endif // CCT_ENABLE_ENET

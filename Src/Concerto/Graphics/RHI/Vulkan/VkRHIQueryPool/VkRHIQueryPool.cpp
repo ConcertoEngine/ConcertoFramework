@@ -3,12 +3,13 @@
 //
 
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIQueryPool/VkRHIQueryPool.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
+
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -18,15 +19,15 @@ namespace cct::gfx::rhi
 		auto& vkDev = static_cast<vk::Device&>(device);
 
 		VkQueryPoolCreateInfo info{};
-		info.sType      = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
-		info.queryType  = VK_QUERY_TYPE_TIMESTAMP;
+		info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+		info.queryType = VK_QUERY_TYPE_TIMESTAMP;
 		info.queryCount = 4; // 2 frames × 2 timestamps
 
 		const VkResult r = vkDev.vkCreateQueryPool(*vkDev.Get(), &info, nullptr, &m_queryPool);
 		if (r != VK_SUCCESS)
 		{
 			CCT_RHI_LOG_WARN("VkRHIQueryPool: vkCreateQueryPool failed ({}); GPU timing unavailable",
-			                static_cast<int>(r));
+							 static_cast<int>(r));
 			m_queryPool = VK_NULL_HANDLE;
 			return;
 		}
@@ -97,4 +98,4 @@ namespace cct::gfx::rhi
 		vkDev.vkCmdWriteTimestamp(vkHandle, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_queryPool, cur + 1);
 		m_frameIndex ^= 1;
 	}
-}
+} // namespace cct::gfx::rhi

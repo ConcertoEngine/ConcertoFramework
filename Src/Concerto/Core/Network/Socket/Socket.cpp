@@ -2,20 +2,21 @@
 // Created by arthur on 25/05/2023.
 //
 
-#include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Network/Socket/Socket.hpp"
+
+#include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Buffer/Buffer.hpp"
 #ifdef CCT_PLATFORM_WINDOWS
 #include "Concerto/Core/Network/Socket/Private/WinSocketImpl.hpp"
-#endif// CCT_PLATFORM_WINDOWS
+#endif // CCT_PLATFORM_WINDOWS
 #ifdef CCT_PLATFORM_POSIX
 #include "Concerto/Core/Network/Socket/Private/PosixSocketImpl.hpp"
-#endif//CCT_PLATFORM_POSIX
+#endif // CCT_PLATFORM_POSIX
 
 namespace cct::net
 {
 	Socket::Socket(SocketType socketType, IpProtocol ipProtocol) :
-		_handle(SocketImpl::InvalidSocket), 
+		_handle(SocketImpl::InvalidSocket),
 		_type(socketType),
 		_lastError(SocketError::NoError),
 		_ipProtocol(ipProtocol),
@@ -23,7 +24,7 @@ namespace cct::net
 	{
 	}
 
-  Socket::Socket(Socket&& other) noexcept :
+	Socket::Socket(Socket&& other) noexcept :
 		_handle(other._handle),
 		_type(other._type),
 		_lastError(other._lastError),
@@ -41,14 +42,14 @@ namespace cct::net
 		Close();
 	}
 
-    Socket& Socket::operator=(Socket&& other) noexcept
-    {
+	Socket& Socket::operator=(Socket&& other) noexcept
+	{
 		_handle = other._handle;
 		_lastError = other._lastError;
 		other._handle = SocketImpl::InvalidSocket;
 		other._lastError = SocketError::NoError;
 		return *this;
-    }
+	}
 
 	void Socket::Close()
 	{
@@ -73,7 +74,7 @@ namespace cct::net
 		if (_handle == SocketImpl::InvalidSocket)
 			return 0;
 		SocketError error = {};
-		const std::size_t availableBytes =  SocketImpl::GetAvailableBytes(_handle, &error);
+		const std::size_t availableBytes = SocketImpl::GetAvailableBytes(_handle, &error);
 		if (error != SocketError::NoError)
 			CCT_ASSERT_FALSE("ConcertoCore: GetAvailableBytes returned error: {}", static_cast<int>(error));
 		return availableBytes;
@@ -164,4 +165,4 @@ namespace cct::net
 	{
 		return SocketImpl::UnInitialize();
 	}
-}
+} // namespace cct::net

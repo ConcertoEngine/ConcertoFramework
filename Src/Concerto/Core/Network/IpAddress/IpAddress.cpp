@@ -2,12 +2,13 @@
 // Created by arthur on 27/05/2023.
 //
 
-#include <regex>
-#include <ranges>
+#include "Concerto/Core/Network/IpAddress/IpAddress.hpp"
+
 #include <charconv>
+#include <ranges>
+#include <regex>
 
 #include "Concerto/Core/Assert.hpp"
-#include "Concerto/Core/Network/IpAddress/IpAddress.hpp"
 #include "Concerto/Core/Logger/Logger.hpp"
 
 namespace cct::net
@@ -15,37 +16,33 @@ namespace cct::net
 	const IpAddress IpAddress::AnyIPV4 = IpAddress(0, 0, 0, 0, 0);
 
 	IpAddress::IpAddress(const IpAddress::IPv4& ip, UInt16 port) :
-		_ipv4(ip), 
-		_protocol(IpProtocol::Ipv4), 
+		_ipv4(ip),
+		_protocol(IpProtocol::Ipv4),
 		_port(port)
 	{
-
 	}
-	IpAddress::IpAddress(const IpAddress::IPv6& ip, UInt16 port) : 
-		_ipv6(ip), 
-		_protocol(IpProtocol::Ipv6), 
+	IpAddress::IpAddress(const IpAddress::IPv6& ip, UInt16 port) :
+		_ipv6(ip),
+		_protocol(IpProtocol::Ipv6),
 		_port(port)
 	{
-
 	}
 
 	IpAddress::IpAddress(UInt8 a, UInt8 b, UInt8 c, UInt8 d, UInt16 port) :
-		_ipv4({ a, b, c, d }),
+		_ipv4({a, b, c, d}),
 		_protocol(IpProtocol::Ipv4),
 		_port(port)
 	{
-
 	}
 
 	IpAddress::IpAddress(UInt32 address, UInt16 port) :
-		_ipv4({ static_cast<UInt8>(address >> 24),
-				static_cast<UInt8>(address >> 16),
-				static_cast<UInt8>(address >> 8),
-				static_cast<UInt8>(address) }),
+		_ipv4({static_cast<UInt8>(address >> 24),
+			   static_cast<UInt8>(address >> 16),
+			   static_cast<UInt8>(address >> 8),
+			   static_cast<UInt8>(address)}),
 		_protocol(IpProtocol::Ipv4),
 		_port(port)
 	{
-
 	}
 
 	IpAddress::IpAddress(std::string_view ip, UInt16 port) :
@@ -56,16 +53,12 @@ namespace cct::net
 		{
 			_protocol = IpProtocol::Ipv4;
 #ifdef CCT_PLATFORM_POSIX
-			auto segments = ip
-			| std::ranges::views::split('.')
-			| std::ranges::views::transform([](auto&& str) { return std::string_view(&*str.begin(), std::ranges::distance(str)); });
+			auto segments = ip | std::ranges::views::split('.') | std::ranges::views::transform([](auto&& str)
+																								{ return std::string_view(&*str.begin(), std::ranges::distance(str)); });
 
 #else
-			auto segments = ip
-				| std::views::split('.')
-				| std::views::transform([](auto v) {
-								return std::string_view(v.data(), v.size());
-							});
+			auto segments = ip | std::views::split('.') | std::views::transform([](auto v)
+																				{ return std::string_view(v.data(), v.size()); });
 #endif
 
 			UInt8 i = 0;
@@ -137,7 +130,7 @@ namespace cct::net
 		}
 		return ip;
 	}
-	
+
 	bool IpAddress::IsIpV4(std::string_view ip)
 	{
 		std::regex ipv4Pattern(R"(\b(?:\d{1,3}\.){3}\d{1,3}\b)");
@@ -146,11 +139,11 @@ namespace cct::net
 
 	bool IpAddress::IsIpV6(std::string_view ip)
 	{
-		//from https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses
+		// from https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses
 		std::regex ipv6Pattern(R"(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
 		return std::regex_match(ip.data(), ipv6Pattern);
 	}
-	
+
 	IpProtocol IpAddress::DetectProtocol(std::string_view ip)
 	{
 		if (IsIpV4(ip))
@@ -159,4 +152,4 @@ namespace cct::net
 			return IpProtocol::Ipv6;
 		return IpProtocol::Error;
 	}
-}
+} // namespace cct::net

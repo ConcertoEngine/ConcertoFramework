@@ -56,5 +56,5 @@ namespace cct
 		}
 		return symbolPtr;
 	}
-}// namespace cct
+} // namespace cct
 #endif

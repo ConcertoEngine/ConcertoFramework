@@ -2,16 +2,17 @@
 // Created by arthur on 03/09/2024.
 //
 
+#include "Concerto/Graphics/RHI/Vulkan/VkRHICommandPool/VkRHICommandPool.hpp"
+
 #include <Concerto/Core/Cast.hpp>
 
-#include "Concerto/Graphics/RHI/Vulkan/VkRHICommandPool/VkRHICommandPool.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
 
 namespace cct::gfx::rhi
 {
 	VkRHICommandPool::VkRHICommandPool(VkRHIDevice& device, QueueFamily family, CommandBufferUsage usage) :
 		rhi::CommandPool(usage),
-		vk::CommandPool(device, device.GetQueueFamilyIndex(static_cast<vk::Queue::Type>(family))), //fixme?
+		vk::CommandPool(device, device.GetQueueFamilyIndex(static_cast<vk::Queue::Type>(family))), // fixme?
 		m_device(device)
 	{
 	}
@@ -20,4 +21,4 @@ namespace cct::gfx::rhi
 	{
 		return std::make_unique<VkRHICommandBuffer>(m_device, *this, m_usage);
 	}
-}
+} // namespace cct::gfx::rhi

@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandList/CommandList.hpp"
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandAllocator/CommandAllocator.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 

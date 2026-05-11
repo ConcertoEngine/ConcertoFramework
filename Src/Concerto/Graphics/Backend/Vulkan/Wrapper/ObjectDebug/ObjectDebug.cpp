@@ -1,9 +1,10 @@
 //
 // Created by arthur on 25/10/2023.
 //
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ObjectDebug/ObjectDebug.hpp"
+
 #include <Concerto/Core/Assert.hpp>
 
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ObjectDebug/ObjectDebug.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 
 #ifdef CCT_ENABLE_OBJECT_DEBUG
@@ -77,7 +78,7 @@ namespace
 			return VK_DEBUG_REPORT_OBJECT_TYPE_VALIDATION_CACHE_EXT_EXT;
 		return VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
 	}
-}
+} // namespace
 
 namespace cct::gfx::vk
 {
@@ -119,7 +120,7 @@ namespace cct::gfx::vk
 	{
 		if (!m_device->IsExtensionEnabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
 		{
-			//CCT_ASSERT_FALSE("ObjectDebug::SetDebugName is called but extension " VK_EXT_DEBUG_MARKER_EXTENSION_NAME " is not enabled");
+			// CCT_ASSERT_FALSE("ObjectDebug::SetDebugName is called but extension " VK_EXT_DEBUG_MARKER_EXTENSION_NAME " is not enabled");
 			return;
 		}
 		m_debugName = name;
@@ -162,6 +163,6 @@ namespace cct::gfx::vk
 
 		return *this;
 	}
-}
+} // namespace cct::gfx::vk
 
 #endif // CCT_ENABLE_OBJECT_DEBUG

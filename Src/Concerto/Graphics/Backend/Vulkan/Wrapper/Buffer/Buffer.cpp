@@ -2,14 +2,15 @@
 // Created by arthur on 21/06/2022.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.hpp"
+
 #include <stdexcept>
 #include <utility>
 #include <vk_mem_alloc.h>
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Allocator/Allocator.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::vk
 {
@@ -83,7 +84,7 @@ namespace cct::gfx::vk
 			CCT_ASSERT_FALSE("ConcertoGraphics: Trying to destroy a buffer that is mapped");
 			return;
 		}
-		//m_allocator->GetDevice()->WaitIdle();
+		// m_allocator->GetDevice()->WaitIdle();
 		vmaDestroyBuffer(*m_allocator->Get(), m_handle, m_allocation);
 	}
 
@@ -146,4 +147,4 @@ namespace cct::gfx::vk
 	{
 		return m_usage;
 	}
-}
+} // namespace cct::gfx::vk

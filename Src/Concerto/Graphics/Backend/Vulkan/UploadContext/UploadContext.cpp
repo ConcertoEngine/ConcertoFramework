@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/Backend/Vulkan/UploadContext/UploadContext.hpp"
+
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::vk
@@ -45,4 +46,4 @@ namespace cct::gfx::vk
 	{
 		m_commandBuffer.ExecuteCommands(m_secondCommandBuffers);
 	}
-}
+} // namespace cct::gfx::vk

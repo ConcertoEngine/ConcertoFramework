@@ -3,20 +3,22 @@
 //
 
 #define STB_IMAGE_IMPLEMENTATION
+#include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
+
 #include <stb_image.h>
+
 #include <Concerto/Core/DeferredExit/DeferredExit.hpp>
 
-#include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
-#include "Concerto/Graphics/RHI/Device.hpp"
 #include "Concerto/Graphics/RHI/Buffer.hpp"
-#include "Concerto/Graphics/RHI/CommandPool.hpp"
 #include "Concerto/Graphics/RHI/CommandBuffer.hpp"
-#include "Concerto/Graphics/RHI/Queue.hpp"
+#include "Concerto/Graphics/RHI/CommandPool.hpp"
+#include "Concerto/Graphics/RHI/Device.hpp"
 #include "Concerto/Graphics/RHI/Fence.hpp"
+#include "Concerto/Graphics/RHI/Queue.hpp"
 
 namespace cct::gfx::rhi
 {
-	TextureBuilder*	TextureBuilder::s_instance = nullptr;
+	TextureBuilder* TextureBuilder::s_instance = nullptr;
 
 	TextureBuilder::TextureBuilder(Device& device) :
 		m_device(device),
@@ -52,15 +54,13 @@ namespace cct::gfx::rhi
 		}
 
 		DeferredExit m_([&]()
-		{
-			stbi_image_free(pixels);
-		});
+						{ stbi_image_free(pixels); });
 
 		PixelFormat format = PixelFormat::RGBA8_SRGB;
 		if (channels == 3)
 		{
-			channels = 4; //tmp fix
-			//format = PixelFormat::RGB8uNorm;
+			channels = 4; // tmp fix
+			// format = PixelFormat::RGB8uNorm;
 		}
 
 		UInt32 allocationSize = width * height * channels;
@@ -148,4 +148,4 @@ namespace cct::gfx::rhi
 
 		m_pendingUploads.clear();
 	}
-}
+} // namespace cct::gfx::rhi

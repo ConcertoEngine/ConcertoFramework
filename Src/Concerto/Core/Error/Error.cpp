@@ -2,7 +2,6 @@
 // Created by arthur on 02/06/2024.
 //
 
-
 #include "Concerto/Core/Error/Error.hpp"
 
 #ifdef CCT_PLATFORM_WINDOWS
@@ -42,5 +41,4 @@ namespace cct
 		return "Not supported";
 #endif
 	}
-}
-
+} // namespace cct

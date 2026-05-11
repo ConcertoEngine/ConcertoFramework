@@ -5,11 +5,11 @@
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSet/DescriptorSet.hpp"
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorPool/DescriptorPool.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Sampler/Sampler.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Sampler/Sampler.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
 
 namespace cct::gfx::vk
@@ -50,7 +50,8 @@ namespace cct::gfx::vk
 		return m_lastResult;
 	}
 
-	DescriptorSet::DescriptorSet(DescriptorSet&& other) noexcept : Object<VkDescriptorSet>(std::move(other))
+	DescriptorSet::DescriptorSet(DescriptorSet&& other) noexcept :
+		Object<VkDescriptorSet>(std::move(other))
 	{
 		m_pool = std::exchange(other.m_pool, nullptr);
 	}
@@ -73,4 +74,4 @@ namespace cct::gfx::vk
 
 		m_device->vkUpdateDescriptorSets(*m_device->Get(), 1, &texture1, 0, nullptr);
 	}
-}
+} // namespace cct::gfx::vk

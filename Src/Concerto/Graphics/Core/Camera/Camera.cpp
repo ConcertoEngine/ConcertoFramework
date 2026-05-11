@@ -21,7 +21,6 @@ namespace cct::gfx
 		UpdateProjectionMatrix();
 	}
 
-
 	const EulerAnglesf& Camera::GetRotation() const
 	{
 		return m_eulerAngles;
@@ -71,14 +70,12 @@ namespace cct::gfx
 	{
 		m_fov = fov;
 		UpdateProjectionMatrix();
-
 	}
 
 	void Camera::SetNear(float near)
 	{
 		m_near = near;
 		UpdateProjectionMatrix();
-
 	}
 
 	void Camera::SetFar(float far)
@@ -97,7 +94,8 @@ namespace cct::gfx
 	{
 		Vector<float, 3> result;
 
-		for (std::size_t widthIndex = 0; widthIndex < mat.GetWidth(); ++widthIndex) {
+		for (std::size_t widthIndex = 0; widthIndex < mat.GetWidth(); ++widthIndex)
+		{
 			const std::size_t finalWidthIndex = widthIndex * mat.GetHeight();
 
 			for (std::size_t heightIndex = 0; heightIndex < mat.GetHeight(); ++heightIndex)
@@ -111,7 +109,7 @@ namespace cct::gfx
 	{
 		const Matrix4f translation = m_position.ToTranslationMatrix();
 		const Matrix4f cameraRotation = m_eulerAngles.ToQuaternion().ToRotationMatrix<Matrix4f>();
-		viewMatrix = (translation * cameraRotation ).Inverse();
+		viewMatrix = (translation * cameraRotation).Inverse();
 		viewProjectionMatrix = projectionMatrix * viewMatrix;
 	}
 
@@ -122,7 +120,7 @@ namespace cct::gfx
 		projectionMatrix(0, 0) = 1.f / (m_aspectRatio * tanHalfFov);
 		projectionMatrix(1, 1) = 1.f / tanHalfFov;
 		projectionMatrix(2, 2) = m_far / (m_near - m_far);
-		projectionMatrix(2, 3) = -(2.f * m_far* m_near) / (m_far - m_near);
+		projectionMatrix(2, 3) = -(2.f * m_far * m_near) / (m_far - m_near);
 		projectionMatrix(3, 2) = -1.f;
 	}
 
@@ -139,19 +137,20 @@ namespace cct::gfx
 
 	void Camera::Move(CameraMovement direction, float x)
 	{
-		switch (direction) {
-		case CameraMovement::Forward:
-			m_position += m_eulerAngles.ToQuaternion() * Vector3f::Forward() * x;
-			break;
-		case CameraMovement::Backward:
-			m_position += m_eulerAngles.ToQuaternion() * Vector3f::Backward() * x;
-			break;
-		case CameraMovement::Left:
-			m_position += m_eulerAngles.ToQuaternion() * Vector3f::Right() * x;
-			break;
-		case CameraMovement::Right:
-			m_position += m_eulerAngles.ToQuaternion() * Vector3f::Left() * x;
-			break;
+		switch (direction)
+		{
+			case CameraMovement::Forward:
+				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Forward() * x;
+				break;
+			case CameraMovement::Backward:
+				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Backward() * x;
+				break;
+			case CameraMovement::Left:
+				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Right() * x;
+				break;
+			case CameraMovement::Right:
+				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Left() * x;
+				break;
 		}
 	}
-}
+} // namespace cct::gfx

@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIFence/VkRHIFence.hpp"
+
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 
 namespace cct::gfx::rhi
@@ -21,4 +22,4 @@ namespace cct::gfx::rhi
 	{
 		m_fence.Reset();
 	}
-}
+} // namespace cct::gfx::rhi

@@ -2,39 +2,35 @@
 // Created by arthur on 15/05/2024.
 //
 
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
+
+#include <Concerto/Core/Assert.hpp>
 #include <Concerto/Core/Cast.hpp>
 
-#include "Concerto/Graphics/Core/Window/Window.hpp"
-#include "Concerto/Graphics/RHI/SwapChain.hpp"
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
-
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
+#include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
+#include "Concerto/Graphics/Core/Window/Window.hpp"
+#include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
 #include "Concerto/Graphics/RHI/Mesh/Mesh.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHISwapChain/VkRHISwapChain.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIFrameBuffer/VKRHIFrameBuffer.hpp"
+#include "Concerto/Graphics/RHI/SwapChain.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIBuffer/VkRHIBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandPool/VkRHICommandPool.hpp"
-#include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIShaderModule/VkRHIShaderModule.hpp"
-#include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSetLayout/VkRHIDescriptorSetLayout.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIPipelineLayout/VkRHIPipelineLayout.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSet/VkRHIDescriptorSet.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIQueue/VkRHIQueue.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSetLayout/VkRHIDescriptorSetLayout.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIFence/VkRHIFence.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIFrameBuffer/VKRHIFrameBuffer.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIPipelineLayout/VkRHIPipelineLayout.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIQueryPool/VkRHIQueryPool.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
-
-#include <Concerto/Core/Assert.hpp>
-
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIQueue/VkRHIQueue.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIShaderModule/VkRHIShaderModule.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHISwapChain/VkRHISwapChain.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -98,28 +94,28 @@ namespace cct::gfx::rhi
 		{
 			auto& vkSubPassDesc = vkSubPassDescriptions.emplace_back();
 
-			//Input attachment
+			// Input attachment
 			vkInputAttachmentReferences[i].reserve(subPassDescription.inputAttachments.size());
 			for (const auto& attachmentReference : subPassDescription.inputAttachments)
 				vkInputAttachmentReferences[i].emplace_back(attachmentReference.attachmentIndex, Converters::ToVulkan(attachmentReference.imageLayout));
 			vkSubPassDesc.inputAttachmentCount = static_cast<UInt32>(subPassDescription.inputAttachments.size());
 			vkSubPassDesc.pInputAttachments = vkInputAttachmentReferences[i].data();
 
-			//Color attachment
+			// Color attachment
 			vkColorAttachmentReferences[i].reserve(subPassDescription.colorAttachments.size());
 			for (const auto& attachmentReference : subPassDescription.colorAttachments)
 				vkColorAttachmentReferences[i].emplace_back(attachmentReference.attachmentIndex, Converters::ToVulkan(attachmentReference.imageLayout));
 			vkSubPassDesc.colorAttachmentCount = static_cast<UInt32>(subPassDescription.colorAttachments.size());
 			vkSubPassDesc.pColorAttachments = vkColorAttachmentReferences[i].data();
 
-			//DepthStencil attachment
+			// DepthStencil attachment
 			if (subPassDescription.depthStencilAttachment)
 			{
-				vkDepthStencilAttachment[i] = { subPassDescription.depthStencilAttachment->attachmentIndex, Converters::ToVulkan(subPassDescription.depthStencilAttachment->imageLayout) };
+				vkDepthStencilAttachment[i] = {subPassDescription.depthStencilAttachment->attachmentIndex, Converters::ToVulkan(subPassDescription.depthStencilAttachment->imageLayout)};
 				vkSubPassDesc.pDepthStencilAttachment = &vkDepthStencilAttachment[i];
 			}
 
-			//Preserve attachment
+			// Preserve attachment
 			vkSubPassDesc.preserveAttachmentCount = static_cast<UInt32>(subPassDescription.preserveAttachments.size());
 			vkSubPassDesc.pPreserveAttachments = subPassDescription.preserveAttachments.data();
 			++i;
@@ -252,10 +248,9 @@ namespace cct::gfx::rhi
 		const auto& rhiRenderPass = Cast<const VkRHIRenderPass&>(renderPass);
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
 			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(vertexShader.GetStage())), *rhiVertexShader.GetVulkanShaderModule().Get()),
-			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(fragmentShader.GetStage())), *rhiFragmentShader.GetVulkanShaderModule().Get())
-		};
+			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(fragmentShader.GetStage())), *rhiFragmentShader.GetVulkanShaderModule().Get())};
 
-		VkExtent2D extent = { windowExtent.X(), windowExtent.Y() };
+		VkExtent2D extent = {windowExtent.X(), windowExtent.Y()};
 		auto pipelineLayoutCopy = std::make_shared<VkRHIPipelineLayout>(*this, pipelineLayout.GetDescriptorSetLayouts());
 		vk::PipelineInfo pipelineInfo(shaderStages, extent, *pipelineLayoutCopy);
 
@@ -282,10 +277,9 @@ namespace cct::gfx::rhi
 
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
 			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(vertexShader.GetStage())), *rhiVertexShader.GetVulkanShaderModule().Get()),
-			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(fragmentShader.GetStage())), *rhiFragmentShader.GetVulkanShaderModule().Get())
-		};
+			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(fragmentShader.GetStage())), *rhiFragmentShader.GetVulkanShaderModule().Get())};
 
-		VkExtent2D extent = { windowExtent.X(), windowExtent.Y() };
+		VkExtent2D extent = {windowExtent.X(), windowExtent.Y()};
 		auto pipelineLayoutCopy = std::make_shared<VkRHIPipelineLayout>(*this, pipelineLayout.GetDescriptorSetLayouts());
 		vk::PipelineInfo pipelineInfo(shaderStages, extent, *pipelineLayoutCopy);
 
@@ -402,7 +396,7 @@ namespace cct::gfx::rhi
 
 		// Create RHI wrapper
 		return std::make_unique<VkRHIDescriptorSet>(vkDescriptorSet, std::make_shared<VkRHIDescriptorSetLayout>(
-			*this, vkRhiLayout.GetBindings()));
+																		 *this, vkRhiLayout.GetBindings()));
 	}
 	Queue& VkRHIDevice::GetQueue(rhi::QueueFamily family)
 	{
@@ -410,18 +404,18 @@ namespace cct::gfx::rhi
 		vk::Queue::Type vkQueueType;
 		switch (family)
 		{
-		case rhi::QueueFamily::Graphics:
-			vkQueueType = vk::Queue::Type::Graphics;
-			break;
-		case rhi::QueueFamily::Compute:
-			vkQueueType = vk::Queue::Type::Compute;
-			break;
-		case rhi::QueueFamily::Transfer:
-			vkQueueType = vk::Queue::Type::Transfer;
-			break;
-		default:
-			CCT_ASSERT_FALSE("ConcertoGraphics: Unknown QueueFamily");
-			return m_queues.begin()->second;
+			case rhi::QueueFamily::Graphics:
+				vkQueueType = vk::Queue::Type::Graphics;
+				break;
+			case rhi::QueueFamily::Compute:
+				vkQueueType = vk::Queue::Type::Compute;
+				break;
+			case rhi::QueueFamily::Transfer:
+				vkQueueType = vk::Queue::Type::Transfer;
+				break;
+			default:
+				CCT_ASSERT_FALSE("ConcertoGraphics: Unknown QueueFamily");
+				return m_queues.begin()->second;
 		}
 
 		// Check if queue already exists in the map
@@ -446,23 +440,23 @@ namespace cct::gfx::rhi
 		switch (info.handleType)
 		{
 #ifdef CCT_PLATFORM_WINDOWS
-		case rhi::ExternalHandleType::D3D11NtHandle:
-		{
-			const VkExtent2D extent{static_cast<UInt32>(info.width), static_cast<UInt32>(info.height)};
-			auto image = vk::Image::ImportFromWin32Handle(
-				*this, extent, Converters::ToVulkan(info.format), static_cast<HANDLE>(info.handle));
-			if (!image)
+			case rhi::ExternalHandleType::D3D11NtHandle:
 			{
-				CCT_ASSERT_FALSE("VkRHIDevice::ImportTexture: ImportFromWin32Handle failed");
-				return nullptr;
+				const VkExtent2D extent{static_cast<UInt32>(info.width), static_cast<UInt32>(info.height)};
+				auto image = vk::Image::ImportFromWin32Handle(
+					*this, extent, Converters::ToVulkan(info.format), static_cast<HANDLE>(info.handle));
+				if (!image)
+				{
+					CCT_ASSERT_FALSE("VkRHIDevice::ImportTexture: ImportFromWin32Handle failed");
+					return nullptr;
+				}
+				return std::make_shared<VkRHITexture>(*this, std::move(*image));
 			}
-			return std::make_shared<VkRHITexture>(*this, std::move(*image));
-		}
 #endif
-		default:
-			CCT_ASSERT_FALSE("VkRHIDevice::ImportTexture: unsupported ExternalHandleType {}",
-				static_cast<UInt32>(info.handleType));
-			return nullptr;
+			default:
+				CCT_ASSERT_FALSE("VkRHIDevice::ImportTexture: unsupported ExternalHandleType {}",
+								 static_cast<UInt32>(info.handleType));
+				return nullptr;
 		}
 	}
 
@@ -471,4 +465,4 @@ namespace cct::gfx::rhi
 		return std::make_unique<VkRHIQueryPool>(*this);
 	}
 
-} //cct::Graphics::RHI
+} // namespace cct::gfx::rhi

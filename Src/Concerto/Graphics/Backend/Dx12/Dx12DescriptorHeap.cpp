@@ -3,14 +3,15 @@
 //
 
 #include "Concerto/Graphics/Backend/Dx12/Dx12DescriptorHeap.hpp"
+
 #include <algorithm>
 
 namespace cct::gfx::dx12
 {
 	void Dx12DescriptorHeap::Initialize(ID3D12Device* device,
-	                                     D3D12_DESCRIPTOR_HEAP_TYPE type,
-	                                     UINT numDescriptors,
-	                                     bool shaderVisible)
+										D3D12_DESCRIPTOR_HEAP_TYPE type,
+										UINT numDescriptors,
+										bool shaderVisible)
 	{
 		m_type = type;
 		m_capacity = numDescriptors;
@@ -24,8 +25,7 @@ namespace cct::gfx::dx12
 
 		ThrowIfFailed(
 			device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&m_heap)),
-			"Failed to create descriptor heap"
-		);
+			"Failed to create descriptor heap");
 
 		m_descriptorSize = device->GetDescriptorHandleIncrementSize(type);
 	}
@@ -52,14 +52,14 @@ namespace cct::gfx::dx12
 	D3D12_CPU_DESCRIPTOR_HANDLE Dx12DescriptorHeap::GetCPUStart() const noexcept
 	{
 		if (!m_heap)
-			return D3D12_CPU_DESCRIPTOR_HANDLE{ 0 };
+			return D3D12_CPU_DESCRIPTOR_HANDLE{0};
 		return m_heap->GetCPUDescriptorHandleForHeapStart();
 	}
 
 	D3D12_GPU_DESCRIPTOR_HANDLE Dx12DescriptorHeap::GetGPUStart() const noexcept
 	{
 		if (!m_heap || !m_shaderVisible)
-			return D3D12_GPU_DESCRIPTOR_HANDLE{ 0 };
+			return D3D12_GPU_DESCRIPTOR_HANDLE{0};
 		return m_heap->GetGPUDescriptorHandleForHeapStart();
 	}
 
@@ -140,4 +140,4 @@ namespace cct::gfx::dx12
 			return 0;
 		return m_heap->GetCapacity() - m_currentOffset;
 	}
-}
+} // namespace cct::gfx::dx12

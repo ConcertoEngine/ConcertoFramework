@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
+
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 
 namespace cct::gfx::rhi
@@ -11,4 +12,4 @@ namespace cct::gfx::rhi
 		vk::RenderPass(device, attachmentDescriptions, subPassDescriptions, subPassDependencies)
 	{
 	}
-}
+} // namespace cct::gfx::rhi

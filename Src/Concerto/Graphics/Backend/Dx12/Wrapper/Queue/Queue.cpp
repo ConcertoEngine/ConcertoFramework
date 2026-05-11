@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Queue/Queue.hpp"
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::dx12

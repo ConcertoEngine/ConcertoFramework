@@ -3,8 +3,8 @@
 //
 
 #include <cassert>
-#include <stdexcept>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #include <Concerto/Core/Assert.hpp>
@@ -14,9 +14,8 @@
 #define VOLK_IMPLEMENTATION
 #include <volk.h> // must be under this ^ include
 
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
-
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 
 #ifdef CCT_ENABLE_OBJECT_DEBUG
@@ -30,9 +29,9 @@ namespace cct::gfx::vk
 	namespace
 	{
 		VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-			[[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
-			[[maybe_unused]] const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-			[[maybe_unused]] void* pUserData)
+													 [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
+													 [[maybe_unused]] const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+													 [[maybe_unused]] void* pUserData)
 		{
 			if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
 			{
@@ -56,11 +55,11 @@ namespace cct::gfx::vk
 			}
 			return VK_FALSE;
 		}
-	}
+	} // namespace
 
 	Instance::Instance(const std::string& appName, const std::string& engineName, const Version& apiVersion,
-		const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
-		std::span<const char*> layers) :
+					   const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
+					   std::span<const char*> layers) :
 		m_apiVersion(apiVersion)
 	{
 		if (Create(appName, engineName, apiVersion, appVersion, engineVersion, extensions, layers) != VK_SUCCESS)
@@ -75,8 +74,8 @@ namespace cct::gfx::vk
 	}
 
 	VkResult Instance::Create(const std::string& appName, const std::string& engineName, const Version& apiVersion,
-		const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
-		std::span<const char*> layers)
+							  const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
+							  std::span<const char*> layers)
 	{
 		CCT_PROFILER_SCOPE();
 		m_apiVersion = apiVersion;
@@ -109,21 +108,21 @@ namespace cct::gfx::vk
 		createInfo.ppEnabledLayerNames = layers.empty() ? VK_NULL_HANDLE : layers.data();
 		createInfo.pNext = &debugCreateInfo;
 
-		//std::array enables = { VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT };
-		//VkValidationFeaturesEXT features = {};
-		//features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-		//features.enabledValidationFeatureCount = enables.size();
-		//features.pEnabledValidationFeatures = enables.data();
+		// std::array enables = { VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT };
+		// VkValidationFeaturesEXT features = {};
+		// features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+		// features.enabledValidationFeatureCount = enables.size();
+		// features.pEnabledValidationFeatures = enables.data();
 
-		//if (createInfo.pNext)
+		// if (createInfo.pNext)
 		//{
 		//	features.pNext = createInfo.pNext;
 		//	createInfo.pNext = &features;
-		//}
-		//else
+		// }
+		// else
 		//{
 		//	createInfo.pNext = &features;
-		//}
+		// }
 
 		for (auto& ext : extensions)
 			m_loadedExtensions.emplace(ext);
@@ -143,15 +142,15 @@ namespace cct::gfx::vk
 		Instance::vkGetInstanceProcAddr = ::vkGetInstanceProcAddr;
 #define CONCERTO_VULKAN_BACKEND_INSTANCE_FUNCTION(func) this->func = ::func;
 
-#define CONCERTO_VULKAN_BACKEND_INSTANCE_EXT_BEGIN(ext)				\
-					if(IsExtensionEnabled(#ext))							\
-					{
-#define CONCERTO_VULKAN_BACKEND_INSTANCE_EXT_FUNCTION(func, ...)	\
-						CONCERTO_VULKAN_BACKEND_INSTANCE_FUNCTION(func)		\
-						if (this->func == nullptr)							\
-						{													\
-							CCT_ASSERT_FALSE("ConcertoGraphics: Function: " #func " is null but the extension has been reported has supported");\
-						}
+#define CONCERTO_VULKAN_BACKEND_INSTANCE_EXT_BEGIN(ext) \
+	if (IsExtensionEnabled(#ext))                       \
+	{
+#define CONCERTO_VULKAN_BACKEND_INSTANCE_EXT_FUNCTION(func, ...)                                                             \
+	CONCERTO_VULKAN_BACKEND_INSTANCE_FUNCTION(func)                                                                          \
+	if (this->func == nullptr)                                                                                               \
+	{                                                                                                                        \
+		CCT_ASSERT_FALSE("ConcertoGraphics: Function: " #func " is null but the extension has been reported has supported"); \
+	}
 #define CONCERTO_VULKAN_BACKEND_INSTANCE_EXT_END }
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/InstanceFunction.hpp"

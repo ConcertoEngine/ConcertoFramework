@@ -67,4 +67,4 @@ namespace cct
 			return;
 		std::default_delete<DynLibImpl>()(static_cast<DynLibImpl*>(impl));
 	}
-}// namespace cct
+} // namespace cct

@@ -5,13 +5,14 @@
 #ifdef CCT_ENABLE_ENET
 
 #include "Concerto/Core/Network/ENet/Peer/Peer.hpp"
+
 #include "Concerto/Core/Network/Packet/Packet.hpp"
 #include <enet/enet.h>
 
 namespace cct::net
 {
-	ENetPeer::ENetPeer(ENetPeerHandle peer)
-		: _peer(peer)
+	ENetPeer::ENetPeer(ENetPeerHandle peer) :
+		_peer(peer)
 	{
 	}
 
@@ -55,6 +56,6 @@ namespace cct::net
 		::ENetPacket* enetPacket = enet_packet_create(data, size, flags);
 		return enet_peer_send(static_cast<::ENetPeer*>(_peer), channel, enetPacket) == 0;
 	}
-}
+} // namespace cct::net
 
 #endif // CCT_ENABLE_ENET

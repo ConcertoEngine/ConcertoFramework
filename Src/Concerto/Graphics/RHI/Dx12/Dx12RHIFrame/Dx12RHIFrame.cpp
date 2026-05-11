@@ -24,4 +24,4 @@ namespace cct::gfx::rhi
 	{
 		return *reinterpret_cast<FrameBuffer*>(nullptr);
 	}
-}
+} // namespace cct::gfx::rhi

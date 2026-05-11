@@ -2,14 +2,14 @@
 // Created by arthur on 18/09/2022.
 //
 
-#include <utility>
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
+
+#include <utility>
 
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
 
@@ -54,4 +54,4 @@ namespace cct::gfx::vk
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 		return *m_image;
 	}
-}
+} // namespace cct::gfx::vk

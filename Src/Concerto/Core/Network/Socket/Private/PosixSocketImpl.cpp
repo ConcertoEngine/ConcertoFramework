@@ -3,17 +3,17 @@
 //
 #include "Concerto/Core/Types/Types.hpp"
 #ifdef CCT_PLATFORM_POSIX
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Network/IpAddress/Private/PosixIpAddressImpl.hpp"
 #include "Concerto/Core/Network/Socket/Private/PosixSocketImpl.hpp"
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 
 namespace cct::net
 {
@@ -221,32 +221,32 @@ namespace cct::net
 	{
 		switch (error)
 		{
-		case EWOULDBLOCK:
-		case EALREADY:
-		case EBADF:
-		case EFAULT:
-		case EINVAL:
-		case EISCONN:
-		case ENOTSOCK:
-		case EACCES:
-			return SocketError::InternError;
-		case EADDRINUSE:
-		case EADDRNOTAVAIL:
-			return SocketError::AddressNotAvailable;
-		case ECONNREFUSED:
-			return SocketError::ConnectionRefused;
-		case ENETUNREACH:
-		case ENETDOWN:
-			return SocketError::NetworkError;
-		case ETIMEDOUT:
-			return SocketError::TimedOut;
-		case EHOSTUNREACH:
-			return SocketError::UnreachableHost;
-		case ENOTCONN:
-		case ESHUTDOWN:
-			return SocketError::ConnectionClosed;
-		default:
-			return SocketError::Unknown;
+			case EWOULDBLOCK:
+			case EALREADY:
+			case EBADF:
+			case EFAULT:
+			case EINVAL:
+			case EISCONN:
+			case ENOTSOCK:
+			case EACCES:
+				return SocketError::InternError;
+			case EADDRINUSE:
+			case EADDRNOTAVAIL:
+				return SocketError::AddressNotAvailable;
+			case ECONNREFUSED:
+				return SocketError::ConnectionRefused;
+			case ENETUNREACH:
+			case ENETDOWN:
+				return SocketError::NetworkError;
+			case ETIMEDOUT:
+				return SocketError::TimedOut;
+			case EHOSTUNREACH:
+				return SocketError::UnreachableHost;
+			case ENOTCONN:
+			case ESHUTDOWN:
+				return SocketError::ConnectionClosed;
+			default:
+				return SocketError::Unknown;
 		}
 	}
 
@@ -261,5 +261,5 @@ namespace cct::net
 		}
 		return available;
 	}
-}// namespace cct::net
-#endif// CCT_PLATFORM_LINUX
+} // namespace cct::net
+#endif // CCT_PLATFORM_LINUX

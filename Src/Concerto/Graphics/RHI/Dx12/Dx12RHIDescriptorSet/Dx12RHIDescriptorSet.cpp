@@ -3,22 +3,23 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSet/Dx12RHIDescriptorSet.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSetLayout/Dx12RHIDescriptorSetLayout.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIBuffer/Dx12RHIBuffer.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
-#include "Concerto/Graphics/RHI/Buffer.hpp"
-#include "Concerto/Graphics/RHI/Texture.hpp"
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
-#include "Concerto/Graphics/Backend/Dx12/Dx12Helpers.hpp"
 
 #include <Concerto/Core/Cast.hpp>
+
+#include "Concerto/Graphics/Backend/Dx12/Dx12Helpers.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
+#include "Concerto/Graphics/RHI/Buffer.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIBuffer/Dx12RHIBuffer.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSetLayout/Dx12RHIDescriptorSetLayout.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
+#include "Concerto/Graphics/RHI/Texture.hpp"
 
 namespace cct::gfx::rhi
 {
 	Dx12RHIDescriptorSet::Dx12RHIDescriptorSet(std::shared_ptr<DescriptorSetLayout> layout,
-	                                           dx12::DescriptorRange gpuRange,
-	                                           dx12::DescriptorRange samplerRange,
-	                                           dx12::Device* device) :
+											   dx12::DescriptorRange gpuRange,
+											   dx12::DescriptorRange samplerRange,
+											   dx12::Device* device) :
 		m_layout(std::move(layout)),
 		m_gpuRange(gpuRange),
 		m_samplerRange(samplerRange),
@@ -140,4 +141,4 @@ namespace cct::gfx::rhi
 			m_device->Get()->CreateSampler(&samplerDesc, samplerHandle);
 		}
 	}
-}
+} // namespace cct::gfx::rhi

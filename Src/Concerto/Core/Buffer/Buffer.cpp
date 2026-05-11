@@ -7,15 +7,14 @@
 namespace cct
 {
 
-	Buffer::Buffer(size_type size) : _data(size)
+	Buffer::Buffer(size_type size) :
+		_data(size)
 	{
-
 	}
 
 	Buffer::Buffer(const void* data, size_type size) :
-		_data(static_cast<const_pointer>(data),static_cast<const_pointer>(data) + size)
+		_data(static_cast<const_pointer>(data), static_cast<const_pointer>(data) + size)
 	{
-
 	}
 
 	void Buffer::Append(const void* data, size_type size)
@@ -167,4 +166,4 @@ namespace cct
 	{
 		return _data != rhs._data;
 	}
-}
+} // namespace cct

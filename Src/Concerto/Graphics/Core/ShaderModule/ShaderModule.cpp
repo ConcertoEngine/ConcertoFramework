@@ -7,9 +7,9 @@
 namespace cct::gfx
 {
 	ShaderModule::ShaderModule(std::vector<UInt32> shaderBytes,
-		std::unordered_map<UInt32, std::vector<DescriptorSetLayoutBinding>> bindings,
-		std::string entryPointName,
-		ShaderStage stage) :
+							   std::unordered_map<UInt32, std::vector<DescriptorSetLayoutBinding>> bindings,
+							   std::string entryPointName,
+							   ShaderStage stage) :
 		m_shaderBytes(std::move(shaderBytes)),
 		m_bindings(std::move(bindings)),
 		m_entryPointName(std::move(entryPointName)),
@@ -36,4 +36,4 @@ namespace cct::gfx
 	{
 		return m_stage;
 	}
-}
+} // namespace cct::gfx

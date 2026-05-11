@@ -110,10 +110,9 @@ namespace cct::gfx::vk
 	VkResult Image::Create(const Allocator& allocator, VkExtent2D extent, VkFormat format, VkImageUsageFlags usageFlags)
 	{
 		VkExtent3D depthImageExtent = {
-				extent.width,
-				extent.height,
-				1
-		};
+			extent.width,
+			extent.height,
+			1};
 		VkImageCreateInfo imageCreateInfo = VulkanInitializer::ImageCreateInfo(format, usageFlags, depthImageExtent);
 		VmaAllocationCreateInfo imageAllocInfo = {};
 		imageAllocInfo.usage = VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE;
@@ -124,7 +123,6 @@ namespace cct::gfx::vk
 
 		return m_lastResult;
 	}
-
 
 	VkFormat Image::GetFormat() const
 	{

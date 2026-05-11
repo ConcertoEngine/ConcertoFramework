@@ -213,7 +213,8 @@ namespace cct::refl
 	bool Class::HasMemberVariable(std::string_view name) const
 	{
 		for (const auto& variable : m_memberVariables)
-			if (variable->GetName() == name) return true;
+			if (variable->GetName() == name)
+				return true;
 		if (m_baseClass != nullptr)
 			return m_baseClass->HasMemberVariable(name);
 		return false;

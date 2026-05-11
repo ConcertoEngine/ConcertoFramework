@@ -2,9 +2,10 @@
 // Created by arthur on 24/10/2025.
 //
 
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
+
 #include <utility>
 
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipelineLayout/VkRHIPipelineLayout.hpp"
 
 namespace cct::gfx::rhi
@@ -37,4 +38,4 @@ namespace cct::gfx::rhi
 	{
 		return m_pipelineLayout;
 	}
-}
+} // namespace cct::gfx::rhi

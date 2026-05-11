@@ -19,14 +19,14 @@ namespace cct::refl
 	String::String(const String& other) :
 		Object(other),
 		m_value(other.m_value)
-		// OnValueChanged connections are NOT copied (Signal copy semantics)
+	// OnValueChanged connections are NOT copied (Signal copy semantics)
 	{
 	}
 
 	String::String(String&& other) noexcept :
 		Object(std::move(other)),
 		m_value(std::move(other.m_value))
-		// OnValueChanged connections follow the Signal move
+	// OnValueChanged connections follow the Signal move
 	{
 	}
 

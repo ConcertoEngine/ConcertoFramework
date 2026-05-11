@@ -2,23 +2,22 @@
 // Created by arthur on 03/09/2024.
 //
 
+#include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
+
 #include <Concerto/Core/Cast.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
-
-#include "Concerto/Graphics/RHI/Vulkan/VkMaterial.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
-
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIBuffer/VkRHIBuffer.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHISwapChain/VkRHISwapChain.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkMaterial.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIBuffer/VkRHIBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSet/VkRHIDescriptorSet.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIFrameBuffer/VKRHIFrameBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipelineLayout/VkRHIPipelineLayout.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHISwapChain/VkRHISwapChain.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -51,8 +50,7 @@ namespace cct::gfx::rhi
 			.width = viewport.width,
 			.height = viewport.height,
 			.minDepth = viewport.minDepth,
-			.maxDepth = viewport.maxDepth
-		};
+			.maxDepth = viewport.maxDepth};
 		vk::CommandBuffer::SetViewport(vkViewport);
 	}
 
@@ -61,13 +59,8 @@ namespace cct::gfx::rhi
 		const VkRect2D vkScissor = {
 			.offset = {
 				.x = scissor.x,
-				.y = scissor.y
-			},
-			.extent = {
-				.width = scissor.width,
-				.height = scissor.height
-			}
-		};
+				.y = scissor.y},
+			.extent = {.width = scissor.width, .height = scissor.height}};
 		vk::CommandBuffer::SetScissor(vkScissor);
 	}
 
@@ -80,19 +73,13 @@ namespace cct::gfx::rhi
 
 		const VkExtent2D extent = {
 			.width = frameBuffer.GetWidth(),
-			.height = frameBuffer.GetHeight()
-		};
+			.height = frameBuffer.GetHeight()};
 
 		const std::array clearValues = {
-					VkClearValue  {
-					.color = {
-						.float32 = {	clearColor.X(), clearColor.Y(), clearColor.Z(), 0.f}
-					}
-				},
-			VkClearValue {
-				.depthStencil = {1.f, 0}
-			}
-		};
+			VkClearValue{
+				.color = {
+					.float32 = {clearColor.X(), clearColor.Y(), clearColor.Z(), 0.f}}},
+			VkClearValue{.depthStencil = {1.f, 0}}};
 		VkRenderPassBeginInfo renderPassInfo = VulkanInitializer::RenderPassBeginInfo(*vkRenderPass.Get(), extent, *vkRhiFrameBuffer.Get());
 		renderPassInfo.clearValueCount = static_cast<UInt32>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
@@ -117,7 +104,7 @@ namespace cct::gfx::rhi
 		const auto& pipelineLayout = pipeline.GetLayout();
 
 		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetPipeline());
-		
+
 		std::vector<VkDescriptorSet> descriptorSets;
 		descriptorSets.resize(material.descriptorSets.size());
 		for (std::size_t i = 0; i < material.descriptorSets.size(); ++i)
@@ -162,8 +149,7 @@ namespace cct::gfx::rhi
 		copyRegion.imageExtent = {
 			.width = vkTexture.GetImage().GetExtent().width,
 			.height = vkTexture.GetImage().GetExtent().height,
-			.depth = 1
-		};
+			.depth = 1};
 
 		m_device->vkCmdCopyBufferToImage(
 			*vk::CommandBuffer::Get(), *static_cast<const vk::Buffer&>(vkBuffer).Get(),
@@ -187,8 +173,7 @@ namespace cct::gfx::rhi
 		copyRegion.imageExtent = {
 			.width = vkTexture.GetImage().GetExtent().width,
 			.height = vkTexture.GetImage().GetExtent().height,
-			.depth = 1
-		};
+			.depth = 1};
 
 		m_device->vkCmdCopyImageToBuffer(
 			*vk::CommandBuffer::Get(), *vkTexture.GetImage().Get(),
@@ -315,7 +300,7 @@ namespace cct::gfx::rhi
 	void VkRHICommandBuffer::ClearTexture(const Texture& texture, const Vector4f& clearColor)
 	{
 		const auto& vkTexture = Cast<const VkRHITexture&>(texture);
-		VkClearColorValue vkClearColor{{ clearColor.X(), clearColor.Y(), clearColor.Z(), clearColor[3] }};
+		VkClearColorValue vkClearColor{{clearColor.X(), clearColor.Y(), clearColor.Z(), clearColor[3]}};
 		VkImageSubresourceRange range{};
 		range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		range.levelCount = 1;
@@ -337,6 +322,6 @@ namespace cct::gfx::rhi
 			vkCmdBufs.push_back(*static_cast<vk::CommandBuffer&>(vkCmdBuf).Get());
 		}
 		m_device->vkCmdExecuteCommands(*vk::CommandBuffer::Get(),
-			static_cast<UInt32>(vkCmdBufs.size()), vkCmdBufs.data());
+									   static_cast<UInt32>(vkCmdBufs.size()), vkCmdBufs.data());
 	}
-}
+} // namespace cct::gfx::rhi

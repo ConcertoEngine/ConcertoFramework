@@ -1,11 +1,12 @@
 //
 // Created by arthur on 12/05/2024.
 //
+#include "Concerto/Graphics/RHI/Vulkan/VkRHI/VkRHI.hpp"
+
 #include <vector>
 
 #include <Concerto/Core/Assert.hpp>
 
-#include "Concerto/Graphics/RHI/Vulkan/VkRHI/VkRHI.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 
@@ -13,7 +14,7 @@ namespace cct::gfx
 {
 	bool VkRHI::Create(rhi::ValidationLevel validationLevel)
 	{
-		std::vector<const char*> extensions = {VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_EXTENSION_NAME };
+		std::vector<const char*> extensions = {VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 #ifdef VK_USE_PLATFORM_XCB_KHR
 		extensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
 #endif
@@ -40,8 +41,7 @@ namespace cct::gfx
 			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		}
 
-
-		m_instance = std::make_unique<vk::Instance>("", "", Version{ 1, 3, 0 }, Version{}, Version{}, extensions, layers);
+		m_instance = std::make_unique<vk::Instance>("", "", Version{1, 3, 0}, Version{}, Version{}, extensions, layers);
 		if (m_instance->GetLastResult() != VK_SUCCESS)
 		{
 			CCT_ASSERT_FALSE("ConcertoGraphics: Failed to initialize Vulkan instance, VkResult={}", static_cast<Int32>(m_instance->GetLastResult()));
@@ -63,8 +63,7 @@ namespace cct::gfx
 			m_devicesInfo.emplace_back(
 				device.GetProperties().deviceName,
 				device.GetProperties().vendorID,
-				FromVulkan(device.GetProperties().deviceType)
-			);
+				FromVulkan(device.GetProperties().deviceType));
 		}
 		return m_devicesInfo;
 	}
@@ -93,18 +92,18 @@ namespace cct::gfx
 	{
 		switch (deviceType)
 		{
-		case VK_PHYSICAL_DEVICE_TYPE_OTHER:
-			return rhi::DeviceType::Other;
-		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-			return rhi::DeviceType::Integrated;
-		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-			return rhi::DeviceType::Dedicated;
-		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-			return rhi::DeviceType::Virtual;
-		case VK_PHYSICAL_DEVICE_TYPE_CPU:
-			return rhi::DeviceType::Software;
-		default:
-			return {};
+			case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+				return rhi::DeviceType::Other;
+			case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+				return rhi::DeviceType::Integrated;
+			case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+				return rhi::DeviceType::Dedicated;
+			case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+				return rhi::DeviceType::Virtual;
+			case VK_PHYSICAL_DEVICE_TYPE_CPU:
+				return rhi::DeviceType::Software;
+			default:
+				return {};
 		}
 	}
 
@@ -113,4 +112,4 @@ namespace cct::gfx
 		Logger::SetContext(&logger);
 		vk::Instance::SetLogger(logger);
 	}
-}
+} // namespace cct::gfx

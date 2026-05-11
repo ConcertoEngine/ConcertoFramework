@@ -6,17 +6,16 @@
 #define VMA_IMPLEMENTATION
 #define VMA_STATIC_VULKAN_FUNCTIONS 0
 
-
-#include <Concerto/Core/Assert.hpp>
 #include <vk_mem_alloc.h>
 
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Allocator/Allocator.hpp"
+#include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Allocator/Allocator.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.hpp"
 
 namespace cct::gfx::vk
 {
@@ -68,8 +67,7 @@ namespace cct::gfx::vk
 			.vkGetPhysicalDeviceMemoryProperties2KHR = nullptr,
 			.vkGetDeviceBufferMemoryRequirements = nullptr,
 			.vkGetDeviceImageMemoryRequirements = nullptr,
-			.vkGetMemoryWin32HandleKHR = nullptr
-		};
+			.vkGetMemoryWin32HandleKHR = nullptr};
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = *physicalDevice.Get();
@@ -82,4 +80,4 @@ namespace cct::gfx::vk
 
 		return m_lastResult;
 	}
-}
+} // namespace cct::gfx::vk

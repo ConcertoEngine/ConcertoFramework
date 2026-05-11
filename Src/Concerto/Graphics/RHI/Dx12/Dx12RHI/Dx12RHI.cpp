@@ -2,13 +2,12 @@
 // Created by arthur on 01/09/2025.
 //
 
-
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHI/Dx12RHI.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
 
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
 
 #define CCT_FACTORY static_cast<cct::gfx::dx12::Factory*>(m_factory)
 
@@ -38,7 +37,7 @@ namespace cct::gfx::rhi
 			DXGI_ADAPTER_DESC adapterDesc;
 			physicalDevice->GetDesc(&adapterDesc);
 			m_deviceInfos.emplace_back(DeviceInfo{
-				.name = { reinterpret_cast<char*>(adapterDesc.Description) }, // Fixme
+				.name = {reinterpret_cast<char*>(adapterDesc.Description)}, // Fixme
 				.vendor = adapterDesc.VendorId,
 				.type = DeviceType::Dedicated,
 			});
@@ -79,4 +78,4 @@ namespace cct::gfx::rhi
 		Logger::SetContext(&logger);
 		dx12::Factory::SetLogger(logger);
 	}
-}
+} // namespace cct::gfx::rhi

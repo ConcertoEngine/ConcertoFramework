@@ -3,16 +3,18 @@
 //
 
 #include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
-#include "Concerto/Graphics/RHI/Device.hpp"
-#include "Concerto/Graphics/RHI/RenderPass.hpp"
+
+#include <algorithm>
+
 #include "Concerto/Graphics/RHI/Buffer.hpp"
-#include "Concerto/Graphics/RHI/DescriptorSetLayout.hpp"
 #include "Concerto/Graphics/RHI/DescriptorSet.hpp"
-#include "Concerto/Graphics/RHI/PipelineLayout.hpp"
+#include "Concerto/Graphics/RHI/DescriptorSetLayout.hpp"
+#include "Concerto/Graphics/RHI/Device.hpp"
 #include "Concerto/Graphics/RHI/Pipeline.hpp"
+#include "Concerto/Graphics/RHI/PipelineLayout.hpp"
+#include "Concerto/Graphics/RHI/RenderPass.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIPipelineLayout/VkRHIPipelineLayout.hpp"
-#include <algorithm>
 
 namespace cct::gfx::rhi
 {
@@ -59,9 +61,10 @@ namespace cct::gfx::rhi
 				{
 					// Look for existing binding with same binding number
 					auto bindingIt = std::find_if(setIt->second.begin(), setIt->second.end(),
-						[&fragBinding](const cct::gfx::DescriptorSetLayoutBinding& existing) {
-							return existing.binding == fragBinding.binding;
-						});
+												  [&fragBinding](const cct::gfx::DescriptorSetLayoutBinding& existing)
+												  {
+													  return existing.binding == fragBinding.binding;
+												  });
 
 					if (bindingIt != setIt->second.end())
 					{
@@ -98,7 +101,8 @@ namespace cct::gfx::rhi
 			// Try to find in cache
 			std::hash<UInt32> hasher;
 			UInt64 hash = 0;
-			for (const auto& binding : bindings) {
+			for (const auto& binding : bindings)
+			{
 				hash ^= hasher(binding.binding) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 				hash ^= hasher(static_cast<UInt32>(binding.descriptorType)) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 				hash ^= hasher(binding.descriptorCount) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
@@ -118,9 +122,8 @@ namespace cct::gfx::rhi
 		}
 
 		// Sort layouts by set index to match Vulkan expectations (set 0 first, then set 1, etc.)
-		std::sort(layoutEntries.begin(), layoutEntries.end(), [](const auto& lhs, const auto& rhs) {
-			return lhs.first < rhs.first;
-		});
+		std::sort(layoutEntries.begin(), layoutEntries.end(), [](const auto& lhs, const auto& rhs)
+				  { return lhs.first < rhs.first; });
 
 		std::vector<std::shared_ptr<rhi::DescriptorSetLayout>> descriptorSetLayouts;
 		descriptorSetLayouts.reserve(layoutEntries.size());
@@ -204,4 +207,4 @@ namespace cct::gfx::rhi
 			}
 		}
 	}
-}
+} // namespace cct::gfx::rhi

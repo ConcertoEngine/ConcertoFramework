@@ -2,9 +2,10 @@
 // Created by arthur on 01/09/2025.
 //
 
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIBuffer/Dx12RHIBuffer.hpp"
+
 #include <Concerto/Core/Cast.hpp>
 
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIBuffer/Dx12RHIBuffer.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
 
@@ -124,7 +125,7 @@ namespace cct::gfx::rhi
 		if (!m_allowMapping || !m_resource)
 			return false;
 
-		D3D12_RANGE readRange = { 0, 0 }; // We don't need to read
+		D3D12_RANGE readRange = {0, 0}; // We don't need to read
 		HRESULT hr = m_resource->Map(0, &readRange, reinterpret_cast<void**>(data));
 		return SUCCEEDED(hr);
 	}
@@ -136,4 +137,4 @@ namespace cct::gfx::rhi
 
 		m_resource->Unmap(0, nullptr);
 	}
-}
+} // namespace cct::gfx::rhi

@@ -3,20 +3,23 @@
 //
 
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSet/VkRHIDescriptorSet.hpp"
+
 #include <algorithm>
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIBuffer/VkRHIBuffer.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
+
+#include <Concerto/Core/Cast.hpp>
+
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Sampler/Sampler.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIBuffer/VkRHIBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSetLayout/VkRHIDescriptorSetLayout.hpp"
-#include <Concerto/Core/Cast.hpp>
+#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 
 namespace cct::gfx::rhi
 {
 	VkRHIDescriptorSet::VkRHIDescriptorSet(vk::DescriptorSetPtr vkDescriptorSet,
-	                                       std::shared_ptr<DescriptorSetLayout> layout) :
+										   std::shared_ptr<DescriptorSetLayout> layout) :
 		m_vkDescriptorSet(std::move(vkDescriptorSet)),
 		m_layout(std::move(layout))
 	{
@@ -34,7 +37,8 @@ namespace cct::gfx::rhi
 
 		// Locate binding description to determine descriptor type
 		const auto& bindings = vkLayout->GetBindings();
-		auto bindingIt = std::find_if(bindings.begin(), bindings.end(), [binding](const auto& b) { return b.binding == binding; });
+		auto bindingIt = std::find_if(bindings.begin(), bindings.end(), [binding](const auto& b)
+									  { return b.binding == binding; });
 		CCT_ASSERT(bindingIt != bindings.end(), "Binding index not found in layout");
 
 		const VkDescriptorType vkDescriptorType = Converters::ToVulkan(bindingIt->descriptorType);
@@ -61,7 +65,8 @@ namespace cct::gfx::rhi
 		CCT_ASSERT(vkLayout, "Invalid descriptor set layout type for Vulkan backend");
 
 		const auto& bindings = vkLayout->GetBindings();
-		auto bindingIt = std::find_if(bindings.begin(), bindings.end(), [binding](const auto& b) { return b.binding == binding; });
+		auto bindingIt = std::find_if(bindings.begin(), bindings.end(), [binding](const auto& b)
+									  { return b.binding == binding; });
 		CCT_ASSERT(bindingIt != bindings.end(), "Binding index not found in layout");
 
 		const VkDescriptorType vkDescriptorType = Converters::ToVulkan(bindingIt->descriptorType);
@@ -93,4 +98,4 @@ namespace cct::gfx::rhi
 	{
 		return m_vkDescriptorSet;
 	}
-}
+} // namespace cct::gfx::rhi

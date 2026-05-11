@@ -3,13 +3,14 @@
 //
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Queue/Queue.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/SwapChain/SwapChain.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
+
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/SwapChain/SwapChain.hpp"
 
 namespace cct::gfx::vk
 {
@@ -93,5 +94,4 @@ namespace cct::gfx::vk
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 		m_device->vkQueueWaitIdle(*Get());
 	}
-}
-
+} // namespace cct::gfx::vk

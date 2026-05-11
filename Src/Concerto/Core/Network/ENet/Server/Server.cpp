@@ -5,6 +5,7 @@
 #ifdef CCT_ENABLE_ENET
 
 #include "Concerto/Core/Network/ENet/Server/Server.hpp"
+
 #include <enet/enet.h>
 
 namespace cct::net

@@ -40,7 +40,7 @@ namespace cct::gfx::vk
 		m_viewport.height = static_cast<float>(windowExtent.height);
 		m_viewport.minDepth = 0.0f;
 		m_viewport.maxDepth = 1.0f;
-		m_scissor.offset = { 0, 0 };
+		m_scissor.offset = {0, 0};
 		m_scissor.extent = windowExtent;
 		m_rasterizer = VulkanInitializer::RasterizationStateCreateInfo(VK_POLYGON_MODE_FILL);
 		m_multisampling = VulkanInitializer::MultisamplingStateCreateInfo();
@@ -48,4 +48,4 @@ namespace cct::gfx::vk
 		m_pipelineLayout = &pipelineLayout;
 		m_depthStencil = VulkanInitializer::DepthStencilCreateInfo(true, true, VK_COMPARE_OP_LESS_OR_EQUAL);
 	}
-} // cct::gfx::vk
+} // namespace cct::gfx::vk

@@ -25,7 +25,6 @@ namespace cct::gfx::rhi
 			b.descriptorCount = binding.descriptorCount;
 			b.stageFlags = Converters::ToVulkan(binding.stageFlags);
 			b.pImmutableSamplers = nullptr;
-			
 		}
 
 		vk::DescriptorSetLayout::Create(device, vkBindings);
@@ -35,4 +34,4 @@ namespace cct::gfx::rhi
 	{
 		return m_bindings;
 	}
-}
+} // namespace cct::gfx::rhi

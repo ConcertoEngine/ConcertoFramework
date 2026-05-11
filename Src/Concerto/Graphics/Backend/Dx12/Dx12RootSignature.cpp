@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/Backend/Dx12/Dx12RootSignature.hpp"
+
 #include <algorithm>
 
 namespace cct::gfx::dx12
@@ -24,14 +25,12 @@ namespace cct::gfx::dx12
 			ComPtr<ID3DBlob> error;
 			ThrowIfFailed(
 				D3D12SerializeVersionedRootSignature(&rootSignatureDesc, &signature, &error),
-				"Failed to serialize root signature"
-			);
+				"Failed to serialize root signature");
 
 			ThrowIfFailed(
 				device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(),
-				                             IID_PPV_ARGS(&m_rootSignature)),
-				"Failed to create root signature"
-			);
+											IID_PPV_ARGS(&m_rootSignature)),
+				"Failed to create root signature");
 
 			m_parameterCount = 0;
 			return;
@@ -61,7 +60,7 @@ namespace cct::gfx::dx12
 			param.ShaderVisibility = table.visibility;
 
 			// Record mapping
-			m_setIndexToRootParam.push_back({ table.setIndex, static_cast<UINT>(rootParameters.size()), table.isSamplerTable });
+			m_setIndexToRootParam.push_back({table.setIndex, static_cast<UINT>(rootParameters.size()), table.isSamplerTable});
 
 			rootParameters.push_back(param);
 		}
@@ -92,9 +91,8 @@ namespace cct::gfx::dx12
 
 		ThrowIfFailed(
 			device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(),
-			                             IID_PPV_ARGS(&m_rootSignature)),
-			"Failed to create root signature"
-		);
+										IID_PPV_ARGS(&m_rootSignature)),
+			"Failed to create root signature");
 
 		m_parameterCount = rootParameters.size();
 	}
@@ -102,11 +100,12 @@ namespace cct::gfx::dx12
 	UINT Dx12RootSignature::GetRootParameterIndex(UINT setIndex, bool isSampler) const noexcept
 	{
 		auto it = std::find_if(m_setIndexToRootParam.begin(), m_setIndexToRootParam.end(),
-			[setIndex, isSampler](const auto& m) { return m.setIndex == setIndex && m.isSampler == isSampler; });
+							   [setIndex, isSampler](const auto& m)
+							   { return m.setIndex == setIndex && m.isSampler == isSampler; });
 
 		if (it != m_setIndexToRootParam.end())
 			return it->rootParamIndex;
 
 		return UINT_MAX; // Not found
 	}
-}
+} // namespace cct::gfx::dx12

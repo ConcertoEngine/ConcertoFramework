@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIShaderModule/VkRHIShaderModule.hpp"
+
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.hpp"
 
@@ -11,9 +12,9 @@ namespace cct::gfx::rhi
 	VkRHIShaderModule::VkRHIShaderModule(vk::Device& device, cct::gfx::ShaderModule&& shaderModule) :
 		m_abstractShaderModule(std::move(shaderModule)),
 		m_vulkanShaderModule(device,
-			m_abstractShaderModule.GetShaderBytes(),
-			static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(m_abstractShaderModule.GetStage())),
-			m_abstractShaderModule.GetEntryPointName())
+							 m_abstractShaderModule.GetShaderBytes(),
+							 static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(m_abstractShaderModule.GetStage())),
+							 m_abstractShaderModule.GetEntryPointName())
 	{
 	}
 
@@ -46,4 +47,4 @@ namespace cct::gfx::rhi
 	{
 		return m_vulkanShaderModule;
 	}
-}
+} // namespace cct::gfx::rhi

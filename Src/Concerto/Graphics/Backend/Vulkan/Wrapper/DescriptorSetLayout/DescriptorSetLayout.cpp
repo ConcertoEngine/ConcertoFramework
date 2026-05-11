@@ -2,10 +2,10 @@
 // Created by arthur on 16/06/22.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
+
 #include <cassert>
 #include <stdexcept>
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
@@ -61,7 +61,8 @@ namespace cct::gfx::vk
 		std::hash<UInt32> hasher;
 		UInt64 hash = 0;
 
-		for (const auto& binding : bindings) {
+		for (const auto& binding : bindings)
+		{
 			hash ^= hasher(binding.binding) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 			hash ^= hasher(binding.descriptorType) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
 			hash ^= hasher(binding.descriptorCount) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
@@ -74,4 +75,4 @@ namespace cct::gfx::vk
 	{
 		return std::make_shared<DescriptorSetLayout>(device, bindings);
 	}
-}
+} // namespace cct::gfx::vk

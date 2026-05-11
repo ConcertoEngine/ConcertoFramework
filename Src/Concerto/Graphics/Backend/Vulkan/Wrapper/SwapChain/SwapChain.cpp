@@ -2,24 +2,24 @@
 // Created by arthur on 11/06/22.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/SwapChain/SwapChain.hpp"
 
 #include <Concerto/Core/Assert.hpp>
 
-#include "Concerto/Graphics/Core/Window/Window.hpp"
-
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/SwapChain/SwapChain.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/FrameBuffer/FrameBuffer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/FrameBuffer/FrameBuffer.hpp"
+#include "Concerto/Graphics/Core/Window/Window.hpp"
 
 namespace cct::gfx::vk
 {
-	SwapChain::SwapChain(Device& device, Window& window, VkFormat colorFormat, VkFormat depthFormat) : Object(device),
+	SwapChain::SwapChain(Device& device, Window& window, VkFormat colorFormat, VkFormat depthFormat) :
+		Object(device),
 		m_swapChainImages(),
 		m_swapChainImageViews(),
 		m_windowExtent(),
@@ -48,7 +48,7 @@ namespace cct::gfx::vk
 		Destroy();
 
 		m_device = &device;
-		m_windowExtent = { .width = window.GetWidth(), .height = window.GetHeight() },
+		m_windowExtent = {.width = window.GetWidth(), .height = window.GetHeight()},
 		m_depthImage = device.GetAllocator().AllocateImage(m_windowExtent, depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
 
 		m_lastResult = m_depthImageView.Create(device, m_depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
@@ -56,7 +56,7 @@ namespace cct::gfx::vk
 			return m_lastResult;
 
 		m_window = &window,
-		m_windowExtent = { .width = m_window->GetWidth(), .height = m_window->GetHeight() };
+		m_windowExtent = {.width = m_window->GetWidth(), .height = m_window->GetHeight()};
 
 		m_lastResult = CreateSurface();
 		if (m_lastResult != VK_SUCCESS)
@@ -141,7 +141,7 @@ namespace cct::gfx::vk
 		m_device->vkGetSwapchainImagesKHR(*m_device->Get(), m_handle, &imageCount, swapChainImages.data());
 		std::vector<Image> images;
 		images.reserve(imageCount);
-		for (auto& image: swapChainImages)
+		for (auto& image : swapChainImages)
 			images.emplace_back(m_device->GetAllocator(), m_windowExtent, image, m_swapChainImageFormat);
 		m_swapChainImages = std::move(images);
 		return m_swapChainImages.value();
@@ -153,7 +153,7 @@ namespace cct::gfx::vk
 			return m_swapChainImageViews.value();
 		std::vector<ImageView> swapChainImageViews;
 		swapChainImageViews.reserve(GetImages().size());
-		for (auto& image: GetImages())
+		for (auto& image : GetImages())
 			swapChainImageViews.emplace_back(*m_device, image, VK_IMAGE_ASPECT_COLOR_BIT);
 		m_swapChainImageViews = std::move(swapChainImageViews);
 		return m_swapChainImageViews.value();
@@ -176,7 +176,6 @@ namespace cct::gfx::vk
 
 	VkFormat SwapChain::GetImageFormat() const
 	{
-
 		return m_swapChainImageFormat;
 	}
 
@@ -218,8 +217,7 @@ namespace cct::gfx::vk
 			.pNext = nullptr,
 			.flags = 0,
 			.hinstance = static_cast<HINSTANCE>(nativeWindow.hinstance),
-			.hwnd = static_cast<HWND>(nativeWindow.window)
-		};
+			.hwnd = static_cast<HWND>(nativeWindow.window)};
 		m_lastResult = m_device->GetInstance().vkCreateWin32SurfaceKHR(*m_device->GetInstance().Get(), &createInfo, nullptr, &m_surface);
 #elif defined(CCT_PLATFORM_MACOS)
 		CCT_ASSERT_FALSE("Not implemented");
@@ -232,8 +230,7 @@ namespace cct::gfx::vk
 				.pNext = nullptr,
 				.flags = 0,
 				.dpy = static_cast<Display*>(x11.display),
-				.window = static_cast<::Window>(x11.window)
-			};
+				.window = static_cast<::Window>(x11.window)};
 			m_lastResult = m_device->GetInstance().vkCreateXlibSurfaceKHR(*m_device->GetInstance().Get(), &createInfo, nullptr, &m_surface);
 		}
 		else if (std::holds_alternative<NativeWindow::Wayland>(nativeWindow.platform))
@@ -244,8 +241,7 @@ namespace cct::gfx::vk
 				.pNext = nullptr,
 				.flags = 0,
 				.display = static_cast<struct wl_display*>(wayland.wl_display),
-				.surface = static_cast<struct wl_surface*>(wayland.wl_surface)
-			};
+				.surface = static_cast<struct wl_surface*>(wayland.wl_surface)};
 			m_lastResult = m_device->GetInstance().vkCreateWaylandSurfaceKHR(*m_device->GetInstance().Get(), &createInfo, nullptr, &m_surface);
 		}
 		else
@@ -258,4 +254,4 @@ namespace cct::gfx::vk
 
 		return m_lastResult;
 	}
-}
+} // namespace cct::gfx::vk

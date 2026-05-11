@@ -2,14 +2,16 @@
 // Created by arthur on 29/05/2023.
 //
 
+#include "Concerto/Core/Stream/Stream.hpp"
+
 #include <cstring>
 
-#include "Concerto/Core/Stream/Stream.hpp"
 #include "Concerto/Core/Buffer/Buffer.hpp"
 
 namespace cct
 {
-	Stream::Stream(std::size_t capacity) : _cursorPos(0)
+	Stream::Stream(std::size_t capacity) :
+		_cursorPos(0)
 	{
 		_buffer.reserve(capacity);
 	}
@@ -53,4 +55,4 @@ namespace cct
 		_cursorPos = pos;
 		return true;
 	}
-}
+} // namespace cct

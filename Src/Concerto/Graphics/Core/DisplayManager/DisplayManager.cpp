@@ -2,12 +2,12 @@
 // Created by arthur on 27/10/2024.
 //
 
-#include <SDL3/SDL.h>
-#include <Concerto/Core/Assert.hpp>
-
 #include "Concerto/Graphics/Core/DisplayManager/DisplayManager.hpp"
 
+#include <Concerto/Core/Assert.hpp>
+
 #include "Concerto/Profiler/Profiler.hpp"
+#include <SDL3/SDL.h>
 
 namespace cct::gfx
 {
@@ -15,34 +15,35 @@ namespace cct::gfx
 	{
 		PixelFormat PixelFormatFrom(SDL_PixelFormat pixelFormat)
 		{
-			switch (pixelFormat) {
-			case SDL_PIXELFORMAT_XRGB8888:
-				return PixelFormat::RGB8uNorm;
-			case SDL_PIXELFORMAT_RGB24:
-				return PixelFormat::RGB8uNorm;
-			case SDL_PIXELFORMAT_RGBA8888:
-				return PixelFormat::RGBA8uNorm;
-			case SDL_PIXELFORMAT_ARGB8888:
-				return PixelFormat::BGRA8uNorm; // Assuming BGRA is ARGB
-			case SDL_PIXELFORMAT_XBGR8888:
-				return PixelFormat::BGRuNorm;
-			case SDL_PIXELFORMAT_ABGR8888:
-				return PixelFormat::BGRA8uNorm;
-			case SDL_PIXELFORMAT_RGB565:
-				return PixelFormat::RGB8uNorm; // Assuming it's closest to 8-bit normalized
-			case SDL_PIXELFORMAT_RGBA5551:
-				return PixelFormat::RGBA8uNorm;
-			case SDL_PIXELFORMAT_RGB332:
-				return PixelFormat::RGB8uNorm; // Approximated to RGB8
-			case SDL_PIXELFORMAT_XRGB4444:
-				return PixelFormat::RGB8uNorm;
-			case SDL_PIXELFORMAT_XRGB1555:
-				return PixelFormat::RGB8uNorm;
-			default:
-				throw std::invalid_argument("Unsupported SDL format");
+			switch (pixelFormat)
+			{
+				case SDL_PIXELFORMAT_XRGB8888:
+					return PixelFormat::RGB8uNorm;
+				case SDL_PIXELFORMAT_RGB24:
+					return PixelFormat::RGB8uNorm;
+				case SDL_PIXELFORMAT_RGBA8888:
+					return PixelFormat::RGBA8uNorm;
+				case SDL_PIXELFORMAT_ARGB8888:
+					return PixelFormat::BGRA8uNorm; // Assuming BGRA is ARGB
+				case SDL_PIXELFORMAT_XBGR8888:
+					return PixelFormat::BGRuNorm;
+				case SDL_PIXELFORMAT_ABGR8888:
+					return PixelFormat::BGRA8uNorm;
+				case SDL_PIXELFORMAT_RGB565:
+					return PixelFormat::RGB8uNorm; // Assuming it's closest to 8-bit normalized
+				case SDL_PIXELFORMAT_RGBA5551:
+					return PixelFormat::RGBA8uNorm;
+				case SDL_PIXELFORMAT_RGB332:
+					return PixelFormat::RGB8uNorm; // Approximated to RGB8
+				case SDL_PIXELFORMAT_XRGB4444:
+					return PixelFormat::RGB8uNorm;
+				case SDL_PIXELFORMAT_XRGB1555:
+					return PixelFormat::RGB8uNorm;
+				default:
+					throw std::invalid_argument("Unsupported SDL format");
 			}
 		}
-	}
+	} // namespace
 	DisplayManager::DisplayManager()
 	{
 		CCT_PROFILER_SCOPE();
@@ -102,8 +103,7 @@ namespace cct::gfx
 						.pixelFormat = PixelFormatFrom(sdlDisplayMode->format),
 						.width = sdlDisplayMode->w,
 						.height = sdlDisplayMode->h,
-						.refreshRate = static_cast<Int32>(sdlDisplayMode->refresh_rate)
-					};
+						.refreshRate = static_cast<Int32>(sdlDisplayMode->refresh_rate)};
 					displayModes.emplace_back(std::move(displayMode));
 				}
 				SDL_free(modes);
@@ -116,10 +116,9 @@ namespace cct::gfx
 			DisplayInfo displayInfo = {
 				.displayIndex = static_cast<Int32>(displayId),
 				.displayName = std::string_view(displayName, std::strlen(displayName)),
-				.displayBounds = {}, //filled below with std::memcpy
+				.displayBounds = {}, // filled below with std::memcpy
 				.isPrimary = (displayId == primary),
-				.displayModes = std::move(displayModes)
-			};
+				.displayModes = std::move(displayModes)};
 			std::memcpy(&displayInfo.displayBounds, &displayBounds, sizeof(DisplayInfo::Bounds));
 			displayInfos.emplace_back(std::move(displayInfo));
 		}
@@ -141,4 +140,4 @@ namespace cct::gfx
 	{
 		SDL_PumpEvents();
 	}
-}
+} // namespace cct::gfx

@@ -2,12 +2,13 @@
 // Created by arthur on 14/06/22.
 //
 
-#include <stdexcept>
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandPool/CommandPool.hpp"
+
 #include <iostream>
+#include <stdexcept>
 
 #include <Concerto/Core/Assert.hpp>
 
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandPool/CommandPool.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::vk
@@ -42,4 +43,4 @@ namespace cct::gfx::vk
 	{
 		return vk::CommandBuffer(*this, level);
 	}
-}
+} // namespace cct::gfx::vk

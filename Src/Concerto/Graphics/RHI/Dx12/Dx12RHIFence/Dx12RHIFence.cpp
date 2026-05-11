@@ -3,6 +3,7 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIFence/Dx12RHIFence.hpp"
+
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
 
 namespace cct::gfx::rhi
@@ -21,4 +22,4 @@ namespace cct::gfx::rhi
 	{
 		// DX12 fence uses a monotonic counter, no explicit reset needed
 	}
-}
+} // namespace cct::gfx::rhi

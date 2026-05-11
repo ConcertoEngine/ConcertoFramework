@@ -2,9 +2,10 @@
 // Created by arthur on 01/09/2025.
 //
 
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/Fence/Fence.hpp"
+
 #include <Concerto/Core/Error/Error.hpp>
 
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/Fence/Fence.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::dx12

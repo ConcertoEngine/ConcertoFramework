@@ -3,9 +3,10 @@
 //
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/SwapChain/SwapChain.hpp"
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 
 namespace cct::gfx::dx12
 {
@@ -48,11 +49,11 @@ namespace cct::gfx::dx12
 
 		Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain1;
 		m_lastResult = factory->CreateSwapChainForHwnd(m_directCommandQueue.Get(),
-														static_cast<HWND>(nativeWindow.window),
-														&swapChainDesc,
-														nullptr,
-														nullptr,
-														&swapChain1);
+													   static_cast<HWND>(nativeWindow.window),
+													   &swapChainDesc,
+													   nullptr,
+													   nullptr,
+													   &swapChain1);
 		CCT_ASSERT(SUCCEEDED(m_lastResult), "ConcertoGraphics: CreateSwapChainForHwnd failed HRESULT={}", m_lastResult);
 		if (FAILED(m_lastResult))
 			return m_lastResult;

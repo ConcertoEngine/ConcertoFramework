@@ -5,13 +5,14 @@
 #ifdef CCT_ENABLE_ENET
 
 #include "Concerto/Core/Network/ENet/Client/Client.hpp"
-#include "Concerto/Core/Logger/Logger.hpp"
+
 #include "Concerto/Core/Assert.hpp"
+#include "Concerto/Core/Logger/Logger.hpp"
 #include <enet/enet.h>
 
 namespace cct::net
 {
-	EnetClient::EnetClient(UInt32 maxIncomingBandwidth, UInt32 maxOutgoingBandwidth) : 
+	EnetClient::EnetClient(UInt32 maxIncomingBandwidth, UInt32 maxOutgoingBandwidth) :
 		ENetHost(nullptr, 1, 2, maxIncomingBandwidth, maxOutgoingBandwidth),
 		_peer(nullptr)
 	{
@@ -43,6 +44,6 @@ namespace cct::net
 		_peer->Disconnect();
 	}
 
-}// namespace cct::net
+} // namespace cct::net
 
 #endif // CCT_ENABLE_ENET

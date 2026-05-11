@@ -2,14 +2,14 @@
 // Created by arthur on 12/06/22.
 //
 
-#include <Concerto/Core/Assert.hpp>
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/FrameBuffer/FrameBuffer.hpp"
 
+#include <Concerto/Core/Assert.hpp>
+
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
 
 namespace cct::gfx::vk
 {
@@ -52,4 +52,4 @@ namespace cct::gfx::vk
 	{
 		return m_extent;
 	}
-} // cct::gfx::vk
+} // namespace cct::gfx::vk

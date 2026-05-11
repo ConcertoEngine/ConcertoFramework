@@ -2,14 +2,14 @@
 // Created by arthur on 12/06/22.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
 
-#include <stdexcept>
 #include <cassert>
+#include <stdexcept>
 
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::vk
@@ -29,7 +29,7 @@ namespace cct::gfx::vk
 	}
 
 	VkResult RenderPass::Create(Device& device, std::span<VkAttachmentDescription> attachmentDescriptions,
-		std::span<VkSubpassDescription> subPassDescriptions, std::span<VkSubpassDependency> subPassDependencies)
+								std::span<VkSubpassDescription> subPassDescriptions, std::span<VkSubpassDependency> subPassDependencies)
 	{
 		m_device = &device;
 
@@ -47,4 +47,4 @@ namespace cct::gfx::vk
 
 		return m_lastResult;
 	}
-} // cct::gfx::vk
+} // namespace cct::gfx::vk

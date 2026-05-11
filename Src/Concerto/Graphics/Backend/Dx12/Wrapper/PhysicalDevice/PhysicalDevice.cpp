@@ -2,9 +2,10 @@
 // Created by arthur on 01/09/2025.
 //
 
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
+
 #include <Concerto/Core/DynLib/DynLib.hpp>
 
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::dx12
@@ -62,6 +63,6 @@ namespace cct::gfx::dx12
 		}
 #endif
 
-		return { *device, *this };
+		return {*device, *this};
 	}
-}
+} // namespace cct::gfx::dx12

@@ -13,15 +13,15 @@ namespace cct::gfx::vk
 {
 
 	DescriptorBuilder::DescriptorBuilder(DescriptorLayoutCache& layoutCache, DescriptorAllocator& allocator) :
-		m_cache(layoutCache), m_alloc(allocator)
+		m_cache(layoutCache),
+		m_alloc(allocator)
 	{
-
 	}
 
 	DescriptorBuilder& DescriptorBuilder::BindBuffer(UInt32 binding,
-		VkDescriptorBufferInfo* bufferInfo,
-		VkDescriptorType type,
-		VkShaderStageFlags stageFlags)
+													 VkDescriptorBufferInfo* bufferInfo,
+													 VkDescriptorType type,
+													 VkShaderStageFlags stageFlags)
 	{
 		VkDescriptorSetLayoutBinding newBinding{};
 
@@ -47,9 +47,9 @@ namespace cct::gfx::vk
 	}
 
 	DescriptorBuilder& DescriptorBuilder::BindImage(UInt32 binding,
-		VkDescriptorImageInfo* imageInfo,
-		VkDescriptorType type,
-		VkShaderStageFlags stageFlags)
+													VkDescriptorImageInfo* imageInfo,
+													VkDescriptorType type,
+													VkShaderStageFlags stageFlags)
 	{
 		VkDescriptorSetLayoutBinding newBinding{};
 
@@ -103,4 +103,4 @@ namespace cct::gfx::vk
 		DescriptorSetLayoutPtr layout;
 		return Build(set, layout);
 	}
-}
+} // namespace cct::gfx::vk

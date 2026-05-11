@@ -8,7 +8,9 @@ namespace cct
 {
 
 	Transform::Transform(const Vector3f& location, const Quaternionf& rotation, const Vector3f& scale) :
-		_location(location), _rotation(rotation), _scale(scale)
+		_location(location),
+		_rotation(rotation),
+		_scale(scale)
 	{
 	}
 
@@ -72,4 +74,4 @@ namespace cct
 		_rotation.Deserialize(stream);
 		_scale.Deserialize(stream);
 	}
-}
+} // namespace cct

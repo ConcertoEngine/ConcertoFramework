@@ -2,19 +2,20 @@
 // Created by arthur on 15/05/2024.
 //
 
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIFrameBuffer/VKRHIFrameBuffer.hpp"
+
 #include <vector>
+
 #include <Concerto/Core/Cast.hpp>
 
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIFrameBuffer/VKRHIFrameBuffer.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 
 namespace cct::gfx::rhi
 {
-	namespace //Fixme
+	namespace // Fixme
 	{
 		std::vector<VkImageView> ToImageView(const std::vector<std::unique_ptr<Texture>>& textures)
 		{
@@ -31,17 +32,17 @@ namespace cct::gfx::rhi
 				imageViews.emplace_back(*Cast<const VkRHITextureView&>(*texture).GetImageView().Get());
 			return imageViews;
 		}
-	}
+	} // namespace
 
 	VkRHIFrameBuffer::VkRHIFrameBuffer(VkRHIDevice& device, UInt32 width, UInt32 height, const VkRHIRenderPass& renderPass, const std::vector<std::unique_ptr<rhi::Texture>>& attachments) :
 		rhi::FrameBuffer(),
-		vk::FrameBuffer(renderPass, ToImageView(attachments), { width, height })
+		vk::FrameBuffer(renderPass, ToImageView(attachments), {width, height})
 	{
 	}
 
 	VkRHIFrameBuffer::VkRHIFrameBuffer(VkRHIDevice& device, UInt32 width, UInt32 height, const VkRHIRenderPass& renderPass, const std::vector<std::unique_ptr<rhi::TextureView>>& attachments) :
 		rhi::FrameBuffer(),
-		vk::FrameBuffer(renderPass, ToImageView(attachments), { width, height })
+		vk::FrameBuffer(renderPass, ToImageView(attachments), {width, height})
 	{
 	}
 
@@ -54,4 +55,4 @@ namespace cct::gfx::rhi
 	{
 		return GetExtent2D().height;
 	}
-}
+} // namespace cct::gfx::rhi

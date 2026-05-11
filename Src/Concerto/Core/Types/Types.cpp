@@ -12,7 +12,7 @@ namespace cct
 	{
 		return IsDebuggerPresent() != 0;
 	}
-}
+} // namespace cct
 #elif defined(CCT_PLATFORM_POSIX)
 #include <fstream>
 namespace cct
@@ -31,7 +31,7 @@ namespace cct
 		}
 		return false;
 	}
-}
+} // namespace cct
 #else
 namespace cct
 {
@@ -39,5 +39,5 @@ namespace cct
 	{
 		return false;
 	}
-}
+} // namespace cct
 #endif

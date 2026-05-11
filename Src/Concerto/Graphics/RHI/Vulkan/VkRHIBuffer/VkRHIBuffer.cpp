@@ -49,7 +49,7 @@ namespace cct::gfx::rhi
 			imageBarrier_toTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
 			vk::Buffer::m_device->vkCmdPipelineBarrier(*commandBuffer->Get(), VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
-				0, nullptr, 0, nullptr, 1, &imageBarrier_toTransfer);
+													   0, nullptr, 0, nullptr, 1, &imageBarrier_toTransfer);
 
 			VkBufferImageCopy copyRegion = {};
 			copyRegion.bufferOffset = 0;
@@ -64,8 +64,8 @@ namespace cct::gfx::rhi
 			copyRegion.imageExtent = {
 				.width = vkTexture.GetImage().GetExtent().width,
 				.height = vkTexture.GetImage().GetExtent().height,
-				.depth = 1
-			};;
+				.depth = 1};
+			;
 
 			vk::Buffer::m_device->vkCmdCopyBufferToImage(*commandBuffer->Get(), *vk::Buffer::Get(), *vkTexture.GetImage().Get(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyRegion);
 
@@ -78,8 +78,8 @@ namespace cct::gfx::rhi
 			imageBarrier_toReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
 			vk::Buffer::m_device->vkCmdPipelineBarrier(*commandBuffer->Get(), VK_PIPELINE_STAGE_TRANSFER_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1,
-				&imageBarrier_toReadable);
+													   VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1,
+													   &imageBarrier_toReadable);
 		}
 		commandBuffer->End();
 
@@ -93,7 +93,8 @@ namespace cct::gfx::rhi
 			CCT_ASSERT_FALSE("ConcertoGraphics: buffer mapping is not enabled");
 			return false;
 		}
-		return vk::Buffer::Map(data);;
+		return vk::Buffer::Map(data);
+		;
 	}
 
 	void VkRHIBuffer::UnMap()
@@ -105,4 +106,4 @@ namespace cct::gfx::rhi
 		}
 		vk::Buffer::UnMap();
 	}
-}
+} // namespace cct::gfx::rhi

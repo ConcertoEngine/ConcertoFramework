@@ -5,8 +5,8 @@
 #include "Concerto/Core/Types/Types.hpp"
 #ifdef CCT_PLATFORM_WINDOWS
 
-#include <stdexcept>
 #include <cstring>
+#include <stdexcept>
 
 #include "Concerto/Core/Network/IpAddress/Private/WinIpAddressImpl.hpp"
 
@@ -18,7 +18,7 @@ namespace cct::net
 		{
 			const auto sockaddIn = reinterpret_cast<const sockaddr_in*>(addr);
 			const auto ipv4 = sockaddIn->sin_addr.S_un.S_un_b;
-			return { ipv4.s_b1, ipv4.s_b2, ipv4.s_b3, ipv4.s_b4, ntohs(sockaddIn->sin_port) };
+			return {ipv4.s_b1, ipv4.s_b2, ipv4.s_b3, ipv4.s_b4, ntohs(sockaddIn->sin_port)};
 		}
 		else
 		{
@@ -37,5 +37,5 @@ namespace cct::net
 		std::memcpy(&addr.sin_addr, ipv4.data(), ipv4.size());
 		return addr;
 	}
-}
+} // namespace cct::net
 #endif

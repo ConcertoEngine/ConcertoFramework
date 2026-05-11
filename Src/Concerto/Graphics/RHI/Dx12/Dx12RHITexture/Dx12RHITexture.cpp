@@ -3,8 +3,9 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -52,4 +53,4 @@ namespace cct::gfx::rhi
 			// Note: SRV handle will be assigned when bound to a descriptor set
 		}
 	}
-}
+} // namespace cct::gfx::rhi

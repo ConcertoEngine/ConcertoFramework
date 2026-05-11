@@ -17,7 +17,6 @@ namespace cct::gfx::vk
 	DescriptorAllocator::DescriptorAllocator(Device& device) :
 		m_device(&device)
 	{
-
 	}
 
 	bool DescriptorAllocator::Allocate(DescriptorSetPtr& descriptorSet, const DescriptorSetLayout& layout)
@@ -56,7 +55,7 @@ namespace cct::gfx::vk
 				CCT_ASSERT_FALSE("ConcertoGraphics: Invalid VkDescriptorType {}, skipping", static_cast<int>(descriptorType));
 				continue;
 			}
-			sizes.push_back({ descriptorType, static_cast<UInt32>(number * DESCRIPTOR_POOL_SIZE) });
+			sizes.push_back({descriptorType, static_cast<UInt32>(number * DESCRIPTOR_POOL_SIZE)});
 		}
 		return std::make_shared<DescriptorPool>(*m_device, sizes);
 	}
@@ -155,4 +154,4 @@ namespace cct::gfx::vk
 		CCT_ASSERT_FALSE("FIXME");
 		return nullptr;
 	}
-}
+} // namespace cct::gfx::vk

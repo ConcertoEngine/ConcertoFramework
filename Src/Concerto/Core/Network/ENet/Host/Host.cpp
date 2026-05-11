@@ -4,10 +4,11 @@
 
 #ifdef CCT_ENABLE_ENET
 
-#include <enet/enet.h>
 #include "Concerto/Core/Network/ENet/Host/Host.hpp"
-#include "Concerto/Core/Logger/Logger.hpp"
+
 #include "Concerto/Core/Assert.hpp"
+#include "Concerto/Core/Logger/Logger.hpp"
+#include <enet/enet.h>
 
 namespace cct::net
 {
@@ -17,14 +18,14 @@ namespace cct::net
 	}
 
 	ENetHost::ENetHost(IpAddress* address, std::size_t maxConnections,
-		std::size_t maxChannels, UInt32 maxIncomingBandwidth, UInt32 maxOutgoingBandwidth) :
+					   std::size_t maxChannels, UInt32 maxIncomingBandwidth, UInt32 maxOutgoingBandwidth) :
 		_enetHost(nullptr),
 		_maxConnections(maxConnections),
 		_maxChannels(maxChannels),
 		_maxIncomingBandwidth(maxIncomingBandwidth),
 		_maxOutgoingBandwidth(maxOutgoingBandwidth)
 	{
-		[[maybe_unused]]const bool ret = CreateHost(address);
+		[[maybe_unused]] const bool ret = CreateHost(address);
 		CCT_ASSERT(ret, "An error occurred while trying to create an ENetHost");
 	}
 
@@ -44,7 +45,7 @@ namespace cct::net
 			event->peer = nullptr;
 			return ret;
 		}
-		
+
 		switch (enetEvent.type)
 		{
 			case ENET_EVENT_TYPE_NONE:
@@ -108,14 +109,13 @@ namespace cct::net
 			_enetHost = enet_host_create(nullptr, _maxConnections, _maxChannels, _maxIncomingBandwidth, _maxOutgoingBandwidth);
 			return _enetHost != nullptr;
 		}
-		
+
 		::ENetAddress enetAddress = {
 			.host = address->ToUInt32(),
-			.port = address->GetPort()
-		};
+			.port = address->GetPort()};
 		_enetHost = enet_host_create(&enetAddress, _maxConnections, _maxChannels, _maxIncomingBandwidth, _maxOutgoingBandwidth);
 		return _enetHost != nullptr;
 	}
-}
+} // namespace cct::net
 
 #endif // CCT_ENABLE_ENET

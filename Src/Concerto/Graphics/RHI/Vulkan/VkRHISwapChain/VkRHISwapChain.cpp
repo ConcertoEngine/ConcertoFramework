@@ -2,21 +2,20 @@
 // Created by arthur on 15/05/2024.
 //
 
+#include "Concerto/Graphics/RHI/Vulkan/VkRHISwapChain/VkRHISwapChain.hpp"
+
 #include <array>
 #include <format>
 
 #include <Concerto/Core/Cast.hpp>
 
-
-#include "Concerto/Graphics/RHI/Vulkan/VkRHISwapChain/VkRHISwapChain.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
+#include "Concerto/Graphics/Core/Window/Window.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandPool/VkRHICommandPool.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
-#include "Concerto/Graphics/Core/Window/Window.hpp"
 namespace cct::gfx::rhi
 {
 	VkRHISwapChain::VkRHISwapChain(rhi::VkRHIDevice& device, Window& window, PixelFormat pixelFormat, PixelFormat depthPixelFormat) :
@@ -56,7 +55,7 @@ namespace cct::gfx::rhi
 
 	Vector2u VkRHISwapChain::GetExtent() const
 	{
-		return Vector2u{ vk::SwapChain::GetExtent().width, vk::SwapChain::GetExtent().height };
+		return Vector2u{vk::SwapChain::GetExtent().width, vk::SwapChain::GetExtent().height};
 	}
 
 	UInt32 VkRHISwapChain::GetImageCount() const
@@ -138,13 +137,13 @@ namespace cct::gfx::rhi
 		{
 			switch (m_presentQueue->GetLastResult())
 			{
-			case VK_ERROR_OUT_OF_DATE_KHR:
-			case VK_SUBOPTIMAL_KHR:
-			{
-				m_needResize = true;
-				break;
-			}
-			default:
+				case VK_ERROR_OUT_OF_DATE_KHR:
+				case VK_SUBOPTIMAL_KHR:
+				{
+					m_needResize = true;
+					break;
+				}
+				default:
 				{
 					CCT_ASSERT_FALSE("ConcertoGraphics: Present failed VKResult={}", static_cast<int>(m_presentQueue->GetLastResult()));
 				}
@@ -200,9 +199,8 @@ namespace cct::gfx::rhi
 		std::vector<rhi::RenderPass::SubPassDescription> subPassDescriptions;
 
 		auto& subPass = subPassDescriptions.emplace_back();
-		subPass.colorAttachments.push_back({ 0, rhi::ImageLayout::ColorAttachmentOptimal });
-		subPass.depthStencilAttachment = { 1, rhi::ImageLayout::DepthStencilAttachmentOptimal };
-
+		subPass.colorAttachments.push_back({0, rhi::ImageLayout::ColorAttachmentOptimal});
+		subPass.depthStencilAttachment = {1, rhi::ImageLayout::DepthStencilAttachmentOptimal};
 
 		std::vector<rhi::RenderPass::SubPassDependency> subPassDependencies;
 		auto& colorDependency = subPassDependencies.emplace_back();
@@ -315,4 +313,4 @@ namespace cct::gfx::rhi
 	{
 		return m_renderFence;
 	}
-}
+} // namespace cct::gfx::rhi

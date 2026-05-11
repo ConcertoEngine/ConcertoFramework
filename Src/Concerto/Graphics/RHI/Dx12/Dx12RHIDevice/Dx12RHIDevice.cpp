@@ -2,33 +2,36 @@
 // Created by arthur on 01/09/2025.
 //
 
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
+
 #include <Concerto/Core/Cast.hpp>
 
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
-#include "Concerto/Graphics/RHI/Mesh/Mesh.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHISwapChain/Dx12RHISwapChain.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIRenderPass/Dx12RHIRenderPass.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIFrameBuffer/Dx12RHIFrameBuffer.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandPool/Dx12RHICommandPool.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIBuffer/Dx12RHIBuffer.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIShaderModule/Dx12RHIShaderModule.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSet/Dx12RHIDescriptorSet.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSetLayout/Dx12RHIDescriptorSetLayout.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipeline/Dx12RHIPipeline.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueryPool/Dx12RHIQueryPool.hpp"
-#include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
-#include "Concerto/Graphics/RHI/DescriptorSet.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
 #include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
 #include "Concerto/Graphics/Core/Vertex.hpp"
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueue/Dx12RHIQueue.hpp"
+#include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
+#include "Concerto/Graphics/RHI/DescriptorSet.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIBuffer/Dx12RHIBuffer.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandPool/Dx12RHICommandPool.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSet/Dx12RHIDescriptorSet.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSetLayout/Dx12RHIDescriptorSetLayout.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIFence/Dx12RHIFence.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIFrameBuffer/Dx12RHIFrameBuffer.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipeline/Dx12RHIPipeline.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueryPool/Dx12RHIQueryPool.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIQueue/Dx12RHIQueue.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIRenderPass/Dx12RHIRenderPass.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIShaderModule/Dx12RHIShaderModule.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHISwapChain/Dx12RHISwapChain.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
+#include "Concerto/Graphics/RHI/Mesh/Mesh.hpp"
 
 namespace cct::gfx::rhi
 {
-	Dx12RHIDevice::Dx12RHIDevice(ID3D12Device& device, dx12::PhysicalDevice& physicalDevice) : rhi::Device(), dx12::Device(device, physicalDevice)
+	Dx12RHIDevice::Dx12RHIDevice(ID3D12Device& device, dx12::PhysicalDevice& physicalDevice) :
+		rhi::Device(),
+		dx12::Device(device, physicalDevice)
 	{
 	}
 
@@ -46,13 +49,13 @@ namespace cct::gfx::rhi
 	}
 
 	std::unique_ptr<RenderPass> Dx12RHIDevice::CreateRenderPass(std::span<RenderPass::Attachment> attachments,
-		std::span<RenderPass::SubPassDescription> subPassDescriptions, std::span<RenderPass::SubPassDependency> subPassDependencies)
+																std::span<RenderPass::SubPassDescription> subPassDescriptions, std::span<RenderPass::SubPassDependency> subPassDependencies)
 	{
 		return std::make_unique<Dx12RHIRenderPass>(attachments, subPassDescriptions, subPassDependencies);
 	}
 
 	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBuffer(UInt32 width, UInt32 height,
-		const RenderPass& renderPass, const std::vector<std::unique_ptr<Texture>>& attachments)
+																  const RenderPass& renderPass, const std::vector<std::unique_ptr<Texture>>& attachments)
 	{
 		// Extract render target resources from DX12 textures
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
@@ -70,7 +73,7 @@ namespace cct::gfx::rhi
 	}
 
 	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBuffer(UInt32 width, UInt32 height,
-		const RenderPass& renderPass, const std::vector<std::unique_ptr<TextureView>>& attachments)
+																  const RenderPass& renderPass, const std::vector<std::unique_ptr<TextureView>>& attachments)
 	{
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> rtResources;
@@ -116,18 +119,18 @@ namespace cct::gfx::rhi
 		D3D12_COMMAND_LIST_TYPE type;
 		switch (family)
 		{
-		case rhi::QueueFamily::Graphics:
-			type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-			break;
-		case rhi::QueueFamily::Compute:
-			type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-			break;
-		case rhi::QueueFamily::Transfer:
-			type = D3D12_COMMAND_LIST_TYPE_COPY;
-			break;
-		default:
-			type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-			break;
+			case rhi::QueueFamily::Graphics:
+				type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+				break;
+			case rhi::QueueFamily::Compute:
+				type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+				break;
+			case rhi::QueueFamily::Transfer:
+				type = D3D12_COMMAND_LIST_TYPE_COPY;
+				break;
+			default:
+				type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+				break;
 		}
 		return std::make_unique<Dx12RHICommandPool>(*this, usage, type);
 	}
@@ -166,8 +169,8 @@ namespace cct::gfx::rhi
 	}
 
 	std::shared_ptr<rhi::Pipeline> Dx12RHIDevice::CreatePipeline(const rhi::ShaderModule& vertexShader, const rhi::ShaderModule& fragmentShader,
-	                                                              const rhi::RenderPass& renderPass, const rhi::PipelineLayout& pipelineLayout,
-	                                                              const Vector2u& windowExtent)
+																 const rhi::RenderPass& renderPass, const rhi::PipelineLayout& pipelineLayout,
+																 const Vector2u& windowExtent)
 	{
 		const auto& dx12VertexShader = Cast<const Dx12RHIShaderModule&>(vertexShader);
 		const auto& dx12FragmentShader = Cast<const Dx12RHIShaderModule&>(fragmentShader);
@@ -178,10 +181,10 @@ namespace cct::gfx::rhi
 		// Define input layout matching nzsl HLSL/DXIL output semantics
 		// nzsl maps vertex inputs at location(N) to TEXCOORD(N)
 		D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(cct::gfx::Vertex, position), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(cct::gfx::Vertex, normal),   D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 2, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(cct::gfx::Vertex, color),    D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-			{ "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT,    0, offsetof(cct::gfx::Vertex, uv),       D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{"TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(cct::gfx::Vertex, position), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(cct::gfx::Vertex, normal), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 2, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(cct::gfx::Vertex, color), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+			{"TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(cct::gfx::Vertex, uv), D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
 		};
 
 		// Get render pass formats
@@ -195,7 +198,7 @@ namespace cct::gfx::rhi
 
 		// Build PSO description
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
-		psoDesc.InputLayout = { inputLayout, _countof(inputLayout) };
+		psoDesc.InputLayout = {inputLayout, _countof(inputLayout)};
 		psoDesc.pRootSignature = pipelineLayoutCopy->GetRootSignature().Get();
 		psoDesc.VS = dx12VertexShader.GetD3D12ShaderBytecode();
 		psoDesc.PS = dx12FragmentShader.GetD3D12ShaderBytecode();
@@ -289,7 +292,7 @@ namespace cct::gfx::rhi
 			m_uploadFenceValue = 0;
 		}
 
-		ID3D12CommandList* cmdLists[] = { cmdList };
+		ID3D12CommandList* cmdLists[] = {cmdList};
 		m_renderQueue->ExecuteCommandLists(1, cmdLists);
 
 		++m_uploadFenceValue;
@@ -323,4 +326,4 @@ namespace cct::gfx::rhi
 	{
 		return std::make_unique<Dx12RHIQueryPool>(*this);
 	}
-}
+} // namespace cct::gfx::rhi

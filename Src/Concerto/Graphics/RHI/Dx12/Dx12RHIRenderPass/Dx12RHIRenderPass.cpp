@@ -3,13 +3,14 @@
 //
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIRenderPass/Dx12RHIRenderPass.hpp"
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
 
 namespace cct::gfx::rhi
 {
 	Dx12RHIRenderPass::Dx12RHIRenderPass(std::span<RenderPass::Attachment> attachments,
-	                                      std::span<RenderPass::SubPassDescription> subPassDescriptions,
-	                                      std::span<RenderPass::SubPassDependency> subPassDependencies) :
+										 std::span<RenderPass::SubPassDescription> subPassDescriptions,
+										 std::span<RenderPass::SubPassDependency> subPassDependencies) :
 		m_attachments(attachments.begin(), attachments.end()),
 		m_subPassDescriptions(subPassDescriptions.begin(), subPassDescriptions.end()),
 		m_subPassDependencies(subPassDependencies.begin(), subPassDependencies.end())
@@ -35,4 +36,4 @@ namespace cct::gfx::rhi
 		}
 		return DXGI_FORMAT_D32_FLOAT;
 	}
-}
+} // namespace cct::gfx::rhi

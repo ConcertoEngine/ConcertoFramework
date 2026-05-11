@@ -1,9 +1,8 @@
 #include <cstring>
 
 #define UUID_SYSTEM_GENERATOR
-#include <stduuid/uuid.h>
-
 #include "Concerto/Core/Uuid/Uuid.hpp"
+#include <stduuid/uuid.h>
 
 namespace cct
 {

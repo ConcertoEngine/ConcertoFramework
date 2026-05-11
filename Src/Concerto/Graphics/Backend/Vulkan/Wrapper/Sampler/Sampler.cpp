@@ -2,9 +2,9 @@
 // Created by arthur on 24/10/2022.
 //
 
-#include <cassert>
-
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Sampler/Sampler.hpp"
+
+#include <cassert>
 
 #include <Concerto/Core/Assert.hpp>
 
@@ -14,7 +14,8 @@
 
 namespace cct::gfx::vk
 {
-	Sampler::Sampler(Device& device, VkFilter filter, VkSamplerAddressMode samplerAddressMode) : Object(device)
+	Sampler::Sampler(Device& device, VkFilter filter, VkSamplerAddressMode samplerAddressMode) :
+		Object(device)
 	{
 		if (Create(device, filter, samplerAddressMode) != VK_SUCCESS)
 			throw VkException(GetLastResult());
@@ -38,4 +39,4 @@ namespace cct::gfx::vk
 
 		return m_lastResult;
 	}
-}
+} // namespace cct::gfx::vk

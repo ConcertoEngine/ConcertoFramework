@@ -16,19 +16,19 @@ namespace cct::gfx::rhi
 		{
 			switch (stage)
 			{
-			case ShaderStage::Vertex:
-				return nzsl::ShaderStageType::Vertex;
-			case ShaderStage::Fragment:
-				return nzsl::ShaderStageType::Fragment;
-			case ShaderStage::Compute:
-				return nzsl::ShaderStageType::Compute;
-			default:
-				break;
+				case ShaderStage::Vertex:
+					return nzsl::ShaderStageType::Vertex;
+				case ShaderStage::Fragment:
+					return nzsl::ShaderStageType::Fragment;
+				case ShaderStage::Compute:
+					return nzsl::ShaderStageType::Compute;
+				default:
+					break;
 			}
 			CCT_ASSERT_FALSE("ConcertoGraphics: Unexpected shader stage");
 			return nzsl::ShaderStageType::Vertex;
 		}
-	}
+	} // namespace
 
 	Dx12RHIShaderModule::Dx12RHIShaderModule(cct::gfx::ResolvedShaderModule&& resolved) :
 		m_bindings(std::move(resolved.bindings)),
@@ -77,4 +77,4 @@ namespace cct::gfx::rhi
 		bytecode.BytecodeLength = m_compiledBytecode.size();
 		return bytecode;
 	}
-}
+} // namespace cct::gfx::rhi

@@ -4,10 +4,10 @@
 #include "Concerto/Core/Types/Types.hpp"
 #ifdef CCT_PLATFORM_POSIX
 
-#include <sys/socket.h>
 #include <stdexcept>
 
 #include "Concerto/Core/Network/IpAddress/Private/PosixIpAddressImpl.hpp"
+#include <sys/socket.h>
 
 namespace cct::net
 {
@@ -17,7 +17,7 @@ namespace cct::net
 		{
 			const auto sockaddIn = reinterpret_cast<const sockaddr_in*>(addr);
 			const UInt32 ipv4 = sockaddIn->sin_addr.s_addr;
-			return IpAddress{ ipv4, ntohs(sockaddIn->sin_port) };
+			return IpAddress{ipv4, ntohs(sockaddIn->sin_port)};
 		}
 		else
 		{
@@ -36,5 +36,5 @@ namespace cct::net
 		addr.sin_addr.s_addr = htonl(ipv4);
 		return addr;
 	}
-}
+} // namespace cct::net
 #endif

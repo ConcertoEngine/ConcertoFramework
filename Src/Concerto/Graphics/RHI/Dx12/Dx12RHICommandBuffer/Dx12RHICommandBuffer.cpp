@@ -2,20 +2,20 @@
 // Created by arthur on 01/09/2025.
 //
 
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
+
 #include <Concerto/Core/Cast.hpp>
 
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIFrameBuffer/Dx12RHIFrameBuffer.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandAllocator/CommandAllocator.hpp"
+#include "Concerto/Graphics/Core/Vertex.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIBuffer/Dx12RHIBuffer.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipeline/Dx12RHIPipeline.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDescriptorSet/Dx12RHIDescriptorSet.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIFrameBuffer/Dx12RHIFrameBuffer.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipeline/Dx12RHIPipeline.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
 #include "Concerto/Graphics/RHI/Material.hpp"
-#include "Concerto/Graphics/Core/Vertex.hpp"
-
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandAllocator/CommandAllocator.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -106,7 +106,7 @@ namespace cct::gfx::rhi
 		}
 
 		// Clear render targets
-		float clearColorArray[4] = { clearColor.X(), clearColor.Y(), clearColor.Z(), 1.0f };
+		float clearColorArray[4] = {clearColor.X(), clearColor.Y(), clearColor.Z(), 1.0f};
 		for (const auto& rtvHandle : rtvHandles)
 		{
 			Get()->ClearRenderTargetView(rtvHandle, clearColorArray, 0, nullptr);
@@ -155,8 +155,7 @@ namespace cct::gfx::rhi
 			auto& pool = m_device->GetDescriptorPool();
 			ID3D12DescriptorHeap* heaps[] = {
 				pool.GetGpuHeap()->GetHeap(),
-				pool.GetSamplerHeap()->GetHeap()
-			};
+				pool.GetSamplerHeap()->GetHeap()};
 			Get()->SetDescriptorHeaps(_countof(heaps), heaps);
 
 			// Bind descriptor sets
@@ -292,16 +291,26 @@ namespace cct::gfx::rhi
 	{
 		switch (layout)
 		{
-		case ImageLayout::Undefined:                return D3D12_RESOURCE_STATE_COMMON;
-		case ImageLayout::General:                  return D3D12_RESOURCE_STATE_COMMON;
-		case ImageLayout::ColorAttachmentOptimal:   return D3D12_RESOURCE_STATE_RENDER_TARGET;
-		case ImageLayout::DepthStencilAttachmentOptimal: return D3D12_RESOURCE_STATE_DEPTH_WRITE;
-		case ImageLayout::DepthStencilReadOnlyOptimal:   return D3D12_RESOURCE_STATE_DEPTH_READ;
-		case ImageLayout::ShaderReadOnlyOptimal:    return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		case ImageLayout::TransferSrcOptimal:       return D3D12_RESOURCE_STATE_COPY_SOURCE;
-		case ImageLayout::TransferDstOptimal:       return D3D12_RESOURCE_STATE_COPY_DEST;
-		case ImageLayout::PresentSrcKhr:            return D3D12_RESOURCE_STATE_PRESENT;
-		default:                                    return D3D12_RESOURCE_STATE_COMMON;
+			case ImageLayout::Undefined:
+				return D3D12_RESOURCE_STATE_COMMON;
+			case ImageLayout::General:
+				return D3D12_RESOURCE_STATE_COMMON;
+			case ImageLayout::ColorAttachmentOptimal:
+				return D3D12_RESOURCE_STATE_RENDER_TARGET;
+			case ImageLayout::DepthStencilAttachmentOptimal:
+				return D3D12_RESOURCE_STATE_DEPTH_WRITE;
+			case ImageLayout::DepthStencilReadOnlyOptimal:
+				return D3D12_RESOURCE_STATE_DEPTH_READ;
+			case ImageLayout::ShaderReadOnlyOptimal:
+				return D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+			case ImageLayout::TransferSrcOptimal:
+				return D3D12_RESOURCE_STATE_COPY_SOURCE;
+			case ImageLayout::TransferDstOptimal:
+				return D3D12_RESOURCE_STATE_COPY_DEST;
+			case ImageLayout::PresentSrcKhr:
+				return D3D12_RESOURCE_STATE_PRESENT;
+			default:
+				return D3D12_RESOURCE_STATE_COMMON;
 		}
 	}
 
@@ -310,4 +319,4 @@ namespace cct::gfx::rhi
 		// TODO: DX12 bundle support is restricted (no transfers/barriers).
 		// Secondary CB commands must be inlined into the primary for DX12.
 	}
-}
+} // namespace cct::gfx::rhi

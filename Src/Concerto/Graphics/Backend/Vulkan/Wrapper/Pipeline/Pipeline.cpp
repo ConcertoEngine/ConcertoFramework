@@ -2,16 +2,16 @@
 // Created by arthur on 10/06/22.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
+
 #include <iostream>
 #include <utility>
 
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
-
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
 
 namespace cct::gfx::vk
 {
@@ -50,9 +50,9 @@ namespace cct::gfx::vk
 	VkPipelineViewportStateCreateInfo Pipeline::BuildViewportState()
 	{
 		VkPipelineViewportStateCreateInfo viewportState{};
-		static VkRect2D scissor = { 0, 0 }; //TODO: remove static
-		scissor.offset = {.x = 0, .y = 0 };
-		scissor.extent = {.width = 1280, .height = 720 };
+		static VkRect2D scissor = {0, 0}; // TODO: remove static
+		scissor.offset = {.x = 0, .y = 0};
+		scissor.extent = {.width = 1280, .height = 720};
 		viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 		viewportState.pNext = nullptr;
 		viewportState.viewportCount = 1;
@@ -66,7 +66,7 @@ namespace cct::gfx::vk
 	{
 		VkPipelineColorBlendStateCreateInfo colorBlending = {};
 		static VkPipelineColorBlendAttachmentState colorBlendAttachment(
-			VulkanInitializer::ColorBlendAttachmentState()); //TODO: remove static
+			VulkanInitializer::ColorBlendAttachmentState()); // TODO: remove static
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.pNext = nullptr;
 		colorBlending.logicOpEnable = VK_FALSE;
@@ -92,8 +92,7 @@ namespace cct::gfx::vk
 
 		VkDynamicState dynamicState[] = {
 			VK_DYNAMIC_STATE_VIEWPORT,
-			VK_DYNAMIC_STATE_SCISSOR
-		};
+			VK_DYNAMIC_STATE_SCISSOR};
 		VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo{};
 		dynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 		dynamicStateCreateInfo.dynamicStateCount = 2;
@@ -135,4 +134,4 @@ namespace cct::gfx::vk
 		return m_lastResult;
 	}
 
-}
+} // namespace cct::gfx::vk

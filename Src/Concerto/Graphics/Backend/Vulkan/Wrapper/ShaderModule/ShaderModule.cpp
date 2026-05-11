@@ -2,11 +2,11 @@
 // Created by arthur on 10/06/22.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ShaderModule/ShaderModule.hpp"
+
 #include <cassert>
 #include <fstream>
 #include <iostream>
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ShaderModule/ShaderModule.hpp"
 
 #include <Concerto/Core/Assert.hpp>
 
@@ -67,15 +67,14 @@ namespace cct::gfx::vk
 
 	VkPipelineShaderStageCreateInfo ShaderModule::GetPipelineShaderStageCreateInfo() const
 	{
-		return VkPipelineShaderStageCreateInfo {
+		return VkPipelineShaderStageCreateInfo{
 			VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
 			nullptr,
 			{},
 			m_stageFlags,
 			m_handle,
 			m_entryPoint.c_str(),
-			nullptr
-		};
+			nullptr};
 	}
 
 	void ShaderModule::LoadShaderModule(const std::string& shaderPath)
@@ -104,4 +103,4 @@ namespace cct::gfx::vk
 
 		return m_lastResult;
 	}
-}
+} // namespace cct::gfx::vk

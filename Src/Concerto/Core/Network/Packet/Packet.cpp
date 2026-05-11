@@ -2,18 +2,25 @@
 // Created by arthur on 28/05/2023.
 //
 
-#include <cstring>
-
 #include "Concerto/Core/Network/Packet/Packet.hpp"
+
+#include <cstring>
 
 namespace cct::net
 {
-	Packet::Packet() : Stream(HeaderSize), _size(0), _packetType(0), _validHeader(false)
+	Packet::Packet() :
+		Stream(HeaderSize),
+		_size(0),
+		_packetType(0),
+		_validHeader(false)
 	{
 	}
 
 	Packet::Packet(UInt8 packetType, const void* data, UInt32 size) :
-		Stream(HeaderSize + size), _size(size), _packetType(packetType), _validHeader(true)
+		Stream(HeaderSize + size),
+		_size(size),
+		_packetType(packetType),
+		_validHeader(true)
 	{
 		_buffer.resize(HeaderSize + size);
 		std::memcpy(_buffer.data(), &_packetType, sizeof(UInt8));
@@ -23,7 +30,10 @@ namespace cct::net
 	}
 
 	Packet::Packet(UInt8 packetType, std::size_t capacity) :
-		Stream(HeaderSize + capacity), _size(0), _packetType(packetType), _validHeader(true)
+		Stream(HeaderSize + capacity),
+		_size(0),
+		_packetType(packetType),
+		_validHeader(true)
 	{
 		_buffer.resize(HeaderSize);
 		std::memcpy(_buffer.data(), &_packetType, sizeof(UInt8));
@@ -97,4 +107,4 @@ namespace cct::net
 	{
 		return !operator==(value);
 	}
-}// namespace cct::net
+} // namespace cct::net

@@ -2,12 +2,12 @@
 // Created by arthur on 30/06/2022.
 //
 
-#include <stdexcept>
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
 
+#include <stdexcept>
+
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::vk
@@ -57,4 +57,4 @@ namespace cct::gfx::vk
 	{
 		return m_descriptorSetLayouts;
 	}
-}
+} // namespace cct::gfx::vk

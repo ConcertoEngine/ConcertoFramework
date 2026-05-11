@@ -44,7 +44,10 @@ namespace
 	class MacroExpandAction : public PreprocessorFrontendAction
 	{
 	public:
-		explicit MacroExpandAction(std::string& output) : m_output(output) {}
+		explicit MacroExpandAction(std::string& output) :
+			m_output(output)
+		{
+		}
 
 		void ExecuteAction() override
 		{
@@ -237,7 +240,6 @@ namespace cct
 
 		for (auto& src : sources)
 			code += std::format("#include \"{}\"\n", src);
-
 
 		std::vector<std::string> args;
 		args.reserve(defines.size() + includeDirs.size() + 3);

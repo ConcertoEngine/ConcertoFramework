@@ -2,11 +2,12 @@
 // Created by arthur on 09/06/22.
 //
 
+#include "Concerto/Graphics/RHI/GpuSubMesh/GpuSubMesh.hpp"
+
 #include <cstring>
 
-#include "Concerto/Graphics/RHI/GpuSubMesh/GpuSubMesh.hpp"
-#include "Concerto/Graphics/RHI/Device.hpp"
 #include "Concerto/Graphics/Core/Vertex.hpp"
+#include "Concerto/Graphics/RHI/Device.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -58,4 +59,4 @@ namespace cct::gfx::rhi
 			m_vertexBuffer->UnMap();
 		}
 	}
-} // cct::gfx::rhi
+} // namespace cct::gfx::rhi

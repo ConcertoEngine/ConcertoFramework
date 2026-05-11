@@ -6,8 +6,9 @@
 #define CONCERTO_PROFILER_PROFILER_HPP
 
 #ifdef CCT_PROFILING
-#include <tracy/Tracy.hpp>
 #include <source_location>
+
+#include <tracy/Tracy.hpp>
 #define CCT_PROFILER_SCOPE(name) ZoneScopedN(name)
 #define CCT_AUTO_PROFILER_SCOPE() ZoneScoped
 #define CCT_FRAME_MARK() FrameMark
@@ -17,4 +18,4 @@
 #define CCT_FRAME_MARK()
 #endif
 
-#endif //CONCERTO_PROFILER_PROFILER_HPP
+#endif // CONCERTO_PROFILER_PROFILER_HPP

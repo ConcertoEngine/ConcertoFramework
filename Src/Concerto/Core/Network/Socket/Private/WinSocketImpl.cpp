@@ -5,13 +5,13 @@
 #include "Concerto/Core/Types/Types.hpp"
 #ifdef CCT_PLATFORM_WINDOWS
 
-#include <string>
 #include <cassert>
+#include <string>
 
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Logger/Logger.hpp"
-#include "WinSocketImpl.hpp"
 #include "Concerto/Core/Network/IpAddress/Private/WinIpAddressImpl.hpp"
+#include "WinSocketImpl.hpp"
 
 namespace cct::net
 {
@@ -57,7 +57,7 @@ namespace cct::net
 		if (error != nullptr)
 			*error = SocketError::NoError;
 		const SocketHandle socket = ::socket(protocol == IpProtocol::Ipv4 ? AF_INET : AF_INET6,
-			socketType == SocketType::Tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
+											 socketType == SocketType::Tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
 		if (socket == InvalidSocket)
 		{
 			if (error != nullptr)
@@ -127,10 +127,10 @@ namespace cct::net
 	}
 
 	bool SocketImpl::Receive(SocketHandle socket,
-		void* buffer,
-		std::size_t size,
-		std::size_t* received,
-		SocketError* error)
+							 void* buffer,
+							 std::size_t size,
+							 std::size_t* received,
+							 SocketError* error)
 	{
 		CCT_ASSERT(socket != SocketImpl::InvalidSocket, "Invalid socket handle");
 		if (error != nullptr)
@@ -237,6 +237,6 @@ namespace cct::net
 		}
 		return static_cast<std::size_t>(available);
 	}
-}
+} // namespace cct::net
 
 #endif

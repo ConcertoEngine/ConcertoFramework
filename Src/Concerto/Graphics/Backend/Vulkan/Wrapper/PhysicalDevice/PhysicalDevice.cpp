@@ -2,14 +2,15 @@
 // Created by arthur on 25/10/2022.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
+
 #include <stdexcept>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 
 namespace cct::gfx::vk
 {
@@ -22,7 +23,6 @@ namespace cct::gfx::vk
 		m_physicalDevice(physicalDevice),
 		m_instance(&instance)
 	{
-
 	}
 
 	std::span<VkQueueFamilyProperties> PhysicalDevice::GetQueueFamilyProperties() const
@@ -66,7 +66,7 @@ namespace cct::gfx::vk
 		std::swap(m_formats, other.m_formats);
 		std::swap(m_presentModes, other.m_presentModes);
 		std::swap(m_physicalDevice, other.m_physicalDevice);
-		std::swap(m_instance,  other.m_instance);
+		std::swap(m_instance, other.m_instance);
 		return *this;
 	}
 
@@ -212,4 +212,4 @@ namespace cct::gfx::vk
 		details.presentModes = GetPresentModes(surface);
 		return details;
 	}
-} // cct::gfx::vk
+} // namespace cct::gfx::vk

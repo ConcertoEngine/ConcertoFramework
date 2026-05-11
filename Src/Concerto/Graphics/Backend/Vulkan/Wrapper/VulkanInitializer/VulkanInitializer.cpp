@@ -2,7 +2,7 @@
 // Created by arthur on 24/03/2022.
 //
 
-//#include <vulkan/utility/vk_format_utils.h>
+// #include <vulkan/utility/vk_format_utils.h>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
 
@@ -68,7 +68,7 @@ namespace VulkanInitializer
 		info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 		info.pNext = nullptr;
 		info.sampleShadingEnable = VK_FALSE;
-		//multisampling defaulted to no multisampling (1 sample per pixel)
+		// multisampling defaulted to no multisampling (1 sample per pixel)
 		info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		info.minSampleShading = 1.0f;
 		info.pSampleMask = nullptr;
@@ -131,7 +131,7 @@ namespace VulkanInitializer
 		info.format = format;
 		info.extent = extent;
 
-		info.mipLevels = 1; //vkuFormatComponentCount(format);
+		info.mipLevels = 1; // vkuFormatComponentCount(format);
 		info.arrayLayers = 1;
 		info.samples = VK_SAMPLE_COUNT_1_BIT;
 		info.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -143,7 +143,7 @@ namespace VulkanInitializer
 	VkImageViewCreateInfo
 	ImageViewCreateInfo(VkFormat format, VkImage image, VkImageAspectFlags aspectFlags)
 	{
-		//build a image-view for the depth image to use for rendering
+		// build a image-view for the depth image to use for rendering
 		VkImageViewCreateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		info.pNext = nullptr;
@@ -220,7 +220,6 @@ namespace VulkanInitializer
 
 		return info;
 	}
-
 
 	VkCommandPoolCreateInfo
 	CommandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags)
@@ -299,7 +298,7 @@ namespace VulkanInitializer
 	}
 
 	VkWriteDescriptorSet WriteDescriptorBuffer(VkDescriptorType type, VkDescriptorSet dstSet,
-			VkDescriptorBufferInfo* bufferInfo, uint32_t binding)
+											   VkDescriptorBufferInfo* bufferInfo, uint32_t binding)
 	{
 		VkWriteDescriptorSet write = {};
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -327,7 +326,6 @@ namespace VulkanInitializer
 
 	VkSamplerCreateInfo SamplerCreateInfo(VkFilter filter, VkSamplerAddressMode samplerAddressMode)
 	{
-
 		VkSamplerCreateInfo info = {};
 		info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		info.pNext = nullptr;
@@ -339,7 +337,6 @@ namespace VulkanInitializer
 		info.addressModeW = samplerAddressMode;
 
 		return info;
-
 	}
 
 	VkWriteDescriptorSet
@@ -359,4 +356,4 @@ namespace VulkanInitializer
 			return write;
 		}
 	}
-}
+} // namespace VulkanInitializer
