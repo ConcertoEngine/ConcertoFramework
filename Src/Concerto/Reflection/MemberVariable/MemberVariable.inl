@@ -27,7 +27,7 @@ namespace cct::refl
 		return m_type;
 	}
 
-	inline NativeMemberVariable::NativeMemberVariable(std::string name, UInt64 typeId, std::size_t index) :
+	inline NativeMemberVariable::NativeMemberVariable(std::string name, cct::UInt64 typeId, std::size_t index) :
 		m_name(std::move(name)),
 		m_typeId(typeId),
 		m_index(index)
@@ -44,7 +44,7 @@ namespace cct::refl
 		return m_index;
 	}
 
-	inline UInt64 NativeMemberVariable::GetTypeId() const
+	inline cct::UInt64 NativeMemberVariable::GetTypeId() const
 	{
 		return m_typeId;
 	}

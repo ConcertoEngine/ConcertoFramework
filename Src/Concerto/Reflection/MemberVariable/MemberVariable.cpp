@@ -12,4 +12,50 @@ namespace cct::refl
 		m_type(type)
 	{
 	}
+
+	bool MemberVariable::HasAttribute(std::string_view name) const
+	{
+		return m_attributes.find(std::string(name)) != m_attributes.end();
+	}
+
+	std::string_view MemberVariable::GetAttribute(std::string_view name) const
+	{
+		auto it = m_attributes.find(std::string(name));
+		if (it == m_attributes.end())
+			return {};
+		return it->second;
+	}
+
+	void MemberVariable::AddAttribute(std::string name, std::string value)
+	{
+		m_attributes.emplace(std::move(name), std::move(value));
+	}
+
+	const std::unordered_map<std::string, std::string>& MemberVariable::GetAttributes() const
+	{
+		return m_attributes;
+	}
+
+	bool NativeMemberVariable::HasAttribute(std::string_view name) const
+	{
+		return m_attributes.find(std::string(name)) != m_attributes.end();
+	}
+
+	std::string_view NativeMemberVariable::GetAttribute(std::string_view name) const
+	{
+		auto it = m_attributes.find(std::string(name));
+		if (it == m_attributes.end())
+			return {};
+		return it->second;
+	}
+
+	void NativeMemberVariable::AddAttribute(std::string name, std::string value)
+	{
+		m_attributes.emplace(std::move(name), std::move(value));
+	}
+
+	const std::unordered_map<std::string, std::string>& NativeMemberVariable::GetAttributes() const
+	{
+		return m_attributes;
+	}
 } // namespace cct::refl

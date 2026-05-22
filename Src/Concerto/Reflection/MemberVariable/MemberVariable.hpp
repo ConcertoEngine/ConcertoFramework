@@ -5,8 +5,9 @@
 #ifndef CONCERTO_REFLECTION_MEMBERVARIABLE_HPP
 #define CONCERTO_REFLECTION_MEMBERVARIABLE_HPP
 
-#include <memory>
 #include <string>
+#include <string_view>
+#include <unordered_map>
 
 #include "Concerto/Reflection/Defines.hpp"
 
@@ -29,16 +30,22 @@ namespace cct::refl
 		[[nodiscard]] inline std::size_t GetIndex() const;
 		[[nodiscard]] inline const Class* GetType() const;
 
+		[[nodiscard]] bool HasAttribute(std::string_view name) const;
+		[[nodiscard]] std::string_view GetAttribute(std::string_view name) const;
+		void AddAttribute(std::string name, std::string value);
+		[[nodiscard]] const std::unordered_map<std::string, std::string>& GetAttributes() const;
+
 	private:
 		std::string m_name;
 		std::size_t m_index;
 		const Class* m_type;
+		std::unordered_map<std::string, std::string> m_attributes;
 	};
 
 	class CCT_REFLECTION_API NativeMemberVariable
 	{
 	public:
-		NativeMemberVariable(std::string name, UInt64 typeId, std::size_t index);
+		NativeMemberVariable(std::string name, cct::UInt64 typeId, std::size_t index);
 		~NativeMemberVariable() = default;
 
 		NativeMemberVariable(const NativeMemberVariable&) = delete;
@@ -49,12 +56,18 @@ namespace cct::refl
 
 		[[nodiscard]] inline std::string_view GetName() const;
 		[[nodiscard]] inline std::size_t GetIndex() const;
-		[[nodiscard]] inline UInt64 GetTypeId() const;
+		[[nodiscard]] inline cct::UInt64 GetTypeId() const;
+
+		[[nodiscard]] bool HasAttribute(std::string_view name) const;
+		[[nodiscard]] std::string_view GetAttribute(std::string_view name) const;
+		void AddAttribute(std::string name, std::string value);
+		[[nodiscard]] const std::unordered_map<std::string, std::string>& GetAttributes() const;
 
 	private:
 		std::string m_name;
 		std::size_t m_index;
-		UInt64 m_typeId;
+		cct::UInt64 m_typeId;
+		std::unordered_map<std::string, std::string> m_attributes;
 	};
 } // namespace cct::refl
 
