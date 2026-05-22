@@ -77,7 +77,7 @@ namespace cct::gfx::rhi
 		auto& sampler = m_samplerCache[binding];
 		if (!sampler)
 		{
-			sampler = std::make_unique<vk::Sampler>(*device, VK_FILTER_LINEAR);
+			sampler = std::make_unique<vk::Sampler>(*device, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 		}
 
 		VkDescriptorImageInfo imageInfo{};

@@ -16,15 +16,20 @@ namespace cct::gfx::rhi
 			Converters::ToVulkan(format),
 			(aspectFlags & VK_IMAGE_ASPECT_DEPTH_BIT)
 				? (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)
-				: (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT))),
+				: (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT))),
 		m_imageView(device, m_image, aspectFlags)
 	{
+		m_width = static_cast<UInt32>(width);
+		m_height = static_cast<UInt32>(height);
 	}
 
 	VkRHITexture::VkRHITexture(vk::Device& device, vk::Image image, VkImageAspectFlags aspectFlags) :
 		m_image(std::move(image)),
 		m_imageView(device, m_image, aspectFlags)
 	{
+		const VkExtent2D ext = m_image.GetExtent();
+		m_width = ext.width;
+		m_height = ext.height;
 	}
 
 	std::unique_ptr<rhi::TextureView> VkRHITexture::CreateView() const
