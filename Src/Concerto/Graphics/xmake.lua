@@ -65,7 +65,6 @@ target("concerto-vulkan-backend", function()
 
     add_files_to_target("./Backend/Vulkan/*")
     add_files_to_target("./Backend/Vulkan/Wrapper/*")
-    add_headerfiles("../../(Concerto/Graphics/Backend/Vulkan/*.hpp)")
 
     add_includedirs("../../", { public = true })
     add_deps("concerto-core", { public = false })
@@ -96,10 +95,8 @@ if is_plat("windows") then
 
         add_files_to_target("./Backend/Dx12/*")
         add_files_to_target("./Backend/Dx12/Wrapper/*")
-        add_headerfiles("../../(Concerto/Graphics/Backend/Dx12/*.hpp)")
 
         add_includedirs("../../", { public = true })
-        add_headerfiles("../../(Concerto/Graphics/Backend/Dx12/*.hpp)")
         add_deps("concerto-core")
         add_packages("nzsl", { public = true })
         add_deps("concerto-graphics-core")
