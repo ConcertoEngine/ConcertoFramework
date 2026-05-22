@@ -106,6 +106,11 @@ namespace cct::refl
 		[[nodiscard]] bool IsEmpty() const;
 		[[nodiscard]] const Class* GetElementType() const;
 
+		[[nodiscard]] bool IsVector() const override
+		{
+			return true;
+		}
+
 		// ── Iteration ─────────────────────────────────────────────────────
 		auto begin() noexcept;
 		auto end() noexcept;

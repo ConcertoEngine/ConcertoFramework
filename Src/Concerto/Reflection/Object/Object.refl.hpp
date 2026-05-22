@@ -5,6 +5,7 @@
 #ifndef CONCERTO_REFLECTION_OBJECT_HPP
 #define CONCERTO_REFLECTION_OBJECT_HPP
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -15,17 +16,18 @@
 #include "Concerto/Core/Signal/Signal.hpp"
 #include "Concerto/Reflection/Defines.hpp"
 
-#define CCT_OBJECT(className)                       \
-public:                                             \
-	static const cct::refl::Class* GetClass()       \
-	{                                               \
-		return m_class;                             \
-	}                                               \
-                                                    \
-private:                                            \
-	inline static const cct::refl::Class* m_class;  \
-	friend class Internal##className##Class;        \
-	friend class Internal##className##GenericClass; \
+#define CCT_OBJECT(className)                              \
+public:                                                    \
+	virtual void Accept(cct::refl::FieldVisitor& visitor); \
+	static const cct::refl::Class* GetClass()              \
+	{                                                      \
+		return m_class;                                    \
+	}                                                      \
+                                                           \
+private:                                                   \
+	inline static const cct::refl::Class* m_class;         \
+	friend class Internal##className##Class;               \
+	friend class Internal##className##GenericClass;        \
 	int PrivateReflInitClass##className = (this->InitReflection(m_class), 0)
 
 struct CCT_REFL_PACKAGE("version = \"1.0.0\"", "description = \"Concerto Reflection Standard Package\"") ConcertoReflection
@@ -56,6 +58,7 @@ CCT_ENABLE_ENUM_FLAGS(cct::refl::ObjectFlags)
 namespace cct::refl
 {
 	class Class;
+	class FieldVisitor;
 	class Registry;
 
 	class CCT_REFL_CLASS() CCT_REFLECTION_API Object
@@ -105,6 +108,20 @@ namespace cct::refl
 		[[nodiscard]] const T* GetNativeMemberVariable(std::string_view name) const;
 
 		[[nodiscard]] virtual std::string ToString() const;
+
+		void Accept(FieldVisitor& visitor) const
+		{
+			const_cast<Object*>(this)->Accept(visitor);
+		}
+
+		[[nodiscard]] virtual bool IsVector() const
+		{
+			return false;
+		}
+		[[nodiscard]] virtual bool IsEnumeration() const
+		{
+			return false;
+		}
 
 		[[nodiscard]] const cct::Uuid& GetUuid() const;
 		void SetUuid(const cct::Uuid& uuid);

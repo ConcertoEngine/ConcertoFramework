@@ -169,4 +169,15 @@ namespace cct::refl
 	{
 		return m_elementType;
 	}
+
+	void Vector::Accept(FieldVisitor& visitor)
+	{
+		for (const auto& elem : m_elements)
+		{
+			if (elem != nullptr)
+			{
+				elem->Accept(visitor);
+			}
+		}
+	}
 } // namespace cct::refl

@@ -6,6 +6,7 @@
 #include "Concerto/Reflection/Enumeration/Enumeration.refl.hpp"
 #include "Concerto/Reflection/Enumeration/EnumerationClass.hpp"
 #include "Concerto/Reflection/Enumeration/EnumIterator.hpp"
+#include "Concerto/Reflection/FieldVisitor/FieldVisitor.hpp"
 
 namespace cct::refl
 {

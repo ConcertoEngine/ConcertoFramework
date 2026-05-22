@@ -52,6 +52,11 @@ namespace cct::refl
 		cct::Int64 SetFlag(cct::Int64 value, cct::Int64 flag) const;
 		cct::Int64 ToggleFlag(cct::Int64 value, cct::Int64 flag) const;
 
+		[[nodiscard]] bool IsEnumeration() const override
+		{
+			return true;
+		}
+
 		CCT_OBJECT(Enumeration);
 
 	protected:
