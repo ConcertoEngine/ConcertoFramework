@@ -5,6 +5,7 @@
 #ifndef CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_DEVICE_HPP
 #define CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_DEVICE_HPP
 
+#include <filesystem>
 #include <optional>
 
 #include <unordered_map>
@@ -34,7 +35,8 @@ namespace cct::gfx::rhi
 		std::unique_ptr<TextureBuilder> CreateTextureBuilder() override;
 		std::unique_ptr<CommandPool> CreateCommandPool(rhi::QueueFamily family, CommandBufferUsage usage) override;
 		std::unique_ptr<rhi::Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) override;
-		std::shared_ptr<rhi::ShaderModule> CreateShaderModule(const std::string& path) override;
+		std::shared_ptr<rhi::ShaderModule> CreateShaderModule(const std::string& path,
+		                                                       cct::gfx::ShaderStage stageFilter) override;
 		std::shared_ptr<rhi::DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) override;
 		std::shared_ptr<rhi::PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<rhi::DescriptorSetLayout>>& descriptorSetLayouts) override;
 		std::shared_ptr<rhi::Pipeline> CreatePipeline(const rhi::ShaderModule& vertexShader, const rhi::ShaderModule& fragmentShader,
@@ -53,6 +55,7 @@ namespace cct::gfx::rhi
 		std::unique_ptr<Fence> CreateFence() override;
 		std::unique_ptr<QueryPool> CreateQueryPool() override;
 		std::shared_ptr<Texture> ImportTexture(const rhi::TextureImportInfo& info) override;
+		void SetShaderModuleSearchPath(const std::filesystem::path& path) override { m_shaderModulePath = path; }
 
 		vk::UploadContext& GetUploadContext();
 		vk::Instance& GetVkInstance() const;
@@ -64,6 +67,7 @@ namespace cct::gfx::rhi
 		std::optional<vk::UploadContext> m_uploadContext;
 		std::optional<vk::DescriptorAllocator> m_descriptorAllocator;
 		std::unordered_map<rhi::QueueFamily, VkRHIQueue> m_queues;
+		std::filesystem::path m_shaderModulePath;
 	};
 }
 

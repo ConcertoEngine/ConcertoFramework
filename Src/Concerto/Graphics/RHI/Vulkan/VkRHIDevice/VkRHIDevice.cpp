@@ -250,8 +250,8 @@ namespace cct::gfx::rhi
 		const auto& rhiFragmentShader = Cast<const VkRHIShaderModule&>(fragmentShader);
 		const auto& rhiRenderPass = Cast<const VkRHIRenderPass&>(renderPass);
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
-			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(vertexShader.GetStage())), *rhiVertexShader.GetVulkanShaderModule().Get()),
-			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(fragmentShader.GetStage())), *rhiFragmentShader.GetVulkanShaderModule().Get())};
+			rhiVertexShader.GetVulkanShaderModule().GetPipelineShaderStageCreateInfo(),
+			rhiFragmentShader.GetVulkanShaderModule().GetPipelineShaderStageCreateInfo()};
 
 		VkExtent2D extent = {windowExtent.X(), windowExtent.Y()};
 		auto pipelineLayoutCopy = std::make_shared<VkRHIPipelineLayout>(*this, pipelineLayout.GetDescriptorSetLayouts());
@@ -279,8 +279,8 @@ namespace cct::gfx::rhi
 		const auto& rhiRenderPass = Cast<const VkRHIRenderPass&>(renderPass);
 
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {
-			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(vertexShader.GetStage())), *rhiVertexShader.GetVulkanShaderModule().Get()),
-			VulkanInitializer::PipelineShaderStageCreateInfo(static_cast<VkShaderStageFlagBits>(Converters::ToVulkan(fragmentShader.GetStage())), *rhiFragmentShader.GetVulkanShaderModule().Get())};
+			rhiVertexShader.GetVulkanShaderModule().GetPipelineShaderStageCreateInfo(),
+			rhiFragmentShader.GetVulkanShaderModule().GetPipelineShaderStageCreateInfo()};
 
 		VkExtent2D extent = {windowExtent.X(), windowExtent.Y()};
 		auto pipelineLayoutCopy = std::make_shared<VkRHIPipelineLayout>(*this, pipelineLayout.GetDescriptorSetLayouts());
