@@ -1,527 +1,521 @@
 #include "Concerto/Reflection/Json/Json.hpp"
 
-#include <iomanip>
-#include <sstream>
+#include <fstream>
+#include <map>
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <vector>
 
-#include <simdjson.h>
-
-#include <Concerto/Core/TypeInfo/TypeInfo.hpp>
-
+#include "Concerto/Reflection/Boolean/Boolean.refl.hpp"
 #include "Concerto/Reflection/Class/Class.hpp"
-#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Enumeration/Enumeration.refl.hpp"
 #include "Concerto/Reflection/Enumeration/EnumerationClass.hpp"
 #include "Concerto/Reflection/EnumValue/EnumValue.hpp"
+#include "Concerto/Reflection/FieldVisitor/FieldVisitor.hpp"
+#include "Concerto/Reflection/File/File.refl.hpp"
+#include "Concerto/Reflection/Float32/Float32.refl.hpp"
+#include "Concerto/Reflection/Float64/Float64.refl.hpp"
+#include "Concerto/Reflection/Folder/Folder.refl.hpp"
+#include "Concerto/Reflection/Int16/Int16.refl.hpp"
+#include "Concerto/Reflection/Int32/Int32.refl.hpp"
+#include "Concerto/Reflection/Int64/Int64.refl.hpp"
+#include "Concerto/Reflection/Int8/Int8.refl.hpp"
+#include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Object/Object.refl.hpp"
+#include "Concerto/Reflection/String/String.refl.hpp"
+#include "Concerto/Reflection/UInt16/UInt16.refl.hpp"
+#include "Concerto/Reflection/UInt32/UInt32.refl.hpp"
+#include "Concerto/Reflection/UInt64/UInt64.refl.hpp"
+#include "Concerto/Reflection/UInt8/UInt8.refl.hpp"
 #include "Concerto/Reflection/Vector/Vector.refl.hpp"
+#include <nlohmann/json.hpp>
 
 namespace cct::refl
 {
 	namespace
 	{
-		void SerializeObject(std::string& out, const Object& obj);
-		bool DeserializeObjectFields(Object& target, simdjson::ondemand::object& jsonObj);
+		nlohmann::json SerializeObject(const Object& obj);
 
-		void AppendEscapedString(std::string& out, std::string_view s)
+		struct JsonSerializer : FieldVisitor
 		{
-			out.reserve(out.size() + s.size() + 2);
-			for (char c : s)
-			{
-				switch (c)
-				{
-					case '"':  out += "\\\""; break;
-					case '\\': out += "\\\\"; break;
-					case '\b': out += "\\b";  break;
-					case '\f': out += "\\f";  break;
-					case '\n': out += "\\n";  break;
-					case '\r': out += "\\r";  break;
-					case '\t': out += "\\t";  break;
-					default:
-						if (static_cast<unsigned char>(c) < 0x20)
-						{
-							char buf[8];
-							std::snprintf(buf, sizeof(buf), "\\u%04x", static_cast<unsigned char>(c));
-							out += buf;
-						}
-						else
-						{
-							out += c;
-						}
-						break;
-				}
-			}
-		}
+			nlohmann::json& out;
 
-		std::string FormatFloat(float value)
-		{
-			std::stringstream oss;
-			oss << std::fixed << std::setprecision(6) << value;
-			std::string result = oss.str();
-			if (result.find('.') != std::string::npos)
+			explicit JsonSerializer(nlohmann::json& o) :
+				out(o)
 			{
-				result.erase(result.find_last_not_of('0') + 1, std::string::npos);
-				if (result.back() == '.')
-					result.pop_back();
 			}
-			return result;
-		}
 
-		std::string FormatDouble(double value)
-		{
-			std::stringstream oss;
-			oss << std::fixed << std::setprecision(15) << value;
-			std::string result = oss.str();
-			if (result.find('.') != std::string::npos)
+			void Visit(std::string_view name, int& v) override
 			{
-				result.erase(result.find_last_not_of('0') + 1, std::string::npos);
-				if (result.back() == '.')
-					result.pop_back();
+				out[std::string(name)] = v;
 			}
-			return result;
-		}
+			void Visit(std::string_view name, float& v) override
+			{
+				out[std::string(name)] = v;
+			}
+			void Visit(std::string_view name, bool& v) override
+			{
+				out[std::string(name)] = v;
+			}
+			void Visit(std::string_view name, std::string& v) override
+			{
+				out[std::string(name)] = v;
+			}
+			void Visit(std::string_view name, Boolean& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, Int8& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, Int16& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, Int32& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, Int64& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, UInt8& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, UInt16& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, UInt32& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, UInt64& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, Float32& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, Float64& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
+			void Visit(std::string_view name, String& v) override
+			{
+				out[std::string(name)] = v.Get();
+			}
 
-		bool TryEmitPrimitiveWrapper(std::string& out, const Object& memberObj)
-		{
-			const Class* klass = memberObj.GetDynamicClass();
-			if (!klass)
-				return false;
-			const std::string_view name = klass->GetName();
-
-			const NativeMemberVariable* mv = klass->GetNativeMemberVariable("m_value");
-			if (!mv)
-				return false;
-			const std::size_t idx = mv->GetIndex();
-
-			if (name == "Boolean")
+			void Visit(std::string_view name, File& v) override
 			{
-				const bool* p = memberObj.GetNativeMemberVariable<bool>(idx);
-				out += (p && *p) ? "true" : "false";
-				return true;
+				out[std::string(name)] = {{"$file", "File"}, {"path", v.Get()}};
 			}
-			if (name == "Int8")
+			void Visit(std::string_view name, Folder& v) override
 			{
-				const cct::Int8* p = memberObj.GetNativeMemberVariable<cct::Int8>(idx);
-				out += std::to_string(p ? static_cast<int>(*p) : 0);
-				return true;
+				out[std::string(name)] = {{"$folder", "Folder"}, {"path", v.Get()}};
 			}
-			if (name == "Int16")
+			void Visit(std::string_view name, Enumeration& v) override
 			{
-				const cct::Int16* p = memberObj.GetNativeMemberVariable<cct::Int16>(idx);
-				out += std::to_string(p ? static_cast<int>(*p) : 0);
-				return true;
-			}
-			if (name == "Int32")
-			{
-				const cct::Int32* p = memberObj.GetNativeMemberVariable<cct::Int32>(idx);
-				out += std::to_string(p ? *p : 0);
-				return true;
-			}
-			if (name == "Int64")
-			{
-				const cct::Int64* p = memberObj.GetNativeMemberVariable<cct::Int64>(idx);
-				out += std::to_string(p ? *p : 0);
-				return true;
-			}
-			if (name == "UInt8")
-			{
-				const cct::UInt8* p = memberObj.GetNativeMemberVariable<cct::UInt8>(idx);
-				out += std::to_string(p ? static_cast<unsigned>(*p) : 0u);
-				return true;
-			}
-			if (name == "UInt16")
-			{
-				const cct::UInt16* p = memberObj.GetNativeMemberVariable<cct::UInt16>(idx);
-				out += std::to_string(p ? static_cast<unsigned>(*p) : 0u);
-				return true;
-			}
-			if (name == "UInt32")
-			{
-				const cct::UInt32* p = memberObj.GetNativeMemberVariable<cct::UInt32>(idx);
-				out += std::to_string(p ? *p : 0u);
-				return true;
-			}
-			if (name == "UInt64")
-			{
-				const cct::UInt64* p = memberObj.GetNativeMemberVariable<cct::UInt64>(idx);
-				out += std::to_string(p ? *p : 0ull);
-				return true;
-			}
-			if (name == "Float32")
-			{
-				const float* p = memberObj.GetNativeMemberVariable<float>(idx);
-				out += FormatFloat(p ? *p : 0.0F);
-				return true;
-			}
-			if (name == "Float64")
-			{
-				const double* p = memberObj.GetNativeMemberVariable<double>(idx);
-				out += FormatDouble(p ? *p : 0.0);
-				return true;
-			}
-			if (name == "String")
-			{
-				const std::string* p = memberObj.GetNativeMemberVariable<std::string>(idx);
-				out += "\"";
-				if (p)
-					AppendEscapedString(out, *p);
-				out += "\"";
-				return true;
-			}
-			return false;
-		}
-
-		bool TryAssignPrimitiveWrapper(Object& memberObj, simdjson::ondemand::value& field)
-		{
-			const Class* klass = memberObj.GetDynamicClass();
-			if (!klass)
-				return false;
-			const std::string_view name = klass->GetName();
-
-			const NativeMemberVariable* mv = klass->GetNativeMemberVariable("m_value");
-			if (!mv)
-				return false;
-			const std::size_t idx = mv->GetIndex();
-
-			auto setInt = [&](auto* dst) {
-				int64_t v;
-				if (field.get(v) == simdjson::SUCCESS && dst)
-					*dst = static_cast<std::remove_reference_t<decltype(*dst)>>(v);
-			};
-			auto setUInt = [&](auto* dst) {
-				uint64_t v;
-				if (field.get(v) == simdjson::SUCCESS && dst)
-					*dst = static_cast<std::remove_reference_t<decltype(*dst)>>(v);
-			};
-
-			if (name == "Boolean")
-			{
-				bool v;
-				if (field.get(v) == simdjson::SUCCESS)
-					if (bool* p = memberObj.GetNativeMemberVariable<bool>(idx))
-						*p = v;
-				return true;
-			}
-			if (name == "Int8")  { setInt(memberObj.GetNativeMemberVariable<cct::Int8>(idx));  return true; }
-			if (name == "Int16") { setInt(memberObj.GetNativeMemberVariable<cct::Int16>(idx)); return true; }
-			if (name == "Int32") { setInt(memberObj.GetNativeMemberVariable<cct::Int32>(idx)); return true; }
-			if (name == "Int64") { setInt(memberObj.GetNativeMemberVariable<cct::Int64>(idx)); return true; }
-			if (name == "UInt8")  { setUInt(memberObj.GetNativeMemberVariable<cct::UInt8>(idx));  return true; }
-			if (name == "UInt16") { setUInt(memberObj.GetNativeMemberVariable<cct::UInt16>(idx)); return true; }
-			if (name == "UInt32") { setUInt(memberObj.GetNativeMemberVariable<cct::UInt32>(idx)); return true; }
-			if (name == "UInt64") { setUInt(memberObj.GetNativeMemberVariable<cct::UInt64>(idx)); return true; }
-			if (name == "Float32")
-			{
-				double v;
-				if (field.get(v) == simdjson::SUCCESS)
-					if (float* p = memberObj.GetNativeMemberVariable<float>(idx))
-						*p = static_cast<float>(v);
-				return true;
-			}
-			if (name == "Float64")
-			{
-				double v;
-				if (field.get(v) == simdjson::SUCCESS)
-					if (double* p = memberObj.GetNativeMemberVariable<double>(idx))
-						*p = v;
-				return true;
-			}
-			if (name == "String")
-			{
-				std::string_view v;
-				if (field.get(v) == simdjson::SUCCESS)
-					if (std::string* p = memberObj.GetNativeMemberVariable<std::string>(idx))
-						*p = std::string(v);
-				return true;
-			}
-			return false;
-		}
-
-		// Serialize one member's value: primitive flat, Vector array, Enumeration name, or nested object.
-		void SerializeMemberValue(std::string& out, const Object& memberObj)
-		{
-			if (TryEmitPrimitiveWrapper(out, memberObj))
-				return;
-
-			if (const auto* enumObj = dynamic_cast<const Enumeration*>(&memberObj))
-			{
-				// Emit a structured enum value with metadata so the UI can render a dropdown.
-				// Format: {"$enum": "<EnumName>", "value": "<currentName>", "options": ["A", "B", ...]}
-				const auto* enumClass = dynamic_cast<const EnumerationClass*>(enumObj->GetDynamicClass());
-
-				out += "{\"$enum\":\"";
+				const auto* enumClass = dynamic_cast<const EnumerationClass*>(v.GetDynamicClass());
+				nlohmann::json enumJson;
+				enumJson["$enum"] = enumClass ? enumClass->GetName() : "";
+				enumJson["value"] = v.ToString();
+				auto opts = nlohmann::json::array();
 				if (enumClass)
-					AppendEscapedString(out, enumClass->GetName());
-				out += "\",\"value\":\"";
-				AppendEscapedString(out, enumObj->ToString());
-				out += "\",\"options\":[";
-				if (enumClass)
-				{
-					bool firstOpt = true;
 					for (const auto& ev : enumClass->GetEnumValues())
-					{
-						if (!ev)
-							continue;
-						if (!firstOpt)
-							out += ",";
-						firstOpt = false;
-						out += "\"";
-						AppendEscapedString(out, ev->GetName());
-						out += "\"";
-					}
-				}
-				out += "]}";
-				return;
+						if (ev)
+							opts.push_back(ev->GetName());
+				enumJson["options"] = std::move(opts);
+				out[std::string(name)] = std::move(enumJson);
 			}
-
-			if (const auto* vec = dynamic_cast<const Vector*>(&memberObj))
+			void Visit(std::string_view name, Vector& v) override
 			{
-				out += "[";
-				const std::size_t n = vec->GetCount();
-				for (std::size_t i = 0; i < n; ++i)
+				auto arr = nlohmann::json::array();
+				for (std::size_t i = 0; i < v.GetCount(); ++i)
 				{
-					if (i > 0)
-						out += ",";
-					if (const Object* elem = vec->Get(i))
-						SerializeObject(out, *elem);
+					if (Object* elem = v.Get(i))
+						arr.push_back(SerializeObject(*elem));
 					else
-						out += "null";
+						arr.push_back(nullptr);
 				}
-				out += "]";
-				return;
+				out[std::string(name)] = std::move(arr);
 			}
+			void Visit(std::string_view name, Object& v) override
+			{
+				out[std::string(name)] = SerializeObject(v);
+			}
+		};
 
-			// Nested non-primitive Object — recurse.
-			SerializeObject(out, memberObj);
-		}
-
-		void SerializeObject(std::string& out, const Object& obj)
+		nlohmann::json BuildMeta(const std::vector<const Class*>& chain)
 		{
-			const Class* klass = obj.GetDynamicClass();
-			if (!klass)
+			nlohmann::json meta = nlohmann::json::object();
+
+			auto processVar = [&](std::string_view fieldName, const auto* mv)
 			{
-				out += "{}";
-				return;
-			}
-
-			out += "{";
-			bool first = true;
-
-			// Native members (raw int/float/bool/std::string fields)
-			for (const auto& member : klass->GetNativeMemberVariables())
-			{
-				if (!member)
-					continue;
-
-				if (!first)
-					out += ",";
-				first = false;
-
-				out += "\"";
-				AppendEscapedString(out, member->GetName());
-				out += "\":";
-
-				const std::size_t idx = member->GetIndex();
-				const UInt64 typeId = member->GetTypeId();
-
-				if (typeId == cct::TypeId<int>())
+				const auto& attrs = mv->GetAttributes();
+				std::string minScalar, maxScalar;
+				std::map<std::string, std::string> minMap, maxMap;
+				for (const auto& [key, val] : attrs)
 				{
-					const int* p = obj.GetNativeMemberVariable<int>(idx);
-					out += std::to_string(p ? *p : 0);
+					if (key == "Min")
+						minScalar = val;
+					else if (key == "Max")
+						maxScalar = val;
+					else if (key.size() > 4 && key.substr(0, 4) == "Min.")
+						minMap[key.substr(4)] = val;
+					else if (key.size() > 4 && key.substr(0, 4) == "Max.")
+						maxMap[key.substr(4)] = val;
 				}
-				else if (typeId == cct::TypeId<float>())
+
+				nlohmann::json entry = nlohmann::json::object();
+
+				auto addScalarOrMap = [&](const char* key,
+										  const std::string& scalar,
+										  const std::map<std::string, std::string>& map)
 				{
-					const float* p = obj.GetNativeMemberVariable<float>(idx);
-					out += FormatFloat(p ? *p : 0.0F);
-				}
-				else if (typeId == cct::TypeId<bool>())
-				{
-					const bool* p = obj.GetNativeMemberVariable<bool>(idx);
-					out += (p && *p) ? "true" : "false";
-				}
-				else if (typeId == cct::TypeId<std::string>())
-				{
-					const std::string* p = obj.GetNativeMemberVariable<std::string>(idx);
-					out += "\"";
-					if (p)
-						AppendEscapedString(out, *p);
-					out += "\"";
-				}
-				else
-				{
-					out += "null";
-				}
-			}
-
-			// Reflected Object members (primitive wrappers, Vectors, nested Objects).
-			for (const auto& member : klass->GetMemberVariables())
-			{
-				if (!member)
-					continue;
-
-				const std::size_t idx = member->GetIndex();
-				const Object* memberObj = klass->GetMemberVariable(idx, obj);
-				if (!memberObj)
-					continue;
-
-				if (!first)
-					out += ",";
-				first = false;
-
-				out += "\"";
-				AppendEscapedString(out, member->GetName());
-				out += "\":";
-
-				SerializeMemberValue(out, *memberObj);
-			}
-
-			out += "}";
-		}
-
-		bool DeserializeObjectFields(Object& target, simdjson::ondemand::object& jsonObj)
-		{
-			const Class* klass = target.GetDynamicClass();
-			if (!klass)
-				return false;
-
-			for (auto field : jsonObj)
-			{
-				std::string_view key;
-				if (field.unescaped_key().get(key))
-					continue;
-
-				// 1. Native members
-				if (const NativeMemberVariable* nm = klass->GetNativeMemberVariable(key))
-				{
-					const std::size_t idx = nm->GetIndex();
-					const UInt64 typeId = nm->GetTypeId();
-					simdjson::ondemand::value v = field.value();
-
-					if (typeId == cct::TypeId<int>())
+					if (scalar.empty() && map.empty())
+						return;
+					if (!scalar.empty())
 					{
-						int64_t iv;
-						if (v.get(iv) == simdjson::SUCCESS)
-							if (int* p = target.GetNativeMemberVariable<int>(idx))
-								*p = static_cast<int>(iv);
-					}
-					else if (typeId == cct::TypeId<float>())
-					{
-						double fv;
-						if (v.get(fv) == simdjson::SUCCESS)
-							if (float* p = target.GetNativeMemberVariable<float>(idx))
-								*p = static_cast<float>(fv);
-					}
-					else if (typeId == cct::TypeId<bool>())
-					{
-						bool bv;
-						if (v.get(bv) == simdjson::SUCCESS)
-							if (bool* p = target.GetNativeMemberVariable<bool>(idx))
-								*p = bv;
-					}
-					else if (typeId == cct::TypeId<std::string>())
-					{
-						std::string_view sv;
-						if (v.get(sv) == simdjson::SUCCESS)
-							if (std::string* p = target.GetNativeMemberVariable<std::string>(idx))
-								*p = std::string(sv);
-					}
-					continue;
-				}
-
-				// 2. Reflected member (primitive wrapper, Vector, or nested Object).
-				if (!klass->HasMemberVariable(key))
-					continue;
-
-				const MemberVariable* m = klass->GetMemberVariable(key);
-				if (!m)
-					continue;
-				Object* memberObj = klass->GetMemberVariable(m->GetIndex(), target);
-				if (!memberObj)
-					continue;
-
-				simdjson::ondemand::value v = field.value();
-				if (TryAssignPrimitiveWrapper(*memberObj, v))
-					continue;
-
-				if (auto* enumObj = dynamic_cast<Enumeration*>(memberObj))
-				{
-					// Accept "Normal" (name string), 0 (raw int), or {value:"Normal", ...} object.
-					std::string_view nameView;
-					if (v.get(nameView) == simdjson::SUCCESS)
-					{
-						enumObj->SetEnumValue(enumObj->FromString(nameView));
+						nlohmann::json val = nlohmann::json::parse(scalar, nullptr, false);
+						if (!val.is_discarded())
+							entry[key] = std::move(val);
 					}
 					else
 					{
-						int64_t intVal;
-						if (v.get(intVal) == simdjson::SUCCESS)
+						nlohmann::json mapJson = nlohmann::json::object();
+						for (const auto& [k, v] : map)
 						{
-							enumObj->SetEnumValue(intVal);
+							nlohmann::json val = nlohmann::json::parse(v, nullptr, false);
+							if (!val.is_discarded())
+								mapJson[k] = std::move(val);
 						}
-						else
+						entry[key] = std::move(mapJson);
+					}
+				};
+
+				addScalarOrMap("min", minScalar, minMap);
+				addScalarOrMap("max", maxScalar, maxMap);
+
+				if constexpr (std::is_same_v<std::remove_pointer_t<decltype(mv)>, MemberVariable>)
+				{
+					static constexpr std::string_view INTEGER_TYPES[] = {
+						"Int8",
+						"Int16",
+						"Int32",
+						"Int64",
+						"UInt8",
+						"UInt16",
+						"UInt32",
+						"UInt64",
+					};
+					if (const Class* type = mv->GetType())
+					{
+						for (const auto& intType : INTEGER_TYPES)
 						{
-							simdjson::ondemand::object enumJsonObj;
-							if (v.get_object().get(enumJsonObj) == simdjson::SUCCESS)
+							if (type->GetName() == intType)
 							{
-								std::string_view innerName;
-								if (enumJsonObj["value"].get(innerName) == simdjson::SUCCESS)
-									enumObj->SetEnumValue(enumObj->FromString(innerName));
+								entry["integer"] = true;
+								break;
 							}
 						}
 					}
-					continue;
 				}
 
-				if (auto* vec = dynamic_cast<Vector*>(memberObj))
+				if (!entry.empty())
+					meta[std::string(fieldName)] = std::move(entry);
+			};
+
+			for (auto it = chain.rbegin(); it != chain.rend(); ++it)
+			{
+				const Class* c = *it;
+				for (const auto& mv : c->GetNativeMemberVariables())
+					if (mv)
+						processVar(mv->GetName(), mv.get());
+				for (const auto& mv : c->GetMemberVariables())
+					if (mv)
+						processVar(mv->GetName(), mv.get());
+			}
+
+			return meta;
+		}
+
+		nlohmann::json SerializeObject(const Object& obj)
+		{
+			const Class* klass = obj.GetDynamicClass();
+			if (klass == nullptr)
+				return nlohmann::json::object();
+
+			std::vector<const Class*> chain;
+			for (const Class* c = klass; c != nullptr && c->GetName() != "Object"; c = c->GetBaseClass())
+				chain.push_back(c);
+
+			nlohmann::json j = nlohmann::json::object();
+
+			if (klass->GetName() != "Object")
+				j["class"] = klass->GetFullyQualifiedName();
+
+			JsonSerializer serializer{j};
+			obj.Accept(serializer);
+
+			nlohmann::json meta = BuildMeta(chain);
+			if (!meta.empty())
+				j["__meta__"] = std::move(meta);
+
+			return j;
+		}
+
+		struct JsonDeserializer : FieldVisitor
+		{
+			const nlohmann::json& obj;
+
+			explicit JsonDeserializer(const nlohmann::json& o) :
+				obj(o)
+			{
+			}
+
+			template<typename T>
+			bool TryGet(std::string_view name, T& out) const
+			{
+				const auto it = obj.find(std::string(name));
+				if (it == obj.end())
+					return false;
+				try
 				{
-					simdjson::ondemand::array arr;
-					if (v.get(arr) != simdjson::SUCCESS)
+					out = it->get<T>();
+					return true;
+				}
+				catch (...)
+				{
+					return false;
+				}
+			}
+
+			void Visit(std::string_view name, int& v) override
+			{
+				TryGet(name, v);
+			}
+			void Visit(std::string_view name, float& v) override
+			{
+				TryGet(name, v);
+			}
+			void Visit(std::string_view name, bool& v) override
+			{
+				TryGet(name, v);
+			}
+			void Visit(std::string_view name, std::string& v) override
+			{
+				TryGet(name, v);
+			}
+
+			void Visit(std::string_view name, Boolean& v) override
+			{
+				bool b;
+				if (TryGet(name, b))
+					v.Set(b);
+			}
+			void Visit(std::string_view name, Int8& v) override
+			{
+				int64_t i;
+				if (TryGet(name, i))
+					v.Set(static_cast<cct::Int8>(i));
+			}
+			void Visit(std::string_view name, Int16& v) override
+			{
+				int64_t i;
+				if (TryGet(name, i))
+					v.Set(static_cast<cct::Int16>(i));
+			}
+			void Visit(std::string_view name, Int32& v) override
+			{
+				int64_t i;
+				if (TryGet(name, i))
+					v.Set(static_cast<cct::Int32>(i));
+			}
+			void Visit(std::string_view name, Int64& v) override
+			{
+				int64_t i;
+				if (TryGet(name, i))
+					v.Set(i);
+			}
+			void Visit(std::string_view name, UInt8& v) override
+			{
+				uint64_t u;
+				if (TryGet(name, u))
+					v.Set(static_cast<cct::UInt8>(u));
+			}
+			void Visit(std::string_view name, UInt16& v) override
+			{
+				uint64_t u;
+				if (TryGet(name, u))
+					v.Set(static_cast<cct::UInt16>(u));
+			}
+			void Visit(std::string_view name, UInt32& v) override
+			{
+				uint64_t u;
+				if (TryGet(name, u))
+					v.Set(static_cast<cct::UInt32>(u));
+			}
+			void Visit(std::string_view name, UInt64& v) override
+			{
+				uint64_t u;
+				if (TryGet(name, u))
+					v.Set(u);
+			}
+			void Visit(std::string_view name, Float32& v) override
+			{
+				float f;
+				if (TryGet(name, f))
+					v.Set(f);
+			}
+			void Visit(std::string_view name, Float64& v) override
+			{
+				double d;
+				if (TryGet(name, d))
+					v.Set(d);
+			}
+			void Visit(std::string_view name, String& v) override
+			{
+				std::string s;
+				if (TryGet(name, s))
+					v.Set(std::move(s));
+			}
+
+			void Visit(std::string_view name, File& v) override
+			{
+				const auto it = obj.find(std::string(name));
+				if (it == obj.end() || !it->is_object())
+					return;
+				const auto pit = it->find("path");
+				if (pit != it->end() && pit->is_string())
+					v.Set(pit->get<std::string>());
+			}
+			void Visit(std::string_view name, Folder& v) override
+			{
+				const auto it = obj.find(std::string(name));
+				if (it == obj.end() || !it->is_object())
+					return;
+				const auto pit = it->find("path");
+				if (pit != it->end() && pit->is_string())
+					v.Set(pit->get<std::string>());
+			}
+			void Visit(std::string_view name, Enumeration& v) override
+			{
+				const auto it = obj.find(std::string(name));
+				if (it == obj.end())
+					return;
+				if (it->is_string())
+				{
+					v.SetEnumValue(v.FromString(it->get<std::string>()));
+					return;
+				}
+				if (it->is_number_integer())
+				{
+					v.SetEnumValue(it->get<int64_t>());
+					return;
+				}
+				if (it->is_object())
+				{
+					const auto vit = it->find("value");
+					if (vit != it->end() && vit->is_string())
+						v.SetEnumValue(v.FromString(vit->get<std::string>()));
+				}
+			}
+			void Visit(std::string_view name, Vector& v) override
+			{
+				const auto it = obj.find(std::string(name));
+				if (it == obj.end() || !it->is_array())
+					return;
+
+				v.Clear();
+				ScopedObjectFlag constructing(v, ObjectFlags::Constructing,
+											  [&v]()
+											  { v.OnValueChanged.Emit(); });
+
+				for (const auto& elemJson : *it)
+				{
+					if (!elemJson.is_object())
 						continue;
 
-					vec->Clear();
-					for (auto elemVal : arr)
+					if (v.GetElementType() == nullptr)
 					{
-						simdjson::ondemand::object elemObj;
-						if (elemVal.get_object().get(elemObj) != simdjson::SUCCESS)
+						const auto cit = elemJson.find("class");
+						if (cit == elemJson.end() || !cit->is_string())
 							continue;
-						Object* newElem = vec->Add();
-						if (newElem)
-							DeserializeObjectFields(*newElem, elemObj);
+						const Class* cls = GetClassByName(cit->get<std::string>());
+						if (!cls)
+							continue;
+						auto newObj = cls->CreateDefaultObject();
+						if (!newObj)
+							continue;
+						Object* elem = newObj.get();
+						v.Add(std::move(newObj));
+						JsonDeserializer elemDeser{elemJson};
+						elem->Accept(elemDeser);
 					}
-					continue;
+					else
+					{
+						Object* elem = v.Add();
+						if (elem)
+						{
+							JsonDeserializer elemDeser{elemJson};
+							elem->Accept(elemDeser);
+						}
+					}
 				}
-
-				// Nested non-primitive Object — recurse.
-				simdjson::ondemand::object nestedObj;
-				if (v.get_object().get(nestedObj) == simdjson::SUCCESS)
-					DeserializeObjectFields(*memberObj, nestedObj);
 			}
-			return true;
-		}
-	}
+			void Visit(std::string_view name, Object& v) override
+			{
+				const auto it = obj.find(std::string(name));
+				if (it == obj.end() || !it->is_object())
+					return;
+				JsonDeserializer nestedDeser{*it};
+				v.Accept(nestedDeser);
+			}
+		};
+
+	} // namespace
 
 	std::string Json::ToJson(const Object& obj)
 	{
-		std::string out;
-		SerializeObject(out, obj);
-		return out;
+		return SerializeObject(obj).dump();
 	}
 
 	bool Json::FromJson(Object& target, std::string_view json)
 	{
-		simdjson::ondemand::parser parser;
-		simdjson::padded_string padded(json.data(), json.size());
-
-		simdjson::ondemand::document doc;
-		if (parser.iterate(padded).get(doc))
+		const nlohmann::json j = nlohmann::json::parse(json, nullptr, false);
+		if (j.is_discarded() || !j.is_object())
 			return false;
-
-		simdjson::ondemand::object obj;
-		if (doc.get_object().get(obj))
-			return false;
-
-		return DeserializeObjectFields(target, obj);
+		JsonDeserializer deser{j};
+		target.Accept(deser);
+		return true;
 	}
+
+	bool Json::ToJsonFile(const Object& obj, const std::string& path)
+	{
+		std::ofstream file(path);
+		if (!file.is_open())
+			return false;
+		file << SerializeObject(obj).dump(4);
+		return file.good();
+	}
+
+	bool Json::FromJsonFile(Object& target, const std::string& path)
+	{
+		std::ifstream file(path);
+		if (!file.is_open())
+			return false;
+		const nlohmann::json j = nlohmann::json::parse(file, nullptr, false);
+		if (j.is_discarded() || !j.is_object())
+			return false;
+		JsonDeserializer deser{j};
+		target.Accept(deser);
+		return true;
+	}
+
 } // namespace cct::refl

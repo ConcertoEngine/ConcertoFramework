@@ -29,12 +29,18 @@ namespace cct::refl
 		/** Serialize all native members of obj into a flat JSON object string. */
 		static std::string ToJson(const Object& obj);
 
+		/** Serialize obj to a JSON file at path. Returns false on I/O error. */
+		static bool ToJsonFile(const Object& obj, const std::string& path);
+
 		/**
 		 * Parse a JSON object string and assign matching native members of target.
 		 * Unknown keys and unsupported types are silently skipped. Returns false
 		 * only on parse error (malformed JSON).
 		 */
 		static bool FromJson(Object& target, std::string_view json);
+
+		/** Deserialize obj from a JSON file at path. Returns false on I/O or parse error. */
+		static bool FromJsonFile(Object& target, const std::string& path);
 	};
 } // namespace cct::refl
 

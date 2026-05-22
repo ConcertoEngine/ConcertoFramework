@@ -1,7 +1,7 @@
 add_requires("toml11")
 add_requires("libllvm", {configs = {clang = true} })
 add_requires("cxxopts")
-add_requires("simdjson", { configs = { threads = true, noexceptions = false, logging = false } })
+add_requires("nlohmann_json")
 
 target("concerto-reflection", function()
     set_kind("$(kind)")
@@ -9,7 +9,7 @@ target("concerto-reflection", function()
     add_rpathdirs("$ORIGIN")
     add_defines("CCT_REFLECTION_BUILD", { public = false })
     add_includedirs("../../../Src/", { public = true })
-    add_packages("simdjson")
+    add_packages("nlohmann_json")
     if is_kind("static") then
         add_defines("CCT_REFLECTION_STATIC", { public = true })
     end
@@ -20,6 +20,7 @@ target("concerto-reflection", function()
         ".",
         "Boolean",
         "Class",
+        "FieldVisitor",
         "Enumeration",
         "EnumIterator",
         "EnumValue",
@@ -55,6 +56,7 @@ target("concerto-reflection", function()
     add_deps("concerto-pkg-generator", {links = false, inherit = false})
     add_deps("concerto-header-plugin", {links = false, plugin = "pkg-generator", inherit = false})
     add_deps("concerto-cpp-plugin", {links = false, plugin = "pkg-generator", inherit = false})
+    add_deps("concerto-json-plugin", {links = false, plugin = "pkg-generator", inherit = false})
     add_deps("concerto-core", { public = true })
     add_rules("cct_cpp_reflect")
 
