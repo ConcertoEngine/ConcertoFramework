@@ -103,6 +103,11 @@ namespace cct::gfx
 		PixelFormat GetFormat() const;
 
 		void FireStateChange(WindowState state);
+		void FireTextInput(const char* text);
+
+		void SetTextInputCallback(std::function<void(const char*)> cb);
+		void StartTextInput();
+		void StopTextInput();
 	private:
 		std::string m_title;
 		std::size_t m_width;
@@ -114,6 +119,7 @@ namespace cct::gfx
 		std::function<void(Window& window, int button, int action, int mods)> m_mouseButtonCallback;
 		std::function<void(Window& window, double xpos, double ypos)> m_cursorPosCallback;
 		std::function<void(Window& window, WindowState state)> m_stateCallback;
+		std::function<void(const char*)> m_textInputCb;
 		UInt32 m_windowID;
 		bool m_shouldQuit;
 		int m_titleBarHeight;

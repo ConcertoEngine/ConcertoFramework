@@ -436,6 +436,9 @@ namespace cct::gfx
 					newEvent.data = keyEvent;
 					break;
 				}
+				case SDL_EVENT_TEXT_INPUT:
+					window->FireTextInput(event->text.text);
+					return false;
 				case SDL_EVENT_MOUSE_WHEEL:
 				{
 					if (event->wheel.windowID != window->GetId())
@@ -719,6 +722,29 @@ namespace cct::gfx
 			m_stateCallback(*this, state);
 	}
 
+	void Window::FireTextInput(const char* text)
+	{
+		if (m_textInputCb)
+		{
+			m_textInputCb(text);
+		}
+	}
+
+	void Window::SetTextInputCallback(std::function<void(const char*)> cb)
+	{
+		m_textInputCb = std::move(cb);
+	}
+
+	void Window::StartTextInput()
+	{
+		SDL_StartTextInput(m_window);
+	}
+
+	void Window::StopTextInput()
+	{
+		SDL_StopTextInput(m_window);
+	}
+
 	namespace
 	{
 		SDL_HitTestResult SDLCALL HitTestThunk(SDL_Window* /*win*/, const SDL_Point* p, void* data)
@@ -752,6 +778,18 @@ namespace cct::gfx
 		const int H = static_cast<int>(GetHeight());
 		constexpr int kBorder = 6; // resize handle thickness
 
+		// Non-draggable rects (interactive UI elements) take priority over resize
+		// borders. Without this, window-control buttons at the top-right corner are
+		// swallowed by the ResizeTopRight zone and never receive WebKit hover/click events.
+		if (y < m_titleBarHeight)
+		{
+			for (const auto& r : m_nonDraggableRects)
+			{
+				if (x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)
+					return HitTestResult::Normal;
+			}
+		}
+
 		const bool L = x < kBorder;
 		const bool R = x >= W - kBorder;
 		const bool T = y < kBorder;
@@ -776,13 +814,12 @@ namespace cct::gfx
 
 		if (y < m_titleBarHeight)
 		{
-			for (const auto& r : m_nonDraggableRects)
-			{
-				if (x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)
-					return HitTestResult::Normal;
-			}
+			static int s_dragCount = 0;
+			if (++s_dragCount % 120 == 1)
+				CCT_GFX_LOG_INFO("Window", "HitTest DRAGGABLE x={} y={} (titleBarH={}, nonDragRects={})", x, y, m_titleBarHeight, m_nonDraggableRects.size());
 			return HitTestResult::Draggable;
 		}
+
 		return HitTestResult::Normal;
 	}
 } // namespace cct::gfx
