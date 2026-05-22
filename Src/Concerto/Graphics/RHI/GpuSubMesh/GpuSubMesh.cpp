@@ -22,7 +22,7 @@ namespace cct::gfx::rhi
 		m_material(std::move(material))
 	{
 		m_vertexBuffer = device.CreateBuffer(
-			static_cast<BufferUsageFlags>(BufferUsage::Vertex),
+			BufferUsage::Vertex,
 			static_cast<UInt32>(m_subMesh->GetVertices().size() * sizeof(Vertex)),
 			true);
 	}

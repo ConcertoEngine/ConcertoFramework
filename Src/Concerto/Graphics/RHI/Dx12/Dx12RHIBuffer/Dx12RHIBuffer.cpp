@@ -17,7 +17,7 @@ namespace cct::gfx::rhi
 		m_allowMapping(allowMapping)
 	{
 		// CBV requires 256-byte aligned size
-		bool isUniform = (usage & static_cast<BufferUsageFlags>(BufferUsage::Uniform)) != 0;
+		bool isUniform = usage.Contains(BufferUsage::Uniform);
 		UInt32 allocSize = isUniform ? (size + 255) & ~255u : size;
 		m_size = allocSize;
 

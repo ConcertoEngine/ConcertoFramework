@@ -28,6 +28,9 @@ namespace cct::gfx::rhi
 		template<typename T>
 		static constexpr inline VkFlags ToVulkan(UInt32 flags);
 
+		static constexpr inline VkFlags ToVulkan(PipelineStageFlags flags);
+		static constexpr inline VkFlags ToVulkan(MemoryAccessFlags flags);
+
 	};
 }
 

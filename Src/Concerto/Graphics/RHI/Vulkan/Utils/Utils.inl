@@ -242,19 +242,19 @@ namespace cct::gfx::rhi
 	constexpr VkBufferUsageFlags Converters::ToVulkan(BufferUsageFlags usage)
 	{
 		VkBufferUsageFlags vkFlags = 0;
-		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Uniform))
+		if (usage.Contains(BufferUsage::Uniform))
 			vkFlags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Vertex))
+		if (usage.Contains(BufferUsage::Vertex))
 			vkFlags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Storage))
+		if (usage.Contains(BufferUsage::Storage))
 			vkFlags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		if (usage & static_cast<BufferUsageFlags>(BufferUsage::TransferSrc))
+		if (usage.Contains(BufferUsage::TransferSrc))
 			vkFlags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-		if (usage & static_cast<BufferUsageFlags>(BufferUsage::TransferDst))
+		if (usage.Contains(BufferUsage::TransferDst))
 			vkFlags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Indirect))
+		if (usage.Contains(BufferUsage::Indirect))
 			vkFlags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
-		if (usage & static_cast<BufferUsageFlags>(BufferUsage::Index))
+		if (usage.Contains(BufferUsage::Index))
 			vkFlags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 		return vkFlags;
 	}
@@ -333,6 +333,16 @@ namespace cct::gfx::rhi
 		if (flags & static_cast<UInt32>(MemoryAccess::MemoryWrite))
 			vkFlags |= VK_ACCESS_MEMORY_WRITE_BIT;
 		return vkFlags;
+	}
+
+	constexpr VkFlags Converters::ToVulkan(PipelineStageFlags flags)
+	{
+		return ToVulkan<VkPipelineStageFlagBits>(flags.Value());
+	}
+
+	constexpr VkFlags Converters::ToVulkan(MemoryAccessFlags flags)
+	{
+		return ToVulkan<VkAccessFlagBits>(flags.Value());
 	}
 
 

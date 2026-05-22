@@ -5,9 +5,9 @@
 #ifndef CONCERTO_GRAPHICS_RHI_ENUMS_HPP
 #define CONCERTO_GRAPHICS_RHI_ENUMS_HPP
 
-#include <type_traits>
 #include <vector>
 #include <Concerto/Core/Types/Types.hpp>
+#include <Concerto/Core/EnumFlags/EnumFlags.hpp>
 #include <Concerto/Graphics/Core/PixelFormat.hpp>
 
 namespace cct::gfx::rhi
@@ -82,7 +82,7 @@ namespace cct::gfx::rhi
 		Transfer = 0x00001000,
 		BottomOfPipe = 0x00002000
 	};
-	using PipelineStageFlags = std::underlying_type_t<PipelineStage>;
+	using PipelineStageFlags = cct::EnumFlags<PipelineStage>;
 
 	enum class MemoryAccess : UInt32
 	{
@@ -104,7 +104,7 @@ namespace cct::gfx::rhi
 		MemoryRead = 0x00008000,
 		MemoryWrite = 0x00010000
 	};
-	using MemoryAccessFlags = std::underlying_type_t<MemoryAccess>;
+	using MemoryAccessFlags = cct::EnumFlags<MemoryAccess>;
 
 	struct AttachmentReference
 	{
@@ -129,7 +129,7 @@ namespace cct::gfx::rhi
 		Indirect    = 0x00000020,
 		Index       = 0x00000040
 	};
-	using BufferUsageFlags = std::underlying_type_t<BufferUsage>;
+	using BufferUsageFlags = cct::EnumFlags<BufferUsage>;
 
 	enum class VertexAttributeFormat : UInt8
 	{
@@ -175,5 +175,9 @@ namespace cct::gfx::rhi
 		return size;
 	}
 }
+
+CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::PipelineStage)
+CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::MemoryAccess)
+CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::BufferUsage)
 
 #endif //CONCERTO_GRAPHICS_RHI_ENUMS_HPP

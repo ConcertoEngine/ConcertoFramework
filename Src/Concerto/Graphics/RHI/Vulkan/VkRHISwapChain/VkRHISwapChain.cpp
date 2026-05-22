@@ -206,18 +206,18 @@ namespace cct::gfx::rhi
 		auto& colorDependency = subPassDependencies.emplace_back();
 		colorDependency.srcSubPassIndex = rhi::RenderPass::SubPassDependency::ExternalSubPass;
 		colorDependency.dstSubPassIndex = 0u;
-		colorDependency.srcStageMask = static_cast<rhi::PipelineStageFlags>(rhi::PipelineStage::ColorAttachmentOutput);
-		colorDependency.srcAccessFlags = 0u;
-		colorDependency.dstStageMask = static_cast<rhi::PipelineStageFlags>(rhi::PipelineStage::ColorAttachmentOutput);
-		colorDependency.dstAccessFlags = static_cast<rhi::MemoryAccessFlags>(rhi::MemoryAccess::ColorAttachmentWrite);
+		colorDependency.srcStageMask = rhi::PipelineStage::ColorAttachmentOutput;
+		colorDependency.srcAccessFlags = {};
+		colorDependency.dstStageMask = rhi::PipelineStage::ColorAttachmentOutput;
+		colorDependency.dstAccessFlags = rhi::MemoryAccess::ColorAttachmentWrite;
 
 		auto& depthDependency = subPassDependencies.emplace_back();
 		depthDependency.srcSubPassIndex = rhi::RenderPass::SubPassDependency::ExternalSubPass;
 		depthDependency.dstSubPassIndex = 0u;
-		depthDependency.srcStageMask = static_cast<rhi::PipelineStageFlags>(rhi::PipelineStage::EarlyFragmentTests) | static_cast<rhi::PipelineStageFlags>(rhi::PipelineStage::LateFragmentTests);
-		depthDependency.srcAccessFlags = 0u;
-		depthDependency.dstStageMask = static_cast<rhi::PipelineStageFlags>(rhi::PipelineStage::EarlyFragmentTests) | static_cast<rhi::PipelineStageFlags>(rhi::PipelineStage::LateFragmentTests);
-		depthDependency.dstAccessFlags = static_cast<rhi::MemoryAccessFlags>(rhi::MemoryAccess::DepthStencilAttachmentWrite);
+		depthDependency.srcStageMask = rhi::PipelineStage::EarlyFragmentTests | rhi::PipelineStage::LateFragmentTests;
+		depthDependency.srcAccessFlags = {};
+		depthDependency.dstStageMask = rhi::PipelineStage::EarlyFragmentTests | rhi::PipelineStage::LateFragmentTests;
+		depthDependency.dstAccessFlags = rhi::MemoryAccess::DepthStencilAttachmentWrite;
 
 		m_renderPass = Cast<VkRHIDevice&>(*m_device).CreateRenderPass(attachment, subPassDescriptions, subPassDependencies);
 		CCT_ASSERT(m_renderPass && Cast<VkRHIRenderPass&>(*m_renderPass).GetLastResult() == VK_SUCCESS, "ConcertoGraphics: Could not create render pass");

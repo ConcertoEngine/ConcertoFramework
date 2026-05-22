@@ -125,11 +125,11 @@ namespace cct::gfx::rhi
 		{
 			auto& vkSubPassDependency = vkSubPassDependencies.emplace_back();
 			vkSubPassDependency.srcSubpass = subPassDependency.srcSubPassIndex;
-			vkSubPassDependency.srcStageMask = Converters::ToVulkan<VkPipelineStageFlagBits>(subPassDependency.srcStageMask);
-			vkSubPassDependency.srcAccessMask = Converters::ToVulkan<VkAccessFlagBits>(subPassDependency.srcAccessFlags);
+			vkSubPassDependency.srcStageMask = Converters::ToVulkan(subPassDependency.srcStageMask);
+			vkSubPassDependency.srcAccessMask = Converters::ToVulkan(subPassDependency.srcAccessFlags);
 			vkSubPassDependency.dstSubpass = subPassDependency.dstSubPassIndex;
-			vkSubPassDependency.dstStageMask = Converters::ToVulkan<VkPipelineStageFlagBits>(subPassDependency.dstStageMask);
-			vkSubPassDependency.dstAccessMask = Converters::ToVulkan<VkAccessFlagBits>(subPassDependency.dstAccessFlags);
+			vkSubPassDependency.dstStageMask = Converters::ToVulkan(subPassDependency.dstStageMask);
+			vkSubPassDependency.dstAccessMask = Converters::ToVulkan(subPassDependency.dstAccessFlags);
 		}
 
 		return std::make_unique<VkRHIRenderPass>(*this, vkAttachmentDescriptions, vkSubPassDescriptions, vkSubPassDependencies);
