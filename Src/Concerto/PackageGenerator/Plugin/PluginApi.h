@@ -191,6 +191,12 @@ extern "C"
 	CRP_PLUGIN_API const char* crpClassMemberGetName(const CrpClassMember* member);
 	CRP_PLUGIN_API const char* crpClassMemberGetType(const CrpClassMember* member);
 	CRP_PLUGIN_API int32_t crpClassMemberIsNative(const CrpClassMember* member);
+	CRP_PLUGIN_API int32_t crpClassMemberHasAttribute(const CrpClassMember* member, const char* attrName);
+	CRP_PLUGIN_API const char* crpClassMemberGetAttribute(const CrpClassMember* member, const char* attrName);
+	CRP_PLUGIN_API int32_t crpClassMemberAttributeIsTable(const CrpClassMember* member, const char* attrName);
+	CRP_PLUGIN_API size_t crpClassMemberGetAttributeTableKeyCount(const CrpClassMember* member, const char* attrName);
+	CRP_PLUGIN_API const char* crpClassMemberGetAttributeTableKey(const CrpClassMember* member, const char* attrName, size_t index);
+	CRP_PLUGIN_API const char* crpClassMemberGetAttributeTableValue(const CrpClassMember* member, const char* attrName, const char* keyName);
 
 	CRP_PLUGIN_API const char* crpClassMethodGetName(const CrpClassMethod* method);
 	CRP_PLUGIN_API const char* crpClassMethodGetBase(const CrpClassMethod* method);
