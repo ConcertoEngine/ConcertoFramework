@@ -5,6 +5,8 @@
 #include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Reflection/Defines.hpp>
 #include <Concerto/Reflection/Object/Object.refl.hpp>
+#include <Concerto/Reflection/Int32/Int32.refl.hpp>
+
 
 #include "Defines.hpp"
 
@@ -38,7 +40,7 @@ namespace cct::sample
 		CCT_REFL_TESTS_METHOD("Test=\"test\"")
 		cct::refl::Int32 Bar(const cct::refl::Int32& bar1, const cct::refl::Int32& bar2, const cct::refl::Int32& bar3)
 		{
-			return 42;
+			return cct::refl::Int32(42);
 		}
 
 		CCT_REFL_TESTS_METHOD("Delegate = \"m_customDelegatePtr\"")
@@ -100,6 +102,27 @@ namespace cct::sample
 
 	template class TemplatedPair<int, float>;
 	template class TemplatedPair<std::string, std::string>;
+
+	// Reflected sample with all four primitive native types covered by cct::refl::Json.
+	class CCT_REFL_TESTS_CLASS() JsonSample : public cct::refl::Object
+	{
+	public:
+		JsonSample() = default;
+
+		CCT_REFL_TESTS_NATIVE_MEMBER()
+		int m_intValue = 0;
+
+		CCT_REFL_TESTS_NATIVE_MEMBER()
+		float m_floatValue = 0.0F;
+
+		CCT_REFL_TESTS_NATIVE_MEMBER()
+		bool m_boolValue = false;
+
+		CCT_REFL_TESTS_NATIVE_MEMBER()
+		std::string m_stringValue;
+
+		CCT_OBJECT(JsonSample);
+	};
 
 	// Generic class with multiple type parameters (runtime parameterized)
 	class CCT_REFL_TESTS_CLASS() CCT_GENERIC_CLASS() GenericPair : public cct::refl::Object
