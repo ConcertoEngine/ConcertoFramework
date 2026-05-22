@@ -5,6 +5,7 @@
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Reflection/Class/Class.hpp"
+#include "Concerto/Reflection/FieldVisitor/FieldVisitor.hpp"
 #include "Concerto/Reflection/Vector/Vector.refl.hpp"
 
 namespace cct::refl
@@ -33,8 +34,11 @@ namespace cct::refl
 		const std::size_t index = m_elements.size();
 		m_elements.push_back(std::move(element));
 
-		OnInserted.Emit(index, *m_elements.back());
-		OnValueChanged.Emit();
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnInserted.Emit(index, *m_elements.back());
+			OnValueChanged.Emit();
+		}
 	}
 
 	Object* Vector::Add()
@@ -56,8 +60,11 @@ namespace cct::refl
 		const std::size_t index = m_elements.size();
 		Object* ptr = m_elements.emplace_back(std::move(element)).get();
 
-		OnInserted.Emit(index, *ptr);
-		OnValueChanged.Emit();
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnInserted.Emit(index, *ptr);
+			OnValueChanged.Emit();
+		}
 
 		return ptr;
 	}
@@ -70,11 +77,18 @@ namespace cct::refl
 			return;
 		}
 
-		// Emit before removal so listeners can still access the element
-		OnRemoved.Emit(index, *m_elements[index]);
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			// Emit before removal so listeners can still access the element
+			OnRemoved.Emit(index, *m_elements[index]);
+		}
 
 		m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(index));
-		OnValueChanged.Emit();
+
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnValueChanged.Emit();
+		}
 	}
 
 	void Vector::Clear()
@@ -82,11 +96,15 @@ namespace cct::refl
 		if (m_elements.empty())
 			return;
 
-		// Emit before clearing so listeners can react while elements are still alive
+		// OnCleared always emits (cleanup handlers must run even during construction)
 		OnCleared.Emit();
 
 		m_elements.clear();
-		OnValueChanged.Emit();
+
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnValueChanged.Emit();
+		}
 	}
 
 	void Vector::Move(std::size_t from, std::size_t to)
@@ -99,7 +117,10 @@ namespace cct::refl
 		m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(from));
 		m_elements.insert(m_elements.begin() + static_cast<std::ptrdiff_t>(to), std::move(elem));
 
-		OnValueChanged.Emit();
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnValueChanged.Emit();
+		}
 	}
 
 	std::unique_ptr<Object> Vector::Extract(std::size_t index)
@@ -107,10 +128,19 @@ namespace cct::refl
 		if (index >= m_elements.size())
 			return nullptr;
 
-		OnRemoved.Emit(index, *m_elements[index]);
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnRemoved.Emit(index, *m_elements[index]);
+		}
+
 		auto elem = std::move(m_elements[index]);
 		m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(index));
-		OnValueChanged.Emit();
+
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnValueChanged.Emit();
+		}
+
 		return elem;
 	}
 
@@ -131,8 +161,12 @@ namespace cct::refl
 			index = m_elements.size();
 
 		m_elements.insert(m_elements.begin() + static_cast<std::ptrdiff_t>(index), std::move(element));
-		OnInserted.Emit(index, *m_elements[index]);
-		OnValueChanged.Emit();
+
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnInserted.Emit(index, *m_elements[index]);
+			OnValueChanged.Emit();
+		}
 	}
 
 	Object* Vector::Get(std::size_t index)
