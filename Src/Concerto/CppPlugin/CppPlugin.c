@@ -350,15 +350,60 @@ static void BeforeClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx
 	}
 }
 
+static void EmitAttrCalls(CrpGenerationContext* ctx, const CrpClassMember* member,
+                          const char* varName, const char* attrName)
+{
+	if (crpClassMemberAttributeIsTable(member, attrName))
+	{
+		size_t n = crpClassMemberGetAttributeTableKeyCount(member, attrName);
+		for (size_t k = 0; k < n; k++)
+		{
+			const char* key = crpClassMemberGetAttributeTableKey(member, attrName, k);
+			const char* val = crpClassMemberGetAttributeTableValue(member, attrName, key);
+			if (key && val)
+				crpGenerationContextWrite(ctx, "%s_mv->AddAttribute(\"%s.%s\", \"%s\");", varName, attrName, key, val);
+		}
+	}
+	else
+	{
+		const char* val = crpClassMemberGetAttribute(member, attrName);
+		if (val)
+		{
+			crpGenerationContextWrite(ctx, "%s_mv->AddAttribute(\"%s\", \"%s\");", varName, attrName, val);
+		}
+	}
+}
+
 static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContext* ctx)
 {
 	const char* memberName = crpClassMemberGetName(member);
 	const char* memberType = crpClassMemberGetType(member);
 	int32_t isNative = crpClassMemberIsNative(member);
+	int32_t hasMin = crpClassMemberHasAttribute(member, "Min");
+	int32_t hasMax = crpClassMemberHasAttribute(member, "Max");
 
 	if (isNative)
 	{
-		crpGenerationContextWrite(ctx, "AddNativeMemberVariable(\"%s\", cct::TypeId<%s>());", memberName, memberType);
+		if (hasMin || hasMax)
+		{
+			char nativeVar[512];
+			SanitizeIdentifier(memberName, nativeVar, sizeof(nativeVar));
+			crpGenerationContextWrite(ctx, "if (auto* %s_mv = AddNativeMemberVariable(\"%s\", cct::TypeId<%s>()))", nativeVar, memberName, memberType);
+			crpGenerationContextEnterScope(ctx);
+			if (hasMin)
+			{
+				EmitAttrCalls(ctx, member, nativeVar, "Min");
+			}
+			if (hasMax)
+			{
+				EmitAttrCalls(ctx, member, nativeVar, "Max");
+			}
+			crpGenerationContextLeaveScope(ctx, NULL);
+		}
+		else
+		{
+			crpGenerationContextWrite(ctx, "AddNativeMemberVariable(\"%s\", cct::TypeId<%s>());", memberName, memberType);
+		}
 	}
 	else
 	{
@@ -382,7 +427,25 @@ static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContex
 			crpGenerationContextWrite(ctx, "const cct::refl::Class* %sClass = cct::refl::GetClassByName(\"%s\"sv);", classVar, memberType);
 		}
 		crpGenerationContextWrite(ctx, "CCT_ASSERT(%sClass != nullptr, \"Could not find class '%s'\");", classVar, memberType);
-		crpGenerationContextWrite(ctx, "AddMemberVariable(\"%s\", %sClass);", memberName, classVar);
+
+		if (hasMin || hasMax)
+		{
+			crpGenerationContextWrite(ctx, "if (auto* %s_mv = AddMemberVariable(\"%s\", %sClass))", classVar, memberName, classVar);
+			crpGenerationContextEnterScope(ctx);
+			if (hasMin)
+			{
+				EmitAttrCalls(ctx, member, classVar, "Min");
+			}
+			if (hasMax)
+			{
+				EmitAttrCalls(ctx, member, classVar, "Max");
+			}
+			crpGenerationContextLeaveScope(ctx, NULL);
+		}
+		else
+		{
+			crpGenerationContextWrite(ctx, "AddMemberVariable(\"%s\", %sClass);", memberName, classVar);
+		}
 	}
 }
 
@@ -1241,8 +1304,10 @@ static void AfterPackageGeneration(const CrpPackage* package, CrpGenerationConte
 		crpGenerationContextEnterScope(ctx);
 		crpGenerationContextWrite(ctx, "cct::Logger::SetContext(logger);");
 		crpGenerationContextWrite(ctx, "return std::make_unique<Internal%sPackage>();", packageName);
+		crpGenerationContextLeaveScope(ctx, NULL);
 	}
-	crpGenerationContextLeaveScope(ctx, NULL);
+	crpGenerationContextWrite(ctx, "CCT_REFL_CREATE(Internal%sPackage)", packageName);
+	crpGenerationContextWrite(ctx, "CCT_REFL_DESTROY()");
 }
 
 static const CrpPluginFunctionTable g_pluginTable = {

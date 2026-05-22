@@ -270,6 +270,132 @@ extern "C"
 		return reinterpret_cast<const Class::Member*>(member)->isNative ? 1 : 0;
 	}
 
+	int32_t crpClassMemberHasAttribute(const CrpClassMember* member, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!member || !attrName)
+			return 0;
+		const auto* m = reinterpret_cast<const Class::Member*>(member);
+		if (!m->tomlAttributes.is_table())
+			return 0;
+		return m->tomlAttributes.as_table().contains(attrName) ? 1 : 0;
+	}
+
+	// Static buffer for returning numeric attribute values as strings.
+	// Safe because the build tool is single-threaded and callers use the value immediately.
+	static char g_memberAttrBuf[64];
+
+	const char* crpClassMemberGetAttribute(const CrpClassMember* member, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!member || !attrName)
+			return nullptr;
+		const auto* m = reinterpret_cast<const Class::Member*>(member);
+		if (!m->tomlAttributes.is_table())
+			return nullptr;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end())
+			return nullptr;
+		if (it->second.is_string())
+			return it->second.as_string().c_str();
+		if (it->second.is_floating())
+		{
+			std::snprintf(g_memberAttrBuf, sizeof(g_memberAttrBuf), "%g", it->second.as_floating());
+			return g_memberAttrBuf;
+		}
+		if (it->second.is_integer())
+		{
+			std::snprintf(g_memberAttrBuf, sizeof(g_memberAttrBuf), "%lld", static_cast<long long>(it->second.as_integer()));
+			return g_memberAttrBuf;
+		}
+		if (it->second.is_boolean())
+			return it->second.as_boolean() ? "true" : "false";
+		return nullptr;
+	}
+
+	int32_t crpClassMemberAttributeIsTable(const CrpClassMember* member, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!member || !attrName)
+			return 0;
+		const auto* m = reinterpret_cast<const Class::Member*>(member);
+		if (!m->tomlAttributes.is_table())
+			return 0;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end())
+			return 0;
+		return it->second.is_table() ? 1 : 0;
+	}
+
+	size_t crpClassMemberGetAttributeTableKeyCount(const CrpClassMember* member, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!member || !attrName)
+			return 0;
+		const auto* m = reinterpret_cast<const Class::Member*>(member);
+		if (!m->tomlAttributes.is_table())
+			return 0;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end() || !it->second.is_table())
+			return 0;
+		return it->second.as_table().size();
+	}
+
+	static char g_memberAttrKeyBuf[64];
+
+	const char* crpClassMemberGetAttributeTableKey(const CrpClassMember* member, const char* attrName, size_t index)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!member || !attrName)
+			return nullptr;
+		const auto* m = reinterpret_cast<const Class::Member*>(member);
+		if (!m->tomlAttributes.is_table())
+			return nullptr;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end() || !it->second.is_table())
+			return nullptr;
+		const auto& tbl = it->second.as_table();
+		if (index >= tbl.size())
+			return nullptr;
+		auto keyIt = tbl.begin();
+		std::advance(keyIt, index);
+		std::strncpy(g_memberAttrKeyBuf, keyIt->first.c_str(), sizeof(g_memberAttrKeyBuf) - 1);
+		g_memberAttrKeyBuf[sizeof(g_memberAttrKeyBuf) - 1] = '\0';
+		return g_memberAttrKeyBuf;
+	}
+
+	const char* crpClassMemberGetAttributeTableValue(const CrpClassMember* member, const char* attrName, const char* keyName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!member || !attrName || !keyName)
+			return nullptr;
+		const auto* m = reinterpret_cast<const Class::Member*>(member);
+		if (!m->tomlAttributes.is_table())
+			return nullptr;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end() || !it->second.is_table())
+			return nullptr;
+		auto keyIt = it->second.as_table().find(keyName);
+		if (keyIt == it->second.as_table().end())
+			return nullptr;
+		const auto& val = keyIt->second;
+		if (val.is_string())
+			return val.as_string().c_str();
+		if (val.is_floating())
+		{
+			std::snprintf(g_memberAttrBuf, sizeof(g_memberAttrBuf), "%g", val.as_floating());
+			return g_memberAttrBuf;
+		}
+		if (val.is_integer())
+		{
+			std::snprintf(g_memberAttrBuf, sizeof(g_memberAttrBuf), "%lld", static_cast<long long>(val.as_integer()));
+			return g_memberAttrBuf;
+		}
+		if (val.is_boolean())
+			return val.as_boolean() ? "true" : "false";
+		return nullptr;
+	}
+
 	const char* crpClassMethodGetName(const CrpClassMethod* method)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
