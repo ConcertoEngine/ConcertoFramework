@@ -50,6 +50,14 @@ namespace cct::gfx::rhi
 		virtual void DrawIndexed(UInt32 indexCount, UInt32 instanceCount, UInt32 firstIndex, Int32 vertexOffset, UInt32 firstInstance) {}
 		virtual void ClearTexture(const Texture& texture, const Vector4f& clearColor) {}
 		virtual void ExecuteCommands(std::span<CommandBuffer*> /*secondaryCmdBufs*/) {}
+
+		virtual void PipelineBarrier(const Texture& texture,
+		                              ImageLayout oldLayout,
+		                              ImageLayout newLayout,
+		                              PipelineStageFlags srcStage,
+		                              PipelineStageFlags dstStage,
+		                              MemoryAccessFlags srcAccess,
+		                              MemoryAccessFlags dstAccess) {}
 	};
 }
 

@@ -319,4 +319,16 @@ namespace cct::gfx::rhi
 		// TODO: DX12 bundle support is restricted (no transfers/barriers).
 		// Secondary CB commands must be inlined into the primary for DX12.
 	}
+	void Dx12RHICommandBuffer::PipelineBarrier(const Texture& texture,
+											   ImageLayout oldLayout,
+											   ImageLayout newLayout,
+											   PipelineStageFlags /*srcStage*/,
+											   PipelineStageFlags /*dstStage*/,
+											   MemoryAccessFlags /*srcAccess*/,
+											   MemoryAccessFlags /*dstAccess*/)
+	{
+		// DX12 encodes all stage/access information in resource states.
+		// Delegate directly to TransitionImageLayout which handles the D3D12_RESOURCE_BARRIER.
+		TransitionImageLayout(texture, oldLayout, newLayout);
+	}
 } // namespace cct::gfx::rhi

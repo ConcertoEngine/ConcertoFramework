@@ -34,6 +34,13 @@ namespace cct::gfx::rhi
 		void Copy(const Texture& src, const Buffer& dst) override;
 		void TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout) override;
 		void ExecuteCommands(std::span<CommandBuffer*> secondaryCmdBufs) override;
+		void PipelineBarrier(const Texture& texture,
+		                     ImageLayout oldLayout,
+		                     ImageLayout newLayout,
+		                     PipelineStageFlags srcStage,
+		                     PipelineStageFlags dstStage,
+		                     MemoryAccessFlags srcAccess,
+		                     MemoryAccessFlags dstAccess) override;
 
 	private:
 		static D3D12_RESOURCE_STATES ToD3D12ResourceState(ImageLayout layout);

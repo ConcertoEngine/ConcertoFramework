@@ -36,7 +36,14 @@ namespace cct::gfx::rhi
 		void BindIndexBuffer(const Buffer& buffer, bool use32bitIndices) override;
 		void DrawIndexed(UInt32 indexCount, UInt32 instanceCount, UInt32 firstIndex, Int32 vertexOffset, UInt32 firstInstance) override;
 		void ClearTexture(const Texture& texture, const Vector4f& clearColor) override;
-		void ExecuteCommands(std::span<CommandBuffer*> secondaryCmdBufs) override;
+		void ExecuteCommands(std::span<rhi::CommandBuffer*> secondaryCmdBufs) override;
+		void PipelineBarrier(const Texture& texture,
+		                     ImageLayout oldLayout,
+		                     ImageLayout newLayout,
+		                     PipelineStageFlags srcStage,
+		                     PipelineStageFlags dstStage,
+		                     MemoryAccessFlags srcAccess,
+		                     MemoryAccessFlags dstAccess) override;
 
 	private:
 		VkRHIDevice* m_device = nullptr;

@@ -312,7 +312,7 @@ namespace cct::gfx::rhi
 			&vkClearColor, 1, &range);
 	}
 
-	void VkRHICommandBuffer::ExecuteCommands(std::span<CommandBuffer*> secondaryCmdBufs)
+	void VkRHICommandBuffer::ExecuteCommands(std::span<rhi::CommandBuffer*> secondaryCmdBufs)
 	{
 		std::vector<VkCommandBuffer> vkCmdBufs;
 		vkCmdBufs.reserve(secondaryCmdBufs.size());
@@ -323,5 +323,49 @@ namespace cct::gfx::rhi
 		}
 		m_device->vkCmdExecuteCommands(*vk::CommandBuffer::Get(),
 									   static_cast<UInt32>(vkCmdBufs.size()), vkCmdBufs.data());
+	}
+	void VkRHICommandBuffer::PipelineBarrier(const Texture& texture,
+											 ImageLayout oldLayout,
+											 ImageLayout newLayout,
+											 PipelineStageFlags srcStage,
+											 PipelineStageFlags dstStage,
+											 MemoryAccessFlags srcAccess,
+											 MemoryAccessFlags dstAccess)
+	{
+		const auto& vkTexture = Cast<const VkRHITexture&>(texture);
+
+		const bool isDepthLayout =
+			newLayout == ImageLayout::DepthStencilAttachmentOptimal ||
+			newLayout == ImageLayout::DepthStencilReadOnlyOptimal ||
+			newLayout == ImageLayout::DepthAttachmentOptimal ||
+			newLayout == ImageLayout::DepthReadOnlyOptimal ||
+			oldLayout == ImageLayout::DepthStencilAttachmentOptimal ||
+			oldLayout == ImageLayout::DepthStencilReadOnlyOptimal ||
+			oldLayout == ImageLayout::DepthAttachmentOptimal ||
+			oldLayout == ImageLayout::DepthReadOnlyOptimal;
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = Converters::ToVulkan(oldLayout);
+		barrier.newLayout = Converters::ToVulkan(newLayout);
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = *vkTexture.GetImage().Get();
+		barrier.subresourceRange.aspectMask = isDepthLayout ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = Converters::ToVulkan(srcAccess);
+		barrier.dstAccessMask = Converters::ToVulkan(dstAccess);
+
+		m_device->vkCmdPipelineBarrier(
+			*vk::CommandBuffer::Get(),
+			Converters::ToVulkan(srcStage),
+			Converters::ToVulkan(dstStage),
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
 	}
 } // namespace cct::gfx::rhi
