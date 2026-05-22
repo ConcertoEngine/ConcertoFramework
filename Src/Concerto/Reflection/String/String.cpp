@@ -54,13 +54,19 @@ namespace cct::refl
 	void String::Set(std::string_view value)
 	{
 		m_value = value;
-		OnValueChanged.Emit();
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnValueChanged.Emit();
+		}
 	}
 
 	void String::Set(std::string value)
 	{
 		m_value = std::move(value);
-		OnValueChanged.Emit();
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnValueChanged.Emit();
+		}
 	}
 
 	const std::string& String::Get() const

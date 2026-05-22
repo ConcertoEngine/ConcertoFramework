@@ -42,9 +42,16 @@ namespace cct::refl
 		Insert,
 		Delete
 	};
-}
+
+	enum class ObjectFlags : cct::UInt8
+	{
+		None = 0,
+		Constructing = 1 << 0, // suppresses all OnXXX signal emissions
+	};
+} // namespace cct::refl
 
 CCT_ENABLE_ENUM_FLAGS(cct::refl::ChangeType)
+CCT_ENABLE_ENUM_FLAGS(cct::refl::ObjectFlags)
 
 namespace cct::refl
 {
@@ -112,11 +119,17 @@ namespace cct::refl
 
 		inline void InitializeMemberVariables();
 
+		inline void SetFlag(ObjectFlags flag);
+		inline void ClearFlag(ObjectFlags flag);
+		[[nodiscard]] inline bool HasFlag(ObjectFlags flag) const;
+		[[nodiscard]] inline EnumFlags<ObjectFlags> GetFlags() const;
+
 		CCT_OBJECT(Object);
 
 	protected:
 		const cct::refl::Class* m_dynamicClass;
 		Registry* m_registry;
+		EnumFlags<ObjectFlags> m_flags;
 
 		CCT_NATIVE_MEMBER()
 		cct::Uuid m_uuid;
@@ -130,6 +143,34 @@ namespace cct::refl
 		 * call wins and m_dynamicClass ends up set to the concrete type.
 		 */
 		inline void InitReflection(const Class* cls) noexcept;
+	};
+	/// RAII guard that sets an ObjectFlag on construction and clears it on destruction.
+	/// An optional callback is invoked just after the flag is cleared, allowing callers
+	/// to fire a deferred notification (e.g. OnValueChanged) once construction is done.
+	///
+	/// Example:
+	///   {
+	///       ScopedObjectFlag guard(vec, ObjectFlags::Constructing,
+	///           [&vec]() { vec.OnValueChanged.Emit(); });
+	///       // ... bulk operations — signals suppressed ...
+	///   } // flag cleared, then callback fires
+	class CCT_REFLECTION_API ScopedObjectFlag
+	{
+	public:
+		using Callback = std::function<void()>;
+
+		ScopedObjectFlag(Object& obj, ObjectFlags flag, Callback onExit = {});
+		~ScopedObjectFlag();
+
+		ScopedObjectFlag(const ScopedObjectFlag&) = delete;
+		ScopedObjectFlag& operator=(const ScopedObjectFlag&) = delete;
+		ScopedObjectFlag(ScopedObjectFlag&&) = delete;
+		ScopedObjectFlag& operator=(ScopedObjectFlag&&) = delete;
+
+	private:
+		Object& m_obj;
+		ObjectFlags m_flag;
+		Callback m_onExit;
 	};
 } // namespace cct::refl
 

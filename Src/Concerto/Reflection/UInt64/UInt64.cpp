@@ -43,7 +43,10 @@ namespace cct::refl
 		if (m_value == value)
 			return;
 		m_value = value;
-		OnValueChanged.Emit();
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			OnValueChanged.Emit();
+		}
 	}
 
 	cct::UInt64 UInt64::Get() const

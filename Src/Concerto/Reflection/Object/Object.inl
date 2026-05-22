@@ -180,4 +180,36 @@ namespace cct::refl
 			return nullptr;
 		return GetNativeMemberVariable<T>(memberVariable->GetIndex());
 	}
+	inline ScopedObjectFlag::ScopedObjectFlag(Object& obj, ObjectFlags flag, Callback onExit)
+		: m_obj(obj), m_flag(flag), m_onExit(std::move(onExit))
+	{
+		m_obj.SetFlag(m_flag);
+	}
+
+	inline ScopedObjectFlag::~ScopedObjectFlag()
+	{
+		m_obj.ClearFlag(m_flag);
+		if (m_onExit)
+			m_onExit();
+	}
+
+	inline void Object::SetFlag(ObjectFlags flag)
+	{
+		m_flags.Set(flag);
+	}
+
+	inline void Object::ClearFlag(ObjectFlags flag)
+	{
+		m_flags.Reset(flag);
+	}
+
+	inline bool Object::HasFlag(ObjectFlags flag) const
+	{
+		return m_flags.Contains(flag);
+	}
+
+	inline EnumFlags<ObjectFlags> Object::GetFlags() const
+	{
+		return m_flags;
+	}
 } // namespace cct::refl
