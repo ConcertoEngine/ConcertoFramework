@@ -128,6 +128,7 @@ target("concerto-rhi-module", function()
 
     add_files_to_target("./RHI/*")
     add_files_to_target("./RHI/Vulkan/*")
+    add_files_to_target("./RenderGraph/*")
 
     if is_plat("windows") then
         add_files_to_target("./RHI/Dx12/*")
