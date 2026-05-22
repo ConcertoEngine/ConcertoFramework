@@ -287,17 +287,19 @@ namespace cct::refl
 		return false;
 	}
 
-	void Class::AddMemberVariable(std::string_view name, const Class* type)
+	MemberVariable* Class::AddMemberVariable(std::string_view name, const Class* type)
 	{
 		CCT_ASSERT(!GetMemberVariable(name), "Member variable already exists");
 		m_memberVariables.emplace_back(std::make_unique<MemberVariable>(std::string(name), type, m_memberVariables.size()));
+		return m_memberVariables.back().get();
 	}
 
-	void Class::AddNativeMemberVariable(std::string_view name, UInt64 typeId)
+	NativeMemberVariable* Class::AddNativeMemberVariable(std::string_view name, UInt64 typeId)
 	{
 		CCT_ASSERT(!GetNativeMemberVariable(name), "Member variable already exists");
 		std::size_t baseCount = m_baseClass ? m_baseClass->GetTotalNativeMemberCount() : 0;
 		m_nativeMemberVariables.emplace_back(std::make_unique<NativeMemberVariable>(std::string(name), typeId, baseCount + m_nativeMemberVariables.size()));
+		return m_nativeMemberVariables.back().get();
 	}
 
 	void Class::AddMemberFunction(std::unique_ptr<Method> method)

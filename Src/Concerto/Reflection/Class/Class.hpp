@@ -98,8 +98,8 @@ namespace cct::refl
 		virtual void Initialize() = 0;
 
 	protected:
-		void AddMemberVariable(std::string_view name, const Class* type);
-		void AddNativeMemberVariable(std::string_view name, UInt64 typeId);
+		MemberVariable* AddMemberVariable(std::string_view name, const Class* type);
+		NativeMemberVariable* AddNativeMemberVariable(std::string_view name, UInt64 typeId);
 		void AddMemberFunction(std::unique_ptr<Method> method);
 		void AddAttribute(std::string name, std::string value);
 		void SetNamespace(Namespace* nameSpace);
