@@ -5,6 +5,7 @@
 #ifndef CONCERTO_GRAPHICS_CORE_SHADERMODULELOADER_HPP
 #define CONCERTO_GRAPHICS_CORE_SHADERMODULELOADER_HPP
 
+#include <filesystem>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -34,11 +35,17 @@ namespace cct::gfx
 		ShaderModuleLoader& operator=(const ShaderModuleLoader&) = delete;
 		ShaderModuleLoader& operator=(ShaderModuleLoader&&) = default;
 
-		ResolvedShaderModule ResolveShaderModule(const std::string& path);
-		ShaderModule LoadShaderModule(const std::string& path);
+		void SetModuleSearchPath(const std::filesystem::path& dir) { m_modulePath = dir; }
+
+		ResolvedShaderModule ResolveShaderModule(const std::string& path,
+		                                         ShaderStage stageFilter = ShaderStage::None);
+		ShaderModule LoadShaderModule(const std::string& path,
+		                              ShaderStage stageFilter = ShaderStage::None);
 
 	private:
 		static ShaderBindingType GetBindingType(const nzsl::Ast::ExpressionType* varType);
+
+		std::filesystem::path m_modulePath;
 	};
 }
 

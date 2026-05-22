@@ -167,10 +167,13 @@ namespace cct::gfx::rhi
 		return std::make_unique<TextureBuilder>(*this);
 	}
 
-	std::shared_ptr<rhi::ShaderModule> VkRHIDevice::CreateShaderModule(const std::string& path)
+	std::shared_ptr<rhi::ShaderModule> VkRHIDevice::CreateShaderModule(const std::string& path,
+																	   cct::gfx::ShaderStage stageFilter)
 	{
 		cct::gfx::ShaderModuleLoader loader;
-		cct::gfx::ShaderModule coreShaderModule = loader.LoadShaderModule(path);
+		if (!m_shaderModulePath.empty())
+			loader.SetModuleSearchPath(m_shaderModulePath);
+		cct::gfx::ShaderModule coreShaderModule = loader.LoadShaderModule(path, stageFilter);
 		return std::make_shared<VkRHIShaderModule>(*this, std::move(coreShaderModule));
 	}
 

@@ -5,6 +5,7 @@
 #ifndef CONCERTO_GRAPHICS_RHI_DEVICE_HPP
 #define CONCERTO_GRAPHICS_RHI_DEVICE_HPP
 
+#include <filesystem>
 #include <string>
 #include <memory>
 #include <span>
@@ -61,7 +62,8 @@ namespace cct::gfx::rhi
 		virtual std::unique_ptr<TextureBuilder> CreateTextureBuilder() = 0;
 		virtual std::unique_ptr<CommandPool> CreateCommandPool(rhi::QueueFamily family, CommandBufferUsage usage) = 0;
 		virtual std::unique_ptr<Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) = 0;
-		virtual std::shared_ptr<ShaderModule> CreateShaderModule(const std::string& path) = 0;
+		virtual std::shared_ptr<ShaderModule> CreateShaderModule(const std::string& path,
+		                                                          cct::gfx::ShaderStage stageFilter = cct::gfx::ShaderStage::None) = 0;
 		virtual std::shared_ptr<DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) = 0;
 		virtual std::shared_ptr<PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<DescriptorSetLayout>>& descriptorSetLayouts) = 0;
 		virtual std::shared_ptr<Pipeline> CreatePipeline(const ShaderModule& vertexShader, const ShaderModule& fragmentShader,
@@ -83,6 +85,7 @@ namespace cct::gfx::rhi
 		virtual std::unique_ptr<Fence> CreateFence() = 0;
 		virtual std::unique_ptr<QueryPool> CreateQueryPool() { return nullptr; }
 		virtual std::shared_ptr<Texture> ImportTexture(const TextureImportInfo& /*info*/) { return nullptr; }
+		virtual void SetShaderModuleSearchPath(const std::filesystem::path& /*path*/) {}
 	};
 }
 

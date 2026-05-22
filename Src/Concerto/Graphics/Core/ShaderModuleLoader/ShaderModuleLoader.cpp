@@ -14,6 +14,7 @@
 #include <NZSL/Ast/Transformations/ResolveTransformer.hpp>
 #include <NZSL/Ast/Transformations/ValidationTransformer.hpp>
 #include <NZSL/Ast/TransformerExecutor.hpp>
+#include <NZSL/FilesystemModuleResolver.hpp>
 #include <NZSL/Parser.hpp>
 #include <NZSL/SpirvWriter.hpp>
 
@@ -37,12 +38,21 @@ namespace cct::gfx
 		}
 	} // namespace
 
-	ResolvedShaderModule ShaderModuleLoader::ResolveShaderModule(const std::string& path)
+	ResolvedShaderModule ShaderModuleLoader::ResolveShaderModule(const std::string& path,
+																 ShaderStage stageFilter)
 	{
 		nzsl::Ast::ModulePtr shaderAst = nzsl::ParseFromFile(path);
 
 		nzsl::Ast::TransformerExecutor executor;
-		executor.AddPass<nzsl::Ast::ResolveTransformer>();
+
+		nzsl::Ast::ResolveTransformer::Options resolveOpts;
+		if (!m_modulePath.empty())
+		{
+			auto resolver = std::make_shared<nzsl::FilesystemModuleResolver>();
+			resolver->RegisterDirectory(m_modulePath);
+			resolveOpts.moduleResolver = std::move(resolver);
+		}
+		executor.AddPass<nzsl::Ast::ResolveTransformer>(resolveOpts);
 		executor.AddPass<nzsl::Ast::BindingResolverTransformer>({.forceAutoBindingResolve = true});
 		executor.AddPass<nzsl::Ast::ValidationTransformer>();
 
@@ -59,8 +69,12 @@ namespace cct::gfx
 		nzsl::Ast::ReflectVisitor::Callbacks callbacks;
 		callbacks.onEntryPointDeclaration = [&](nzsl::ShaderStageType stageType, const std::string& functionName)
 		{
-			resolved.stage = ToShaderStage(stageType);
-			resolved.entryPointName = functionName;
+			ShaderStage stage = ToShaderStage(stageType);
+			if (stageFilter == ShaderStage::None || stage == stageFilter)
+			{
+				resolved.stage = stage;
+				resolved.entryPointName = functionName;
+			}
 		};
 
 		callbacks.onExternalDeclaration = [&](const nzsl::Ast::DeclareExternalStatement& extDecl)
@@ -97,9 +111,9 @@ namespace cct::gfx
 		return resolved;
 	}
 
-	ShaderModule ShaderModuleLoader::LoadShaderModule(const std::string& path)
+	ShaderModule ShaderModuleLoader::LoadShaderModule(const std::string& path, ShaderStage stageFilter)
 	{
-		auto resolved = ResolveShaderModule(path);
+		auto resolved = ResolveShaderModule(path, stageFilter);
 
 		nzsl::SpirvWriter spirvWriter;
 		nzsl::SpirvWriter::Environment env = {

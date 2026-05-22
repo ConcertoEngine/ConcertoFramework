@@ -151,10 +151,11 @@ namespace cct::gfx::rhi
 		return mesh.BuildGpuMesh(materialBuilder, renderPass, *this);
 	}
 
-	std::shared_ptr<rhi::ShaderModule> Dx12RHIDevice::CreateShaderModule(const std::string& path)
+	std::shared_ptr<rhi::ShaderModule> Dx12RHIDevice::CreateShaderModule(const std::string& path,
+																		 cct::gfx::ShaderStage stageFilter)
 	{
 		cct::gfx::ShaderModuleLoader loader;
-		auto resolved = loader.ResolveShaderModule(path);
+		auto resolved = loader.ResolveShaderModule(path, stageFilter);
 		return std::make_shared<Dx12RHIShaderModule>(std::move(resolved));
 	}
 

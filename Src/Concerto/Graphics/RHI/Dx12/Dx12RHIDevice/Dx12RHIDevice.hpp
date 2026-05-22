@@ -35,7 +35,8 @@ namespace cct::gfx::rhi
 		std::unique_ptr<TextureBuilder> CreateTextureBuilder() override;
 		std::unique_ptr<CommandPool> CreateCommandPool(rhi::QueueFamily family, CommandBufferUsage usage) override;
 		std::unique_ptr<Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) override;
-		std::shared_ptr<rhi::ShaderModule> CreateShaderModule(const std::string& path) override;
+		std::shared_ptr<rhi::ShaderModule> CreateShaderModule(const std::string& path,
+		                                                       cct::gfx::ShaderStage stageFilter) override;
 		std::shared_ptr<rhi::DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) override;
 		std::shared_ptr<rhi::PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<rhi::DescriptorSetLayout>>& descriptorSetLayouts) override;
 		std::shared_ptr<rhi::Pipeline> CreatePipeline(const rhi::ShaderModule& vertexShader, const rhi::ShaderModule& fragmentShader,
