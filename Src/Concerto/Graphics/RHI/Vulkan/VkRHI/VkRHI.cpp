@@ -62,7 +62,7 @@ namespace cct::gfx
 		{
 			m_devicesInfo.emplace_back(
 				device.GetProperties().deviceName,
-				device.GetProperties().vendorID,
+				static_cast<rhi::VendorId>(device.GetProperties().vendorID),
 				FromVulkan(device.GetProperties().deviceType));
 		}
 		return m_devicesInfo;

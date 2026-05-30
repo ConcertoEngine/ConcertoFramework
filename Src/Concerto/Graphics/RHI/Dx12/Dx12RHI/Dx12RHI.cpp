@@ -38,7 +38,7 @@ namespace cct::gfx::rhi
 			physicalDevice->GetDesc(&adapterDesc);
 			m_deviceInfos.emplace_back(DeviceInfo{
 				.name = {reinterpret_cast<char*>(adapterDesc.Description)}, // Fixme
-				.vendor = adapterDesc.VendorId,
+				.vendor = static_cast<rhi::VendorId>(adapterDesc.VendorId),
 				.type = DeviceType::Dedicated,
 			});
 		}

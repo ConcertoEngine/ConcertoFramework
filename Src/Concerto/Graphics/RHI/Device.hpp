@@ -36,10 +36,18 @@ namespace cct::gfx::rhi
 {
 	class SwapChain;
 
+	enum class VendorId : UInt32
+	{
+		Unknown = 0x0000,
+		AMD     = 0x1002,
+		Intel   = 0x8086,
+		NVIDIA  = 0x10DE,
+	};
+
 	struct DeviceInfo
 	{
 		std::string name;
-		UInt32 vendor;
+		VendorId vendor;
 		DeviceType type;
 	};
 
