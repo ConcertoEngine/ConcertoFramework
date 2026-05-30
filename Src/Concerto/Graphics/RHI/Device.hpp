@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <string>
+#include <string_view>
 #include <memory>
 #include <span>
 #include <vector>
@@ -72,6 +73,10 @@ namespace cct::gfx::rhi
 		virtual std::unique_ptr<Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) = 0;
 		virtual std::shared_ptr<ShaderModule> CreateShaderModule(const std::string& path,
 		                                                          cct::gfx::ShaderStage stageFilter = cct::gfx::ShaderStage::None) = 0;
+		virtual std::shared_ptr<ShaderModule> CreateShaderModuleFromSource(std::string_view source, std::string_view label = "<generated>", cct::gfx::ShaderStage stageFilter = cct::gfx::ShaderStage::None)
+		{
+			return nullptr;
+		}
 		virtual std::shared_ptr<DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) = 0;
 		virtual std::shared_ptr<PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<DescriptorSetLayout>>& descriptorSetLayouts) = 0;
 		virtual std::shared_ptr<Pipeline> CreatePipeline(const ShaderModule& vertexShader, const ShaderModule& fragmentShader,

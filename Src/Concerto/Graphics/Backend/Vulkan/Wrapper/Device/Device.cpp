@@ -5,6 +5,7 @@
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 
 #include <stdexcept>
+#include <unordered_set>
 #include <volk.h> // must be under this ^ include
 
 #include <Concerto/Core/Assert.hpp>
@@ -26,6 +27,7 @@ namespace cct::gfx::vk
 		VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
 #endif
 	};
+
 
 	Device::Device(PhysicalDevice& physicalDevice) :
 		m_physicalDevice(&physicalDevice),
@@ -117,15 +119,28 @@ namespace cct::gfx::vk
 		createInfo.queueCreateInfoCount = static_cast<UInt32>(queueCreateInfos.size());
 		createInfo.pEnabledFeatures = &deviceFeatures;
 		createInfo.pNext = &shader_draw_parameters_features;
-		createInfo.enabledExtensionCount = static_cast<UInt32>(deviceExtensions.size());
-		createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+		// Only request extensions the physical device actually supports (allows headless use).
+		auto supportedNames = physicalDevice.GetExtensionPropertiesNames();
+		std::unordered_set<std::string_view> supportedSet(supportedNames.begin(), supportedNames.end());
+		std::vector<const char*> enabledExtensions;
+		enabledExtensions.reserve(deviceExtensions.size());
+		for (const char* ext : deviceExtensions)
+		{
+			if (supportedSet.contains(ext))
+			{
+				enabledExtensions.push_back(ext);
+			}
+		}
+
+		createInfo.enabledExtensionCount = static_cast<UInt32>(enabledExtensions.size());
+		createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
 		const VkResult result = physicalDevice.GetInstance().vkCreateDevice(*m_physicalDevice->Get(), &createInfo, nullptr, &m_handle);
 		CCT_ASSERT(result == VK_SUCCESS, "Error cannot create logical device: VkResult={}", static_cast<int>(result));
 		if (result != VK_SUCCESS)
 			return result;
 
-		for (auto& ext : deviceExtensions)
+		for (auto& ext : enabledExtensions)
 			m_extensions.emplace(ext);
 
 		VolkDeviceTable deviceTable;

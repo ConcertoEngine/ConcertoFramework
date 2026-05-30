@@ -125,6 +125,109 @@ namespace cct::gfx
 		return ShaderModule(std::move(spirv), std::move(resolved.bindings), std::move(resolved.entryPointName), resolved.stage);
 	}
 
+	ResolvedShaderModule ShaderModuleLoader::ResolveShaderModuleFromSource(std::string_view source,
+																		   std::string_view label,
+																		   ShaderStage stageFilter)
+	{
+		try
+		{
+			nzsl::Ast::ModulePtr shaderAst = nzsl::Parse(source, std::string(label));
+
+			nzsl::Ast::TransformerExecutor executor;
+
+			nzsl::Ast::ResolveTransformer::Options resolveOpts;
+			if (!m_modulePath.empty())
+			{
+				auto resolver = std::make_shared<nzsl::FilesystemModuleResolver>();
+				resolver->RegisterDirectory(m_modulePath);
+				resolveOpts.moduleResolver = std::move(resolver);
+			}
+			executor.AddPass<nzsl::Ast::ResolveTransformer>(resolveOpts);
+			executor.AddPass<nzsl::Ast::BindingResolverTransformer>({.forceAutoBindingResolve = true});
+			executor.AddPass<nzsl::Ast::ValidationTransformer>();
+
+			nzsl::Ast::TransformerContext context;
+			context.partialCompilation = true;
+
+			nzsl::Ast::ModulePtr resolvedModule = nzsl::Ast::Clone(*shaderAst);
+			executor.Transform(*resolvedModule, context);
+
+			ResolvedShaderModule resolved;
+			resolved.stage = ShaderStage::Vertex;
+
+			nzsl::Ast::ReflectVisitor reflectVisitor;
+			nzsl::Ast::ReflectVisitor::Callbacks callbacks;
+			callbacks.onEntryPointDeclaration = [&](nzsl::ShaderStageType stageType, const std::string& functionName)
+			{
+				ShaderStage stage = ToShaderStage(stageType);
+				if (stageFilter == ShaderStage::None || stage == stageFilter)
+				{
+					resolved.stage = stage;
+					resolved.entryPointName = functionName;
+				}
+			};
+
+			callbacks.onExternalDeclaration = [&](const nzsl::Ast::DeclareExternalStatement& extDecl)
+			{
+				for (auto& externalVariable : extDecl.externalVars)
+				{
+					const auto* varType = &externalVariable.type.GetResultingValue();
+					const ShaderBindingType descriptorType = GetBindingType(varType);
+					UInt32 bindingSet = externalVariable.bindingSet.GetResultingValue();
+
+					DescriptorSetLayoutBinding descriptorSetLayoutBinding;
+					descriptorSetLayoutBinding.binding = externalVariable.bindingIndex.GetResultingValue();
+					descriptorSetLayoutBinding.descriptorCount = 1;
+					descriptorSetLayoutBinding.descriptorType = descriptorType;
+					descriptorSetLayoutBinding.stageFlags = resolved.stage;
+
+					auto layoutBindings = resolved.bindings.find(bindingSet);
+					if (layoutBindings == resolved.bindings.end())
+						resolved.bindings[bindingSet] = std::vector{descriptorSetLayoutBinding};
+					else
+						layoutBindings->second.push_back(descriptorSetLayoutBinding);
+				}
+			};
+
+			reflectVisitor.Reflect(*resolvedModule, callbacks);
+
+			for (auto& b : resolved.bindings | std::views::values)
+			{
+				for (auto& binding : b)
+					binding.stageFlags = resolved.stage;
+			}
+
+			resolved.resolvedAst = std::move(resolvedModule);
+			return resolved;
+		}
+		catch (const nzsl::Error& e)
+		{
+			CCT_GFX_LOG_ERROR("ShaderModuleLoader", "Shader:\n{}", source);
+			CCT_GFX_LOG_ERROR("ShaderModuleLoader", "NZSL error: {}", e.GetFullErrorMessage());
+		}
+		catch (const std::exception& e)
+		{
+			CCT_GFX_LOG_ERROR("ShaderModuleLoader", "NZSL", "{}", e.what());
+		}
+		return {};
+	}
+
+	ShaderModule ShaderModuleLoader::LoadShaderModuleFromSource(std::string_view source,
+																std::string_view label,
+																ShaderStage stageFilter)
+	{
+		auto resolved = ResolveShaderModuleFromSource(source, label, stageFilter);
+
+		nzsl::SpirvWriter spirvWriter;
+		nzsl::SpirvWriter::Environment env = {
+			.spvMajorVersion = 1,
+			.spvMinorVersion = 3};
+		spirvWriter.SetEnv(env);
+		std::vector<UInt32> spirv = spirvWriter.Generate(*resolved.resolvedAst);
+
+		return ShaderModule(std::move(spirv), std::move(resolved.bindings), std::move(resolved.entryPointName), resolved.stage);
+	}
+
 	ShaderBindingType ShaderModuleLoader::GetBindingType(const nzsl::Ast::ExpressionType* varType)
 	{
 		if (nzsl::Ast::IsStorageType(*varType))

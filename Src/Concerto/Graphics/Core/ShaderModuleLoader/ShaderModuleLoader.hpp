@@ -39,8 +39,14 @@ namespace cct::gfx
 
 		ResolvedShaderModule ResolveShaderModule(const std::string& path,
 		                                         ShaderStage stageFilter = ShaderStage::None);
+		ResolvedShaderModule ResolveShaderModuleFromSource(std::string_view source,
+		                                                   std::string_view label = "<generated>",
+		                                                   ShaderStage stageFilter = ShaderStage::None);
 		ShaderModule LoadShaderModule(const std::string& path,
 		                              ShaderStage stageFilter = ShaderStage::None);
+		ShaderModule LoadShaderModuleFromSource(std::string_view source,
+		                                        std::string_view label = "<generated>",
+		                                        ShaderStage stageFilter = ShaderStage::None);
 
 	private:
 		static ShaderBindingType GetBindingType(const nzsl::Ast::ExpressionType* varType);

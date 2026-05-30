@@ -37,6 +37,7 @@ namespace cct::gfx::rhi
 		std::unique_ptr<rhi::Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) override;
 		std::shared_ptr<rhi::ShaderModule> CreateShaderModule(const std::string& path,
 		                                                       cct::gfx::ShaderStage stageFilter) override;
+		std::shared_ptr<rhi::ShaderModule> CreateShaderModuleFromSource(std::string_view source, std::string_view label, cct::gfx::ShaderStage stageFilter) override;
 		std::shared_ptr<rhi::DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) override;
 		std::shared_ptr<rhi::PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<rhi::DescriptorSetLayout>>& descriptorSetLayouts) override;
 		std::shared_ptr<rhi::Pipeline> CreatePipeline(const rhi::ShaderModule& vertexShader, const rhi::ShaderModule& fragmentShader,
