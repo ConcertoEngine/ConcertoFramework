@@ -27,6 +27,8 @@ namespace cct::net
 		virtual Int32 PollEvent(ENetEvent* event, UInt32 timeout = 0);
 		bool SendPacket(const void* data, std::size_t size, ENetPeer* peer, UInt8 channel = 0, ENetPacket::Flag flags = ENetPacket::Flag::Reliable);
 		bool SendPacket(const ENetPacket& packet, ENetPeer* peer, UInt8 channel = 0, ENetPacket::Flag flags = ENetPacket::Flag::Reliable);
+		void Broadcast(const void* data, std::size_t size, UInt8 channel = 0, ENetPacket::Flag flags = ENetPacket::Flag::Reliable);
+		void Broadcast(const ENetPacket& packet, UInt8 channel = 0, ENetPacket::Flag flags = ENetPacket::Flag::Reliable);
 		void Flush();
 
 		ENetHost& operator=(const ENetHost&) = delete;

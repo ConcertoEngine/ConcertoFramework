@@ -97,6 +97,23 @@ namespace cct::net
 		return SendPacket(packet.GetData(), packet.GetSize(), peer, channel, flags);
 	}
 
+	void ENetHost::Broadcast(const void* data, std::size_t size, UInt8 channel, ENetPacket::Flag flags)
+	{
+		enet_uint32 enetFlags = ENET_PACKET_FLAG_RELIABLE;
+		if (flags == ENetPacket::Flag::Unsequenced)
+			enetFlags = ENET_PACKET_FLAG_UNSEQUENCED;
+		else if (flags == ENetPacket::Flag::UnreliableFragment)
+			enetFlags = ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT;
+		::ENetPacket* pkt = enet_packet_create(data, size, enetFlags);
+		if (pkt)
+			enet_host_broadcast(ToENetHost(_enetHost), channel, pkt);
+	}
+
+	void ENetHost::Broadcast(const ENetPacket& packet, UInt8 channel, ENetPacket::Flag flags)
+	{
+		Broadcast(packet.GetData(), static_cast<std::size_t>(packet.GetSize()), channel, flags);
+	}
+
 	void ENetHost::Flush()
 	{
 		enet_host_flush(ToENetHost(_enetHost));
