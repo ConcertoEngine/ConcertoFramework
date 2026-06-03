@@ -76,7 +76,7 @@ namespace cct::refl
 		[[nodiscard]] bool InheritsFrom(std::string_view name) const;
 
 		bool HasAttribute(std::string_view attribute) const;
-		std::string_view GetAttribute(std::string_view attribute);
+		std::string_view GetAttribute(std::string_view attribute) const;
 
 		bool operator==(const Class& other) const;
 		bool operator!=(const Class& other) const;

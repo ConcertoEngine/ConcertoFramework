@@ -257,11 +257,11 @@ namespace cct::refl
 		return it != m_attributes.end();
 	}
 
-	std::string_view Class::GetAttribute(std::string_view attribute)
+	std::string_view Class::GetAttribute(std::string_view attribute) const
 	{
 		// not using "contains", because it does not support std::string_view
 		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
-							   { return "attribute" == value.first; });
+							   { return attribute == value.first; });
 		if (it == m_attributes.end())
 		{
 			CCT_ASSERT_FALSE("Attribute '{}' does not exist", attribute);

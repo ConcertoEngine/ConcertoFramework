@@ -188,6 +188,12 @@ extern "C"
 	CRP_PLUGIN_API size_t crpClassGetGenericTypeParameterFieldCount(const CrpClass* cls);
 	CRP_PLUGIN_API const char* crpClassGetGenericTypeParameterField(const CrpClass* cls, size_t index);
 
+	CRP_PLUGIN_API int32_t crpClassHasAttribute(const CrpClass* cls, const char* attrName);
+	CRP_PLUGIN_API const char* crpClassGetAttribute(const CrpClass* cls, const char* attrName);
+	CRP_PLUGIN_API size_t crpClassGetAttributeCount(const CrpClass* cls);
+	CRP_PLUGIN_API const char* crpClassGetAttributeKey(const CrpClass* cls, size_t index);
+	CRP_PLUGIN_API const char* crpClassGetAttributeValue(const CrpClass* cls, size_t index);
+
 	CRP_PLUGIN_API const char* crpClassMemberGetName(const CrpClassMember* member);
 	CRP_PLUGIN_API const char* crpClassMemberGetType(const CrpClassMember* member);
 	CRP_PLUGIN_API int32_t crpClassMemberIsNative(const CrpClassMember* member);

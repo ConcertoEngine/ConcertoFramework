@@ -242,6 +242,108 @@ extern "C"
 		return klass->genericTypeParameterFields[index].c_str();
 	}
 
+	int32_t crpClassHasAttribute(const CrpClass* cls, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!cls || !attrName)
+			return 0;
+		const auto* klass = reinterpret_cast<const Class*>(cls);
+		if (!klass->tomlAttributes.is_table())
+			return 0;
+		return klass->tomlAttributes.as_table().contains(attrName) ? 1 : 0;
+	}
+
+	static char g_classAttrBuf[256];
+
+	const char* crpClassGetAttribute(const CrpClass* cls, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!cls || !attrName)
+			return nullptr;
+		const auto* klass = reinterpret_cast<const Class*>(cls);
+		if (!klass->tomlAttributes.is_table())
+			return nullptr;
+		auto it = klass->tomlAttributes.as_table().find(attrName);
+		if (it == klass->tomlAttributes.as_table().end())
+			return nullptr;
+		if (it->second.is_string())
+			return it->second.as_string().c_str();
+		if (it->second.is_floating())
+		{
+			std::snprintf(g_classAttrBuf, sizeof(g_classAttrBuf), "%g", it->second.as_floating());
+			return g_classAttrBuf;
+		}
+		if (it->second.is_integer())
+		{
+			std::snprintf(g_classAttrBuf, sizeof(g_classAttrBuf), "%lld", static_cast<long long>(it->second.as_integer()));
+			return g_classAttrBuf;
+		}
+		if (it->second.is_boolean())
+			return it->second.as_boolean() ? "true" : "false";
+		return nullptr;
+	}
+
+	size_t crpClassGetAttributeCount(const CrpClass* cls)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!cls)
+			return 0;
+		const auto* klass = reinterpret_cast<const Class*>(cls);
+		if (!klass->tomlAttributes.is_table())
+			return 0;
+		return klass->tomlAttributes.as_table().size();
+	}
+
+	static char g_classAttrKeyBuf[128];
+
+	const char* crpClassGetAttributeKey(const CrpClass* cls, size_t index)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!cls)
+			return nullptr;
+		const auto* klass = reinterpret_cast<const Class*>(cls);
+		if (!klass->tomlAttributes.is_table())
+			return nullptr;
+		const auto& tbl = klass->tomlAttributes.as_table();
+		if (index >= tbl.size())
+			return nullptr;
+		auto it = tbl.begin();
+		std::advance(it, index);
+		std::strncpy(g_classAttrKeyBuf, it->first.c_str(), sizeof(g_classAttrKeyBuf) - 1);
+		g_classAttrKeyBuf[sizeof(g_classAttrKeyBuf) - 1] = '\0';
+		return g_classAttrKeyBuf;
+	}
+
+	const char* crpClassGetAttributeValue(const CrpClass* cls, size_t index)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!cls)
+			return nullptr;
+		const auto* klass = reinterpret_cast<const Class*>(cls);
+		if (!klass->tomlAttributes.is_table())
+			return nullptr;
+		const auto& tbl = klass->tomlAttributes.as_table();
+		if (index >= tbl.size())
+			return nullptr;
+		auto it = tbl.begin();
+		std::advance(it, index);
+		if (it->second.is_string())
+			return it->second.as_string().c_str();
+		if (it->second.is_floating())
+		{
+			std::snprintf(g_classAttrBuf, sizeof(g_classAttrBuf), "%g", it->second.as_floating());
+			return g_classAttrBuf;
+		}
+		if (it->second.is_integer())
+		{
+			std::snprintf(g_classAttrBuf, sizeof(g_classAttrBuf), "%lld", static_cast<long long>(it->second.as_integer()));
+			return g_classAttrBuf;
+		}
+		if (it->second.is_boolean())
+			return it->second.as_boolean() ? "true" : "false";
+		return nullptr;
+	}
+
 	const char* crpClassMemberGetName(const CrpClassMember* member)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
