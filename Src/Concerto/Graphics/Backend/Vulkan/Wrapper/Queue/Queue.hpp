@@ -19,12 +19,12 @@ namespace cct::gfx::vk
 
 	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Queue : public Object<VkQueue>
 	{
-	 public:
+	public:
 		enum class Type
 		{
-			Compute,  /**< Compute queue for parallel computation. */
+			Compute, /**< Compute queue for parallel computation. */
 			Graphics, /**< Graphics queue for rendering operations. */
-			Transfer  /**< Transfer queue for memory operations. */
+			Transfer /**< Transfer queue for memory operations. */
 		};
 
 		Queue();
@@ -38,16 +38,16 @@ namespace cct::gfx::vk
 		Queue& operator=(const Queue&) = delete;
 
 		VkResult Create(Device& device, UInt32 queueFamilyIndex);
-		
+
 		[[nodiscard]] UInt32 GetFamilyIndex() const;
 
 		void Submit(const CommandBuffer& commandBuffer, const Semaphore* presentSemaphore, const Semaphore* renderSemaphore, const Fence& renderFence) const;
 		bool Present(const Semaphore& renderSemaphore, SwapChain& swapchain, UInt32 swapchainImageIndex) const;
 		void WaitIdle() const;
 
-	 private:
+	private:
 		UInt32 m_queueFamilyIndex;
 	};
 } // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_QUEUE_HPP
+#endif // CONCERTO_GRAPHICS_QUEUE_HPP

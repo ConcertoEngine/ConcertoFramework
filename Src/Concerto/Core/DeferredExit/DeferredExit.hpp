@@ -22,11 +22,12 @@ namespace cct
 
 		DeferredExit& operator=(DeferredExit&&) = default;
 		DeferredExit& operator=(const DeferredExit&) = delete;
+
 	private:
 		F m_functor;
 	};
-}
+} // namespace cct
 
 #include "Concerto/Core/DeferredExit/DeferredExit.inl"
 
-#endif //CONCERTO_CORE_DEFEREDEXIT_HPP
+#endif // CONCERTO_CORE_DEFEREDEXIT_HPP

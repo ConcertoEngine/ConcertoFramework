@@ -5,9 +5,10 @@
 #pragma once
 
 #include <d3d12.h>
+#include <format>
 #include <stdexcept>
 #include <string>
-#include <format>
+
 #include "Concerto/Graphics/Core/ShaderTypes.hpp"
 
 namespace cct::gfx::dx12
@@ -83,18 +84,18 @@ namespace cct::gfx::dx12
 
 		switch (bindingType)
 		{
-		case ShaderBindingType::UniformBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-		case ShaderBindingType::StorageBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-		case ShaderBindingType::ReadOnlyStorageBuffer:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-		case ShaderBindingType::Texture:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-		case ShaderBindingType::Sampler:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
-		default:
-			return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			case ShaderBindingType::UniformBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+			case ShaderBindingType::StorageBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+			case ShaderBindingType::ReadOnlyStorageBuffer:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			case ShaderBindingType::Texture:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			case ShaderBindingType::Sampler:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+			default:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 		}
 	}
-}
+} // namespace cct::gfx::dx12

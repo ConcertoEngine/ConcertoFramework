@@ -5,8 +5,8 @@
 #ifndef CONCERTO_CORE_STREAM_INL
 #define CONCERTO_CORE_STREAM_INL
 
-#include "Concerto/Core/Stream/Stream.hpp"
 #include "Concerto/Core/Serializer/Serializer.hpp"
+#include "Concerto/Core/Stream/Stream.hpp"
 
 namespace cct
 {
@@ -23,6 +23,6 @@ namespace cct
 		cct::Deserialize(*this, data);
 		return *this;
 	}
-}
+} // namespace cct
 
-#endif //CONCERTO_CORE_STREAM_INL
+#endif // CONCERTO_CORE_STREAM_INL

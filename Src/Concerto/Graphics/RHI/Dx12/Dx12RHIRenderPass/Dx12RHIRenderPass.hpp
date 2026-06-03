@@ -8,8 +8,8 @@
 #include <span>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/RenderPass.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Defines.hpp"
+#include "Concerto/Graphics/RHI/RenderPass.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -17,12 +17,21 @@ namespace cct::gfx::rhi
 	{
 	public:
 		Dx12RHIRenderPass(std::span<RenderPass::Attachment> attachments,
-		                  std::span<RenderPass::SubPassDescription> subPassDescriptions,
-		                  std::span<RenderPass::SubPassDependency> subPassDependencies);
+						  std::span<RenderPass::SubPassDescription> subPassDescriptions,
+						  std::span<RenderPass::SubPassDependency> subPassDependencies);
 
-		[[nodiscard]] const std::vector<Attachment>& GetAttachments() const { return m_attachments; }
-		[[nodiscard]] const std::vector<SubPassDescription>& GetSubPassDescriptions() const { return m_subPassDescriptions; }
-		[[nodiscard]] const std::vector<SubPassDependency>& GetSubPassDependencies() const { return m_subPassDependencies; }
+		[[nodiscard]] const std::vector<Attachment>& GetAttachments() const
+		{
+			return m_attachments;
+		}
+		[[nodiscard]] const std::vector<SubPassDescription>& GetSubPassDescriptions() const
+		{
+			return m_subPassDescriptions;
+		}
+		[[nodiscard]] const std::vector<SubPassDependency>& GetSubPassDependencies() const
+		{
+			return m_subPassDependencies;
+		}
 
 		[[nodiscard]] DXGI_FORMAT GetColorAttachmentFormat() const;
 		[[nodiscard]] DXGI_FORMAT GetDepthAttachmentFormat() const;
@@ -32,6 +41,6 @@ namespace cct::gfx::rhi
 		std::vector<SubPassDescription> m_subPassDescriptions;
 		std::vector<SubPassDependency> m_subPassDependencies;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHIRENDERPASS_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHIRENDERPASS_HPP

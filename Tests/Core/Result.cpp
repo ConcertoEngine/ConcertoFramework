@@ -4,9 +4,10 @@
 
 #include <string>
 
-#include <catch2/catch_test_macros.hpp>
-#include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Core/Result/Result.hpp>
+#include <Concerto/Core/Types/Types.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {
@@ -15,8 +16,18 @@ namespace CCT_ANONYMOUS_NAMESPACE
 	class Bar
 	{
 	public:
-		Bar() : a(0), b(false), c(0) {}
-		Bar(Int32 aa, bool bb, Int32 cc) : a(aa), b(bb), c(cc) {}
+		Bar() :
+			a(0),
+			b(false),
+			c(0)
+		{
+		}
+		Bar(Int32 aa, bool bb, Int32 cc) :
+			a(aa),
+			b(bb),
+			c(cc)
+		{
+		}
 
 		Int32 a;
 		bool b;

@@ -6,9 +6,10 @@
 #define CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIDESCRIPTORSETLAYOUT_HPP
 
 #include <memory>
+
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/DescriptorSetLayout.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -24,6 +25,6 @@ namespace cct::gfx::rhi
 	private:
 		std::vector<cct::gfx::DescriptorSetLayoutBinding> m_bindings;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIDESCRIPTORSETLAYOUT_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIDESCRIPTORSETLAYOUT_HPP

@@ -33,6 +33,6 @@ namespace cct::gfx::dx12
 	private:
 		Factory* m_factory;
 	};
-} // cct::gfx::dx12
+} // namespace cct::gfx::dx12
 
-#endif //CONCERTO_GRAPHICS_BACKEND_D3D12_PHYSICAL_DEVICE_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_D3D12_PHYSICAL_DEVICE_HPP

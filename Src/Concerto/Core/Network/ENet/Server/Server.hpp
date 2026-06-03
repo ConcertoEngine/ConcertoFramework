@@ -9,20 +9,21 @@
 
 #include <functional>
 
-#include "Concerto/Core/Network/IpAddress/IpAddress.hpp"
 #include "Concerto/Core/Network/ENet/Host/Host.hpp"
+#include "Concerto/Core/Network/IpAddress/IpAddress.hpp"
 
 namespace cct::net
 {
 	class CCT_CORE_PUBLIC_API EnetServer : public ENetHost
 	{
-	 public:
+	public:
 		EnetServer() = delete;
 		explicit EnetServer(IpAddress address, std::size_t maxClients = 32, UInt32 maxIncomingBandwidth = 0, UInt32 maxOutgoingBandwidth = 0);
+
 	private:
 		IpAddress _address;
 	};
-}// namespace cct::net
+} // namespace cct::net
 
 #endif // CONCERTO_CORE_NETWORK_ENET_SERVER_HPP
 

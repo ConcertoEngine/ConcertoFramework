@@ -5,12 +5,12 @@
 #ifndef CONCERTO_GRAPHICS_RHI_SHADERMODULE_HPP
 #define CONCERTO_GRAPHICS_RHI_SHADERMODULE_HPP
 
-#include <vector>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
-#include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -42,6 +42,6 @@ namespace cct::gfx::rhi
 		 */
 		virtual cct::gfx::ShaderStage GetStage() const = 0;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_SHADERMODULE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_SHADERMODULE_HPP

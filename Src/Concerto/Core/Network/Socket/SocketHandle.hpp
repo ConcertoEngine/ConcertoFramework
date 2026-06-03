@@ -37,5 +37,5 @@ namespace cct::net
 		Unknown // Unknown error
 	};
 
-}
-#endif //CONCERTO_CORE_NETWORK_SOCKETHANDLE_HPP
+} // namespace cct::net
+#endif // CONCERTO_CORE_NETWORK_SOCKETHANDLE_HPP

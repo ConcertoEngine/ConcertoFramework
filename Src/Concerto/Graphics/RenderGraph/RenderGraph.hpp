@@ -11,16 +11,16 @@
 #include <memory>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/CommandBuffer.hpp"
-#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
-#include "Concerto/Graphics/RHI/Device.hpp"
-#include "Concerto/Graphics/RenderGraph/RenderGraphResource.hpp"
-#include "Concerto/Graphics/RenderGraph/RenderGraphPass.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphBuilder.hpp"
-#include "Concerto/Graphics/RenderGraph/RenderGraphContext.hpp"
-#include "Concerto/Graphics/RenderGraph/RenderGraphResourceRegistry.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphCompiler.hpp"
+#include "Concerto/Graphics/RenderGraph/RenderGraphContext.hpp"
+#include "Concerto/Graphics/RenderGraph/RenderGraphPass.hpp"
+#include "Concerto/Graphics/RenderGraph/RenderGraphResource.hpp"
+#include "Concerto/Graphics/RenderGraph/RenderGraphResourceRegistry.hpp"
+#include "Concerto/Graphics/RHI/CommandBuffer.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Device.hpp"
+#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -35,32 +35,32 @@ namespace cct::gfx::rhi
 
 		// Resource declaration
 		RGTextureHandle CreateTexture(const RGTextureDesc& desc);
-		RGBufferHandle  CreateBuffer (const RGBufferDesc&  desc);
+		RGBufferHandle CreateBuffer(const RGBufferDesc& desc);
 
 		// Import external resources (swapchain backbuffer, persistent textures)
 		RGTextureHandle ImportTexture(const char* name,
-		                              std::shared_ptr<Texture> texture,
-		                              ImageLayout currentLayout = ImageLayout::Undefined,
-		                              PixelFormat format        = PixelFormat::RGBA8_SRGB,
-		                              UInt32 width  = 0,
-		                              UInt32 height = 0);
-		RGBufferHandle  ImportBuffer (const char* name,
-		                              std::shared_ptr<Buffer>  buffer);
+									  std::shared_ptr<Texture> texture,
+									  ImageLayout currentLayout = ImageLayout::Undefined,
+									  PixelFormat format = PixelFormat::RGBA8_SRGB,
+									  UInt32 width = 0,
+									  UInt32 height = 0);
+		RGBufferHandle ImportBuffer(const char* name,
+									std::shared_ptr<Buffer> buffer);
 
 		// Pass declaration
 		void AddPass(const char* name, RGPassType type,
-		             std::function<void(RenderGraphBuilder&)> setup,
-		             std::function<void(RenderGraphContext&)> execute);
+					 std::function<void(RenderGraphBuilder&)> setup,
+					 std::function<void(RenderGraphContext&)> execute);
 
 		void AddGraphicsPass(const char* name,
-		                     std::function<void(RenderGraphBuilder&)> setup,
-		                     std::function<void(RenderGraphContext&)> execute);
-		void AddComputePass (const char* name,
-		                     std::function<void(RenderGraphBuilder&)> setup,
-		                     std::function<void(RenderGraphContext&)> execute);
+							 std::function<void(RenderGraphBuilder&)> setup,
+							 std::function<void(RenderGraphContext&)> execute);
+		void AddComputePass(const char* name,
+							std::function<void(RenderGraphBuilder&)> setup,
+							std::function<void(RenderGraphContext&)> execute);
 		void AddTransferPass(const char* name,
-		                     std::function<void(RenderGraphBuilder&)> setup,
-		                     std::function<void(RenderGraphContext&)> execute);
+							 std::function<void(RenderGraphBuilder&)> setup,
+							 std::function<void(RenderGraphContext&)> execute);
 
 		void SetFinalOutput(RGTextureHandle handle);
 
@@ -111,6 +111,6 @@ namespace cct::gfx::rhi
 		bool m_dirty = true;
 		FrameBuffer* m_currentFrameBuffer = nullptr; // active framebuffer across a merge group
 	};
-}
+} // namespace cct::gfx::rhi
 
 #endif // CONCERTO_GRAPHICS_RHI_RENDERGRAPH_HPP

@@ -2,17 +2,17 @@
 // Created by arthur on 27/02/2026.
 //
 #define CATCH_CONFIG_RUNNER
-#include <catch2/catch_test_macros.hpp>
-
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 
+#include <Concerto/Core/Signal/Connection.hpp>
 #include <Concerto/Reflection/GenericClass/GenericClass.hpp>
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
-#include <Concerto/Core/Signal/Connection.hpp>
 #include <Concerto/Reflection/String/String.refl.hpp>
 #include <Concerto/Reflection/Vector/Vector.refl.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 using namespace std::string_view_literals;
 
@@ -256,7 +256,10 @@ SCENARIO("Vector - Clear and OnCleared signal")
 			vec.Clear();
 			callCount = 0; // reset
 			vec.Clear();
-			THEN("OnCleared is NOT called again") { CHECK(callCount == 0); }
+			THEN("OnCleared is NOT called again")
+			{
+				CHECK(callCount == 0);
+			}
 		}
 	}
 }
@@ -268,7 +271,8 @@ SCENARIO("Vector - OnValueChanged is emitted on every mutation")
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
 		int changeCount = 0;
-		auto conn = vec.OnValueChanged.Connect([&changeCount]() { ++changeCount; });
+		auto conn = vec.OnValueChanged.Connect([&changeCount]()
+											   { ++changeCount; });
 
 		WHEN("Add, Remove, and Clear are called")
 		{
@@ -282,7 +286,10 @@ SCENARIO("Vector - OnValueChanged is emitted on every mutation")
 			CHECK(changeCount == 3);
 
 			vec.Clear();
-			THEN("OnValueChanged fires for each mutation") { CHECK(changeCount == 4); }
+			THEN("OnValueChanged fires for each mutation")
+			{
+				CHECK(changeCount == 4);
+			}
 		}
 	}
 }
@@ -306,7 +313,10 @@ SCENARIO("Vector - ScopedConnection auto-disconnect")
 			} // sc destroyed, auto-disconnect
 
 			vec.Add(std::make_unique<cct::refl::String>("out of scope"sv));
-			THEN("Callback is not called after scope exit") { CHECK(callCount == 1); }
+			THEN("Callback is not called after scope exit")
+			{
+				CHECK(callCount == 1);
+			}
 		}
 	}
 }

@@ -1,7 +1,3 @@
-#include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include <catch2/matchers/catch_matchers_string.hpp>
-
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 
@@ -9,6 +5,9 @@
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
 #include "SampleBar.refl.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 
 using Catch::Matchers::ContainsSubstring;
 using Catch::Matchers::WithinAbs;
@@ -27,11 +26,11 @@ namespace
 	std::unique_ptr<cct::sample::JsonSample> MakeSample()
 	{
 		auto obj = cct::sample::JsonSample::GetClass()
-			->CreateDefaultObject<cct::sample::JsonSample>();
+					   ->CreateDefaultObject<cct::sample::JsonSample>();
 		REQUIRE(obj != nullptr);
 		return obj;
 	}
-}
+} // namespace
 
 SCENARIO("Json::ToJson - serializes native primitive members")
 {
@@ -100,7 +99,8 @@ SCENARIO("Json::ToJson - escapes string special characters")
 		LoadPackages(loader);
 
 		auto sample = MakeSample();
-		sample->m_stringValue = std::string("a\"b\\c\nd\te\x01""f");
+		sample->m_stringValue = std::string("a\"b\\c\nd\te\x01"
+											"f");
 
 		WHEN("ToJson is called")
 		{
@@ -213,7 +213,7 @@ SCENARIO("Json - round-trip preserves all primitive members")
 
 		auto original = MakeSample();
 		original->m_intValue = -1234;
-		original->m_floatValue = 3.140625F;  // exactly representable in float
+		original->m_floatValue = 3.140625F; // exactly representable in float
 		original->m_boolValue = false;
 		original->m_stringValue = "ok";
 
@@ -227,7 +227,7 @@ SCENARIO("Json - round-trip preserves all primitive members")
 			{
 				CHECK(roundTripped->m_intValue == original->m_intValue);
 				CHECK_THAT(static_cast<double>(roundTripped->m_floatValue),
-					WithinAbs(static_cast<double>(original->m_floatValue), 1e-6));
+						   WithinAbs(static_cast<double>(original->m_floatValue), 1e-6));
 				CHECK(roundTripped->m_boolValue == original->m_boolValue);
 				CHECK(roundTripped->m_stringValue == original->m_stringValue);
 			}

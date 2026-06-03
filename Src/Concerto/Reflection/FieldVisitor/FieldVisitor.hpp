@@ -41,36 +41,80 @@ namespace cct::refl
 		virtual ~FieldVisitor() = default;
 
 		// Native C++ types
-		virtual void Visit(std::string_view name, int& v)         {}
-		virtual void Visit(std::string_view name, float& v)       {}
-		virtual void Visit(std::string_view name, bool& v)        {}
-		virtual void Visit(std::string_view name, std::string& v) {}
+		virtual void Visit(std::string_view name, int& v)
+		{
+		}
+		virtual void Visit(std::string_view name, float& v)
+		{
+		}
+		virtual void Visit(std::string_view name, bool& v)
+		{
+		}
+		virtual void Visit(std::string_view name, std::string& v)
+		{
+		}
 
 		// Primitive wrappers
-		virtual void Visit(std::string_view name, Boolean& v)  {}
-		virtual void Visit(std::string_view name, Int8& v)     {}
-		virtual void Visit(std::string_view name, Int16& v)    {}
-		virtual void Visit(std::string_view name, Int32& v)    {}
-		virtual void Visit(std::string_view name, Int64& v)    {}
-		virtual void Visit(std::string_view name, UInt8& v)    {}
-		virtual void Visit(std::string_view name, UInt16& v)   {}
-		virtual void Visit(std::string_view name, UInt32& v)   {}
-		virtual void Visit(std::string_view name, UInt64& v)   {}
-		virtual void Visit(std::string_view name, Float32& v)  {}
-		virtual void Visit(std::string_view name, Float64& v)  {}
-		virtual void Visit(std::string_view name, String& v)   {}
-		virtual void Visit(std::string_view name, File& v)     {}
-		virtual void Visit(std::string_view name, Folder& v)   {}
+		virtual void Visit(std::string_view name, Boolean& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Int8& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Int16& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Int32& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Int64& v)
+		{
+		}
+		virtual void Visit(std::string_view name, UInt8& v)
+		{
+		}
+		virtual void Visit(std::string_view name, UInt16& v)
+		{
+		}
+		virtual void Visit(std::string_view name, UInt32& v)
+		{
+		}
+		virtual void Visit(std::string_view name, UInt64& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Float32& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Float64& v)
+		{
+		}
+		virtual void Visit(std::string_view name, String& v)
+		{
+		}
+		virtual void Visit(std::string_view name, File& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Folder& v)
+		{
+		}
 
 		// Containers and nested objects
-		virtual void Visit(std::string_view name, Enumeration& v) {}
-		virtual void Visit(std::string_view name, Vector& v)      {}
-		virtual void Visit(std::string_view name, Object& v)      {}
+		virtual void Visit(std::string_view name, Enumeration& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Vector& v)
+		{
+		}
+		virtual void Visit(std::string_view name, Object& v)
+		{
+		}
 
 		/// Called before a field that carries Min/Max/integer metadata.
 		/// Visitors that render UI constraints (e.g. sliders) should override this.
 		virtual void PushMeta(std::string_view name, std::optional<double> min,
-		                      std::optional<double> max, bool isInteger) {}
+							  std::optional<double> max, bool isInteger)
+		{
+		}
 	};
 } // namespace cct::refl
 

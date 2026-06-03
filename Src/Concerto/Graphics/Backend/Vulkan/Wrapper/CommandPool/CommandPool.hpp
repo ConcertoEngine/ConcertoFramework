@@ -5,11 +5,9 @@
 #ifndef CONCERTO_GRAPHICS_COMMANDPOOL_HPP
 #define CONCERTO_GRAPHICS_COMMANDPOOL_HPP
 
-
-
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
 namespace cct::gfx::vk
 {
@@ -28,9 +26,10 @@ namespace cct::gfx::vk
 
 		void Reset() const;
 		CommandBuffer AllocateCommandBuffer(VkCommandBufferLevel level);
+
 	private:
 		UInt32 m_queueFamily;
 	};
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_COMMANDPOOL_HPP
+#endif // CONCERTO_GRAPHICS_COMMANDPOOL_HPP

@@ -8,9 +8,9 @@
 #include <vk_mem_alloc.h>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
 namespace cct::gfx::vk
 {
@@ -40,8 +40,8 @@ namespace cct::gfx::vk
 
 		inline Image AllocateImage(VkExtent2D extent, VkFormat format, VkImageUsageFlags usageFlags);
 	};
-}
+} // namespace cct::gfx::vk
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Allocator/Allocator.inl"
 
-#endif //CONCERTO_GRAPHICS_ALLOCATOR_HPP
+#endif // CONCERTO_GRAPHICS_ALLOCATOR_HPP

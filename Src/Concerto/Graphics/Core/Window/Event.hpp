@@ -5,8 +5,8 @@
 #ifndef CONCERTO_EVENT_HPP
 #define CONCERTO_EVENT_HPP
 
-#include <variant>
 #include <string>
+#include <variant>
 
 #include "Concerto/Graphics/Core/Window/Key.hpp"
 
@@ -86,5 +86,5 @@ namespace cct
 		std::string name;
 		std::variant<KeyEvent, MouseEvent, float, bool, int, std::string> data;
 	};
-}
-#endif //CONCERTO_EVENT_HPP
+} // namespace cct
+#endif // CONCERTO_EVENT_HPP

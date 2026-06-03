@@ -11,7 +11,7 @@
 
 namespace cct
 {
-	template <typename ReturnValue, typename ... Args>
+	template<typename ReturnValue, typename... Args>
 	ReturnValue DynLib::Invoke(const std::string& functionName, Args&&... args)
 	{
 		auto func = GetFunction<ReturnValue, Args...>(functionName);
@@ -23,7 +23,7 @@ namespace cct
 		return func(std::forward<Args>(args)...);
 	}
 
-	template <typename ReturnValue, typename ... Args>
+	template<typename ReturnValue, typename... Args>
 	FunctionRef<ReturnValue(Args...)> DynLib::GetFunction(const std::string& functionName)
 	{
 		void* symbol = GetSymbol(functionName);
@@ -32,11 +32,11 @@ namespace cct
 			CCT_ASSERT_FALSE("ConcertoCore: Invalid symbol pointer '{}'", functionName);
 			return FunctionRef<ReturnValue(Args...)>();
 		}
-		using Func = ReturnValue(*)(Args...);
+		using Func = ReturnValue (*)(Args...);
 		return FunctionRef<ReturnValue(Args...)>(*reinterpret_cast<Func>(symbol));
 	}
 
-	template <typename T>
+	template<typename T>
 	T* DynLib::GetValue(const std::string& valueName)
 	{
 		void* symbol = GetSymbol(valueName);
@@ -47,6 +47,6 @@ namespace cct
 		}
 		return static_cast<T*>(symbol);
 	}
-}// namespace cct
+} // namespace cct
 
-#endif//CONCERTO_CORE_DYNLIB_INL
+#endif // CONCERTO_CORE_DYNLIB_INL

@@ -27,7 +27,8 @@ namespace cct::gfx::vk
 
 		[[nodiscard]] VkType* Get() const;
 		[[nodiscard]] bool IsValid() const;
-		[[nodiscard]] Device* GetDevice() const requires (!std::is_same_v<VkType, VkDevice> && !std::is_same_v<VkType, VkInstance>);
+		[[nodiscard]] Device* GetDevice() const
+			requires(!std::is_same_v<VkType, VkDevice> && !std::is_same_v<VkType, VkInstance>);
 		[[nodiscard]] VkResult GetLastResult() const;
 
 	protected:
@@ -35,8 +36,8 @@ namespace cct::gfx::vk
 		Device* m_device;
 		mutable VkResult m_lastResult;
 	};
-}
+} // namespace cct::gfx::vk
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.inl"
 
-#endif //CONCERTO_GRAPHICS_OBJECT_HPP
+#endif // CONCERTO_GRAPHICS_OBJECT_HPP

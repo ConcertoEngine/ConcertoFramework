@@ -2,10 +2,10 @@
 // Created by arthur on 04/09/2022.
 //
 
+#include "Concerto/Core/Math/Quaternion/Quaternion.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-
-#include "Concerto/Core/Math/Quaternion/Quaternion.hpp"
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {
@@ -235,14 +235,20 @@ namespace CCT_ANONYMOUS_NAMESPACE
 		{
 			Quaternionf q1(1, 2, 3, 4);
 			Quaternionf q2(1, 2, 3, 4);
-			THEN("They are equal") { CHECK(q1 == q2); }
+			THEN("They are equal")
+			{
+				CHECK(q1 == q2);
+			}
 		}
 
 		GIVEN("Two Quaternions differing in W")
 		{
 			Quaternionf q1(1, 2, 3, 4);
 			Quaternionf q2(1, 2, 3, 5);
-			THEN("They are not equal") { CHECK(q1 != q2); }
+			THEN("They are not equal")
+			{
+				CHECK(q1 != q2);
+			}
 		}
 	}
 
@@ -256,7 +262,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			WHEN("Multiplied by Vector3f::Forward()")
 			{
 				Vector3f vec = q * Vector3f::Forward();
-				THEN("The vector is unchanged") { CHECK(vec == Vector3f::Forward()); }
+				THEN("The vector is unchanged")
+				{
+					CHECK(vec == Vector3f::Forward());
+				}
 			}
 		}
 	}
@@ -271,7 +280,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			WHEN("Normalized")
 			{
 				q.Normalize();
-				THEN("Length is 1 within tolerance") { CHECK_THAT(q.Length(), Catch::Matchers::WithinAbs(1.f, near)); }
+				THEN("Length is 1 within tolerance")
+				{
+					CHECK_THAT(q.Length(), Catch::Matchers::WithinAbs(1.f, near));
+				}
 			}
 		}
 	}
@@ -287,8 +299,8 @@ namespace CCT_ANONYMOUS_NAMESPACE
 				THEN("All angles are ~0")
 				{
 					CHECK_THAT(angles.Pitch(), Catch::Matchers::WithinAbs(0.f, near));
-					CHECK_THAT(angles.Yaw(),   Catch::Matchers::WithinAbs(0.f, near));
-					CHECK_THAT(angles.Roll(),  Catch::Matchers::WithinAbs(0.f, near));
+					CHECK_THAT(angles.Yaw(), Catch::Matchers::WithinAbs(0.f, near));
+					CHECK_THAT(angles.Roll(), Catch::Matchers::WithinAbs(0.f, near));
 				}
 			}
 		}
@@ -302,8 +314,8 @@ namespace CCT_ANONYMOUS_NAMESPACE
 				THEN("Angles match within tolerance")
 				{
 					CHECK_THAT(angles.Pitch(), Catch::Matchers::WithinAbs(30.f, near));
-					CHECK_THAT(angles.Yaw(),   Catch::Matchers::WithinAbs(25.f, near));
-					CHECK_THAT(angles.Roll(),  Catch::Matchers::WithinAbs(68.f, near));
+					CHECK_THAT(angles.Yaw(), Catch::Matchers::WithinAbs(25.f, near));
+					CHECK_THAT(angles.Roll(), Catch::Matchers::WithinAbs(68.f, near));
 				}
 			}
 		}
@@ -320,8 +332,7 @@ namespace CCT_ANONYMOUS_NAMESPACE
 				-0.9505614f, -0.2766193f, 0.1411200f, 0.f,
 				0.0800920f, -0.6574507f, -0.7492288f, 0.f,
 				0.3000306f, -0.7008854f, 0.6471023f, 0.f,
-				0.f, 0.f, 0.f, 1.f
-			);
+				0.f, 0.f, 0.f, 1.f);
 
 			THEN("All matrix elements match within tolerance")
 			{

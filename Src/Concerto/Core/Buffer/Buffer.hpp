@@ -13,7 +13,7 @@ namespace cct
 {
 	class CCT_CORE_PUBLIC_API Buffer
 	{
-	 public:
+	public:
 		using container_type = std::vector<Byte>;
 		using allocator_type = container_type::allocator_type;
 		using const_iterator = container_type::const_iterator;
@@ -126,7 +126,7 @@ namespace cct
 		 */
 		void ShrinkToFit();
 
-		//STL functions
+		// STL functions
 		[[nodiscard]] iterator begin() noexcept;
 		[[nodiscard]] const_iterator begin() const noexcept;
 		[[nodiscard]] const_iterator cbegin() const noexcept;
@@ -145,8 +145,8 @@ namespace cct
 		bool operator==(const Buffer& rhs) const;
 		bool operator!=(const Buffer& rhs) const;
 
-	 private:
+	private:
 		container_type _data;
 	};
-}
-#endif //CONCERTO_CORE_BUFFER_HPP
+} // namespace cct
+#endif // CONCERTO_CORE_BUFFER_HPP

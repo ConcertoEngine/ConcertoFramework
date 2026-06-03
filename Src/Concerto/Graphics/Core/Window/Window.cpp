@@ -474,7 +474,7 @@ namespace cct::gfx
 		m_shouldQuit(false),
 		m_titleBarHeight(0)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 		const auto displayId = static_cast<SDL_DisplayID>(displayIndex);
 		SDL_PropertiesID props = SDL_CreateProperties();
 		SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title.c_str());
@@ -504,7 +504,7 @@ namespace cct::gfx
 	}
 	Window::~Window()
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 		if (m_window != nullptr)
 			SDL_SetWindowHitTest(m_window, nullptr, nullptr);
 		SDL_RemoveEventWatch(EventHandler, this);

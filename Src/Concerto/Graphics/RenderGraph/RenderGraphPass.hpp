@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/RenderPass.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphResource.hpp"
+#include "Concerto/Graphics/RHI/RenderPass.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -51,6 +51,6 @@ namespace cct::gfx::rhi
 		std::unique_ptr<RenderPass> renderPass; // non-null when this pass opens a new render pass
 		bool closesRenderPass = true; // false when the next pass continues the same render pass
 	};
-}
+} // namespace cct::gfx::rhi
 
 #endif // CONCERTO_GRAPHICS_RHI_RENDERGRAPH_PASS_HPP

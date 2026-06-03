@@ -6,14 +6,15 @@
 #define CONCERTO_CORE_NETWORK_PACKET_HPP
 
 #include <cstddef>
-#include "Concerto/Core/Types/Types.hpp"
+
 #include "Concerto/Core/Stream/Stream.hpp"
+#include "Concerto/Core/Types/Types.hpp"
 
 namespace cct::net
 {
 	class CCT_CORE_PUBLIC_API Packet : public Stream
 	{
-	 public:
+	public:
 		Packet();
 		Packet(UInt8 packetType, const void* data, UInt32 size);
 		explicit Packet(UInt8 packetType, std::size_t capacity = 0);
@@ -39,11 +40,12 @@ namespace cct::net
 		}
 
 		static constexpr UInt32 HeaderSize = sizeof(UInt8) + sizeof(UInt32);
-	 private:
+
+	private:
 		UInt32 _size;
 		UInt8 _packetType;
 		bool _validHeader;
 	};
-}
+} // namespace cct::net
 
-#endif //CONCERTO_CORE_NETWORK_PACKET_HPP
+#endif // CONCERTO_CORE_NETWORK_PACKET_HPP

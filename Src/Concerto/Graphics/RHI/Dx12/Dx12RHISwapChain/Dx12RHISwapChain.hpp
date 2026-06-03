@@ -5,12 +5,12 @@
 #ifndef CONCERTO_GRAPHICS_RHI_DX12_DX12RHISWAPCHAIN_HPP
 #define CONCERTO_GRAPHICS_RHI_DX12_DX12RHISWAPCHAIN_HPP
 
-#include "Concerto/Graphics/RHI/SwapChain.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Fence/Fence.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/SwapChain/SwapChain.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandPool/Dx12RHICommandPool.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIFrameBuffer/Dx12RHIFrameBuffer.hpp"
+#include "Concerto/Graphics/RHI/SwapChain.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -27,6 +27,7 @@ namespace cct::gfx::rhi
 		rhi::Frame& AcquireFrame() override;
 		void WaitAll() const override;
 		CommandPool& GetCommandPool();
+
 	private:
 		class SwapChainFrame : public rhi::Frame
 		{
@@ -42,6 +43,7 @@ namespace cct::gfx::rhi
 			const dx12::Fence& GetRenderFence() const;
 
 			static constexpr UInt32 InvalidFrameIndex = std::numeric_limits<UInt32>::max();
+
 		private:
 			Dx12RHICommandBuffer m_commandBuffer;
 			dx12::Fence m_renderFence;
@@ -63,6 +65,6 @@ namespace cct::gfx::rhi
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
 		D3D12_CPU_DESCRIPTOR_HANDLE m_dsvHandle{};
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHISWAPCHAIN_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHISWAPCHAIN_HPP

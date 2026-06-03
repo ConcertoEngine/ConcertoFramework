@@ -3,13 +3,13 @@
 //
 #include <ConcertoReflectionPackage.gen.hpp>
 #include <ConcertoReflectionTestsPackage.gen.hpp>
+#include <SampleBar.refl.hpp>
 
 #include <Concerto/Reflection/GenericClass/GenericClass.hpp>
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
 #include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
 #include <catch2/catch_test_macros.hpp>
-#include <SampleBar.refl.hpp>
 
 SCENARIO("GenericClass identification")
 {

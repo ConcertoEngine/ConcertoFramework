@@ -88,4 +88,4 @@ namespace cct::gfx
 		D32f
 	};
 }
-#endif //CONCERTO_GRAPHICS_PIXELFORMAT_HPP
+#endif // CONCERTO_GRAPHICS_PIXELFORMAT_HPP

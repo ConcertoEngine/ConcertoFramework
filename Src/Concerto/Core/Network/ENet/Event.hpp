@@ -8,6 +8,7 @@
 #define CONCERTO_CORE_NETWORK_ENET_EVENT_HPP
 
 #include <memory>
+
 #include "Concerto/Core/Network/ENet/Packet/Packet.hpp"
 #include "Concerto/Core/Network/ENet/Peer/Peer.hpp"
 
@@ -15,7 +16,7 @@ namespace cct::net
 {
 	struct CCT_CORE_PUBLIC_API ENetEvent
 	{
-		enum Type 
+		enum Type
 		{
 			None,
 			Connect,
@@ -29,7 +30,7 @@ namespace cct::net
 		UInt32 data;
 		std::unique_ptr<ENetPacket> packet;
 	};
-}
+} // namespace cct::net
 
 #endif // CONCERTO_CORE_NETWORK_ENET_EVENT_HPP
 

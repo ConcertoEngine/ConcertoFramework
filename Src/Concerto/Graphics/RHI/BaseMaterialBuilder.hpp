@@ -5,14 +5,14 @@
 #ifndef CONCERTO_GRAPHICS_RHI_BASEMATERIALBUILDER_HPP
 #define CONCERTO_GRAPHICS_RHI_BASEMATERIALBUILDER_HPP
 
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <memory>
 
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/MaterialBuilder.hpp"
 #include "Concerto/Graphics/RHI/ShaderModule.hpp"
-#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -42,8 +42,8 @@ namespace cct::gfx::rhi
 		ThreadSafeHashMap<std::string, std::shared_ptr<rhi::ShaderModule>> m_shaderModules;
 		ThreadSafeHashMap<UInt64, std::shared_ptr<rhi::Pipeline>> m_pipelinesCache;
 		ThreadSafeHashMap<UInt64, std::shared_ptr<rhi::DescriptorSetLayout>> m_descriptorSetLayoutsCache;
-		ThreadSafeHashSet<MaterialPtr> m_materialsCache;  // Track all created materials for Update()
+		ThreadSafeHashSet<MaterialPtr> m_materialsCache; // Track all created materials for Update()
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_BASEMATERIALBUILDER_HPP
+#endif // CONCERTO_GRAPHICS_RHI_BASEMATERIALBUILDER_HPP

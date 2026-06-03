@@ -13,8 +13,9 @@
 namespace cct
 {
 
-	template <typename ReturnValue, typename ... Args>
-	template <typename Functor> requires (std::is_invocable_r_v<ReturnValue, std::decay_t<Functor>, Args...>)
+	template<typename ReturnValue, typename... Args>
+	template<typename Functor>
+		requires(std::is_invocable_r_v<ReturnValue, std::decay_t<Functor>, Args...>)
 	FunctionRef<ReturnValue(Args...)>::FunctionRef(Functor&& func) :
 		_functionPointer(reinterpret_cast<void*>(std::addressof(func)))
 	{
@@ -24,8 +25,9 @@ namespace cct
 		};
 	}
 
-	template <typename ReturnValue, typename ... Args>
-	template <typename Functor> requires (std::is_invocable_r_v<ReturnValue, std::decay_t<Functor>, Args...>)
+	template<typename ReturnValue, typename... Args>
+	template<typename Functor>
+		requires(std::is_invocable_r_v<ReturnValue, std::decay_t<Functor>, Args...>)
 	FunctionRef<ReturnValue(Args...)>& FunctionRef<ReturnValue(Args...)>::operator=(Functor&& f)
 	{
 		_functionPointer = reinterpret_cast<void*>(std::addressof(f));
@@ -36,8 +38,9 @@ namespace cct
 		return *this;
 	}
 
-	template <typename ReturnValue, typename ... Args>
-	template <typename ... FunctorArgs> requires(std::is_invocable_r_v<ReturnValue, ReturnValue(Args...), FunctorArgs...>)
+	template<typename ReturnValue, typename... Args>
+	template<typename... FunctorArgs>
+		requires(std::is_invocable_r_v<ReturnValue, ReturnValue(Args...), FunctorArgs...>)
 	ReturnValue FunctionRef<ReturnValue(Args...)>::operator()(FunctorArgs&&... args) const
 	{
 		if (this->operator bool() == false)
@@ -48,11 +51,11 @@ namespace cct
 		return _callback(_functionPointer, std::forward<FunctorArgs>(args)...);
 	}
 
-	template <typename ReturnValue, typename ... Args>
+	template<typename ReturnValue, typename... Args>
 	FunctionRef<ReturnValue(Args...)>::operator bool() const noexcept
 	{
 		return _functionPointer != nullptr;
 	}
-}
+} // namespace cct
 
 #endif // CONCERTO_CORE_FUNCTIONREF_INL

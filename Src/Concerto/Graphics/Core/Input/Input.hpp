@@ -6,8 +6,8 @@
 #define CONCERTO_INPUT_HPP
 
 #include <functional>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <Concerto/Core/FunctionRef/FunctionRef.hpp>
@@ -35,7 +35,6 @@ namespace cct
 		Input& operator=(const Input&) = delete;
 		Input& operator=(Input&&) = default;
 
-
 		void Register(const std::string& name, Key key, TriggerType triggerType, std::function<void()>&& callback);
 		void Register(const std::string& name, MouseEvent::Type key, MouseEventCallback&& callback);
 
@@ -47,5 +46,5 @@ namespace cct
 		std::unordered_map<std::string, BindingCallback> m_keyCallbacks;
 		std::unordered_map<std::string, std::pair<MouseEvent::Type, std::vector<MouseEventCallback>>> m_mouseCallback;
 	};
-}
-#endif //CONCERTO_INPUT_HPP
+} // namespace cct
+#endif // CONCERTO_INPUT_HPP

@@ -6,8 +6,9 @@
 #define CONCERTO_GRAPHICS_RHI_DESCRIPTORSETLAYOUT_HPP
 
 #include <vector>
-#include "Concerto/Graphics/RHI/Defines.hpp"
+
 #include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -24,6 +25,6 @@ namespace cct::gfx::rhi
 		 */
 		virtual const std::vector<cct::gfx::DescriptorSetLayoutBinding>& GetBindings() const = 0;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DESCRIPTORSETLAYOUT_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DESCRIPTORSETLAYOUT_HPP

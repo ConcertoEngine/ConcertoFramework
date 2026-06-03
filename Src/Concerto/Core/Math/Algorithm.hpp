@@ -36,5 +36,5 @@ namespace cct
 	{
 		return radians * T(180) / Pi<T>;
 	}
-}
-#endif //CONCERTO_CORE_MATH_ALGORITHM_HPP
+} // namespace cct
+#endif // CONCERTO_CORE_MATH_ALGORITHM_HPP

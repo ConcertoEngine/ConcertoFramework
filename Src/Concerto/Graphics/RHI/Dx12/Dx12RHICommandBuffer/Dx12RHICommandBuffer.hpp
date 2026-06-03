@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_DX12_DX12RHICOMMANDBUFFER_HPP
 
 #include <span>
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandList/CommandList.hpp"
 #include "Concerto/Graphics/RHI/CommandBuffer.hpp"
 
@@ -35,18 +36,18 @@ namespace cct::gfx::rhi
 		void TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout) override;
 		void ExecuteCommands(std::span<CommandBuffer*> secondaryCmdBufs) override;
 		void PipelineBarrier(const Texture& texture,
-		                     ImageLayout oldLayout,
-		                     ImageLayout newLayout,
-		                     PipelineStageFlags srcStage,
-		                     PipelineStageFlags dstStage,
-		                     MemoryAccessFlags srcAccess,
-		                     MemoryAccessFlags dstAccess) override;
+							 ImageLayout oldLayout,
+							 ImageLayout newLayout,
+							 PipelineStageFlags srcStage,
+							 PipelineStageFlags dstStage,
+							 MemoryAccessFlags srcAccess,
+							 MemoryAccessFlags dstAccess) override;
 
 	private:
 		static D3D12_RESOURCE_STATES ToD3D12ResourceState(ImageLayout layout);
 		Dx12RHIDevice* m_device = nullptr;
 		const Dx12RHIFrameBuffer* m_currentFrameBuffer = nullptr;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHICOMMANDBUFFER_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHICOMMANDBUFFER_HPP

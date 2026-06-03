@@ -7,10 +7,10 @@
 
 #include <memory>
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ShaderModule/ShaderModule.hpp"
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/ShaderModule.hpp"
-#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ShaderModule/ShaderModule.hpp"
 
 namespace cct::gfx::vk
 {
@@ -44,6 +44,6 @@ namespace cct::gfx::rhi
 		cct::gfx::ShaderModule m_abstractShaderModule;
 		vk::ShaderModule m_vulkanShaderModule;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VKRHISHADERMODULE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VKRHISHADERMODULE_HPP

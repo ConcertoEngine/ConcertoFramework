@@ -13,7 +13,7 @@
 
 namespace cct::gfx::rhi
 {
-	template <typename T>
+	template<typename T>
 		requires std::is_trivially_copyable_v<T>
 	void Buffer::Write(T& object, UInt32 padding)
 	{
@@ -28,7 +28,7 @@ namespace cct::gfx::rhi
 		UnMap();
 	}
 
-	template <typename DestBuffer, typename SrcObj>
+	template<typename DestBuffer, typename SrcObj>
 	void Buffer::Write(std::span<SrcObj> objects, FunctionRef<void(DestBuffer& destBuffer, SrcObj& srcObj)>&& copyFunc, std::size_t padding)
 	{
 		Byte* data = nullptr;
@@ -45,6 +45,6 @@ namespace cct::gfx::rhi
 		}
 		UnMap();
 	}
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_INL
+#endif // CONCERTO_GRAPHICS_RHI_INL

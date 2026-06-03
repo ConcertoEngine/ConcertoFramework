@@ -23,8 +23,9 @@ namespace cct::gfx::dx12
 		DescriptorHeap& operator=(DescriptorHeap&&) = default;
 
 		HRESULT Create(Device& device, D3D12_DESCRIPTOR_HEAP_TYPE type, UINT numDescriptors, D3D12_DESCRIPTOR_HEAP_FLAGS flags);
+
 	private:
 	};
-} // cct::gfx::dx12
+} // namespace cct::gfx::dx12
 
-#endif //CONCERTO_GRAPHICS_BACKEND_D3D12_DESCRIPTOR_HEAP_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_D3D12_DESCRIPTOR_HEAP_HPP

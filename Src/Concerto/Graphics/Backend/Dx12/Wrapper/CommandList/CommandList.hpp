@@ -29,9 +29,10 @@ namespace cct::gfx::dx12
 		CommandAllocator& GetCommandAllocator() const;
 		HRESULT Close() const;
 		HRESULT Reset() const;
+
 	private:
 		CommandAllocator* m_owner;
 	};
-} // cct::gfx::dx12
+} // namespace cct::gfx::dx12
 
-#endif //CONCERTO_GRAPHICS_BACKEND_D3D12_COMMAND_LIST_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_D3D12_COMMAND_LIST_HPP

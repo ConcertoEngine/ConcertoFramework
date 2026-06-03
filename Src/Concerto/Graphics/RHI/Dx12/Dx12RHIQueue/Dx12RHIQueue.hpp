@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_QUEUE_HPP
 
 #include <d3d12.h>
+
 #include "Concerto/Graphics/RHI/Queue.hpp"
 
 namespace cct::gfx::rhi
@@ -24,6 +25,6 @@ namespace cct::gfx::rhi
 		ID3D12CommandQueue* m_queue;
 		Dx12RHIDevice* m_device;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_QUEUE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_QUEUE_HPP

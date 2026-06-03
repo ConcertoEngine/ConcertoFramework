@@ -5,9 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_RENDERPASS_HPP
 #define CONCERTO_GRAPHICS_RENDERPASS_HPP
 
-#include <vector>
 #include <span>
-
+#include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
@@ -37,6 +36,6 @@ namespace cct::gfx::vk
 		std::vector<VkSubpassDependency> m_dependencies;
 	};
 
-} // Concerto
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_RENDERPASS_HPP
+#endif // CONCERTO_GRAPHICS_RENDERPASS_HPP

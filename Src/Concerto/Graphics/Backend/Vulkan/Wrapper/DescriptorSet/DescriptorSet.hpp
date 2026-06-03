@@ -34,10 +34,11 @@ namespace cct::gfx::vk
 		VkResult Create(const DescriptorPool& pool, const DescriptorSetLayout& descriptorSetLayout);
 
 		void WriteImageSamplerDescriptor(const Sampler& sampler, const ImageView& imageView, VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) const;
+
 	private:
 		DescriptorPool* m_pool{};
 	};
 	using DescriptorSetPtr = std::shared_ptr<DescriptorSet>;
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_DESCRIPTORSET_HPP
+#endif // CONCERTO_GRAPHICS_DESCRIPTORSET_HPP

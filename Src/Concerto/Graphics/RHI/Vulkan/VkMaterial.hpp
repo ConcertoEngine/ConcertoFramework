@@ -17,7 +17,7 @@ namespace cct::gfx::vk
 	class DescriptorSet;
 	class Pipeline;
 
-	//struct CONCERTO_GRAPHICS_RHI_BASE_API VkMaterial : public rhi::MaterialInfo
+	// struct CONCERTO_GRAPHICS_RHI_BASE_API VkMaterial : public rhi::MaterialInfo
 	//{
 	//	VkMaterial() = default;
 	//	VkMaterial(VkMaterial&&other) = default;
@@ -28,6 +28,6 @@ namespace cct::gfx::vk
 	//	std::shared_ptr<Pipeline> pipeline;
 	//	std::vector<std::shared_ptr<DescriptorSet>> descriptorSets;
 	//};
-	//using VkMaterialPtr = std::shared_ptr<VkMaterial>;
-}
-#endif //CONCERTO_GRAPHICS_MATERIAL_HPP
+	// using VkMaterialPtr = std::shared_ptr<VkMaterial>;
+} // namespace cct::gfx::vk
+#endif // CONCERTO_GRAPHICS_MATERIAL_HPP

@@ -2,14 +2,24 @@
 // Created by arthur on 24/12/2023.
 //
 
-#include <catch2/catch_test_macros.hpp>
 #include <memory>
+
 #include <Concerto/Core/TypeInfo/TypeInfo.hpp>
 
-enum class EnumClass{};
-enum struct EnumStruct{};
-class Class{};
-struct Struct{};
+#include <catch2/catch_test_macros.hpp>
+
+enum class EnumClass
+{
+};
+enum struct EnumStruct
+{
+};
+class Class
+{
+};
+struct Struct
+{
+};
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {

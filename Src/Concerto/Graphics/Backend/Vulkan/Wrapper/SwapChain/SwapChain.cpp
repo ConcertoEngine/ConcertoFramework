@@ -43,7 +43,7 @@ namespace cct::gfx::vk
 
 	VkResult SwapChain::Create(Device& device, Window& window, VkFormat colorFormat, VkFormat depthFormat)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		Destroy();
 

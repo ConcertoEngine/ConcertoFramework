@@ -15,7 +15,7 @@ namespace cct::gfx::dx12
 		Fence() = default;
 		Fence(Device& device, D3D12_FENCE_FLAGS flags = D3D12_FENCE_FLAG_NONE);
 		~Fence() override = default;
-		
+
 		Fence(const Fence&) = delete;
 		Fence(Fence&&) = default;
 
@@ -26,10 +26,11 @@ namespace cct::gfx::dx12
 
 		void Wait() const;
 		UInt64 GetCompletedValue() const;
+
 	private:
 		HANDLE m_completionEvent;
 		mutable UInt64 m_lastCompletedValue = 1;
 	};
-} // cct::gfx::dx12
+} // namespace cct::gfx::dx12
 
-#endif //CONCERTO_GRAPHICS_BACKEND_D3D12_FENCE_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_D3D12_FENCE_HPP

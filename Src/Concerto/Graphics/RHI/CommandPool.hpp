@@ -23,13 +23,15 @@ namespace cct::gfx::rhi
 		virtual ~CommandPool() = default;
 
 		virtual std::unique_ptr<CommandBuffer> AllocateCommandBuffer() = 0;
+
 	protected:
 		CommandBufferUsage m_usage;
 	};
 
-	inline CommandPool::CommandPool(CommandBufferUsage usage): m_usage(usage)
+	inline CommandPool::CommandPool(CommandBufferUsage usage) :
+		m_usage(usage)
 	{
 	}
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_COMMANDPOOL_HPP
+#endif // CONCERTO_GRAPHICS_RHI_COMMANDPOOL_HPP

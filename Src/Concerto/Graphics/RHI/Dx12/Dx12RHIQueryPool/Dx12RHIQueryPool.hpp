@@ -6,9 +6,9 @@
 #define CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_QUERYPOOL_HPP
 
 #include <d3d12.h>
-#include <wrl/client.h>
 
 #include "Concerto/Graphics/RHI/QueryPool.hpp"
+#include <wrl/client.h>
 
 namespace cct::gfx::rhi
 {
@@ -22,17 +22,20 @@ namespace cct::gfx::rhi
 
 		void BeginFrame(CommandBuffer& cmd) override;
 		void EndFrame(CommandBuffer& cmd) override;
-		float ReadLastFrameMs() const override { return m_lastMs; }
+		float ReadLastFrameMs() const override
+		{
+			return m_lastMs;
+		}
 
 	private:
-		Dx12RHIDevice&                          m_device;
+		Dx12RHIDevice& m_device;
 		Microsoft::WRL::ComPtr<ID3D12QueryHeap> m_queryHeap;
-		Microsoft::WRL::ComPtr<ID3D12Resource>  m_readbackBuffer;
-		uint64_t*                               m_mappedData    = nullptr;
-		uint64_t                                m_timestampFreq = 1;
-		int                                     m_frameIndex    = 0;
-		float                                   m_lastMs        = 0.0F;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_readbackBuffer;
+		uint64_t* m_mappedData = nullptr;
+		uint64_t m_timestampFreq = 1;
+		int m_frameIndex = 0;
+		float m_lastMs = 0.0F;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_QUERYPOOL_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_QUERYPOOL_HPP

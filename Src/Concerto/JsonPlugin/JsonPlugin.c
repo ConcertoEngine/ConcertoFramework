@@ -17,7 +17,7 @@
 
 typedef struct JsonPluginData
 {
-	int currentClassSkipped;    // 1 while generating a class that should be skipped
+	int currentClassSkipped; // 1 while generating a class that should be skipped
 	int inTemplateSpecialization; // 1 inside a template specialization Accept body
 } JsonPluginData;
 
@@ -98,8 +98,8 @@ static void BeforePackageGeneration(const CrpPackage* package, CrpGenerationCont
 static void BeforeClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx)
 {
 	const char* className = crpClassGetName(cls);
-	const char* baseName  = crpClassGetBase(cls);
-	JsonPluginData* data  = (JsonPluginData*)crpGenerationContextGetPrivateData(ctx);
+	const char* baseName = crpClassGetBase(cls);
+	JsonPluginData* data = (JsonPluginData*)crpGenerationContextGetPrivateData(ctx);
 
 	// Skip the root Object class — it has a hand-written runtime-reflection fallback
 	// in Object.cpp and has no serializable members of its own.
@@ -118,7 +118,7 @@ static void BeforeClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx
 	if (scope != NULL && scope[0] != '\0')
 	{
 		crpGenerationContextWrite(ctx, "void %s::%s::Accept(cct::refl::FieldVisitor& v)",
-			scope, className);
+								  scope, className);
 	}
 	else
 	{
@@ -162,10 +162,10 @@ static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContex
 		if (!inSpec)
 		{
 			if (!(strcmp(type, "bool") == 0 ||
-			      strcmp(type, "int") == 0 ||
-			      strcmp(type, "float") == 0 ||
-			      strcmp(type, "std::string") == 0 ||
-			      strcmp(type, "string") == 0))
+				  strcmp(type, "int") == 0 ||
+				  strcmp(type, "float") == 0 ||
+				  strcmp(type, "std::string") == 0 ||
+				  strcmp(type, "string") == 0))
 			{
 				return;
 			}
@@ -173,7 +173,7 @@ static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContex
 	}
 
 	const char* fieldName = crpClassMemberGetName(member);
-	const char* jsonKey   = (strncmp(fieldName, "m_", 2) == 0) ? fieldName + 2 : fieldName;
+	const char* jsonKey = (strncmp(fieldName, "m_", 2) == 0) ? fieldName + 2 : fieldName;
 
 	crpGenerationContextWrite(ctx, "v.Visit(\"%s\", %s);", jsonKey, fieldName);
 }
@@ -217,8 +217,8 @@ static void AfterTemplateClassGeneration(const CrpClass* cls, CrpGenerationConte
 static void BeforeTemplateSpecializationGeneration(const CrpClass* cls, const char* specialization, CrpGenerationContext* ctx)
 {
 	const char* className = crpClassGetName(cls);
-	const char* baseName  = crpClassGetBase(cls);
-	const char* scope     = crpGenerationContextGetNamespacePath(ctx);
+	const char* baseName = crpClassGetBase(cls);
+	const char* scope = crpGenerationContextGetNamespacePath(ctx);
 
 	if (scope != NULL && scope[0] != '\0')
 	{
@@ -252,7 +252,7 @@ static void BeforeTemplateSpecializationGeneration(const CrpClass* cls, const ch
 			continue; // skip pointer types
 		}
 		const char* fieldName = crpClassMemberGetName(member);
-		const char* jsonKey   = (strncmp(fieldName, "m_", 2) == 0) ? fieldName + 2 : fieldName;
+		const char* jsonKey = (strncmp(fieldName, "m_", 2) == 0) ? fieldName + 2 : fieldName;
 		crpGenerationContextWrite(ctx, "v.Visit(\"%s\", %s);", jsonKey, fieldName);
 	}
 }
@@ -276,7 +276,7 @@ static void AfterTemplateSpecializationGeneration(const CrpClass* cls, const cha
 static void BeforeGenericClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx)
 {
 	const char* className = crpClassGetName(cls);
-	JsonPluginData* data  = (JsonPluginData*)crpGenerationContextGetPrivateData(ctx);
+	JsonPluginData* data = (JsonPluginData*)crpGenerationContextGetPrivateData(ctx);
 	if (strcmp(className, "Vector") == 0)
 	{
 		if (data)

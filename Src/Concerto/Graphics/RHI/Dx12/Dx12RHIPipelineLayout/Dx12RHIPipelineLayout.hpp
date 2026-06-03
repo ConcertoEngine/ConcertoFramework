@@ -9,9 +9,9 @@
 #include <span>
 #include <vector>
 
+#include "Concerto/Graphics/Backend/Dx12/Dx12RootSignature.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/PipelineLayout.hpp"
-#include "Concerto/Graphics/Backend/Dx12/Dx12RootSignature.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -24,13 +24,19 @@ namespace cct::gfx::rhi
 
 		const std::vector<std::shared_ptr<DescriptorSetLayout>>& GetDescriptorSetLayouts() const override;
 
-		[[nodiscard]] dx12::Dx12RootSignature& GetRootSignature() { return m_rootSignature; }
-		[[nodiscard]] const dx12::Dx12RootSignature& GetRootSignature() const { return m_rootSignature; }
+		[[nodiscard]] dx12::Dx12RootSignature& GetRootSignature()
+		{
+			return m_rootSignature;
+		}
+		[[nodiscard]] const dx12::Dx12RootSignature& GetRootSignature() const
+		{
+			return m_rootSignature;
+		}
 
 	private:
 		dx12::Dx12RootSignature m_rootSignature;
 		std::vector<std::shared_ptr<DescriptorSetLayout>> m_descriptorSetLayouts;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHIPIPELINELAYOUT_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHIPIPELINELAYOUT_HPP

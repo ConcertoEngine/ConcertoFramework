@@ -9,9 +9,9 @@
 #include <stdexcept>
 #include <utility>
 
+#include "Concerto/Core/Any/Any.hpp"
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/TypeInfo/TypeInfo.hpp"
-#include "Concerto/Core/Any/Any.hpp"
 
 namespace cct
 {
@@ -307,6 +307,6 @@ namespace cct
 		src.m_copy = nullptr;
 		src.m_move = nullptr;
 	}
-}
+} // namespace cct
 
 #endif // CONCERTO_CORE_ANY_INL

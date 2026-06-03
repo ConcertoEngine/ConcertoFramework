@@ -2,8 +2,9 @@
 // Created by arthur on 09/08/2023.
 //
 
-#include <catch2/catch_test_macros.hpp>
 #include "Concerto/Core/Network/IpAddress/IpAddress.hpp"
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {
@@ -50,13 +51,19 @@ namespace CCT_ANONYMOUS_NAMESPACE
 		GIVEN("An invalid IP string \"xxx.x.x.x\"")
 		{
 			IpAddress ip("xxx.x.x.x", 2121);
-			THEN("Protocol is Error") { CHECK(ip.GetProtocol() == IpProtocol::Error); }
+			THEN("Protocol is Error")
+			{
+				CHECK(ip.GetProtocol() == IpProtocol::Error);
+			}
 		}
 	}
 
 	SCENARIO("IpAddress - IsIpV4")
 	{
-		THEN("Valid IPv4 addresses are recognized") { CHECK(IpAddress::IsIpV4("127.0.0.1")); }
+		THEN("Valid IPv4 addresses are recognized")
+		{
+			CHECK(IpAddress::IsIpV4("127.0.0.1"));
+		}
 
 		THEN("Invalid IPv4 addresses are rejected")
 		{

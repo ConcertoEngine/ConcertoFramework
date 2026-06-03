@@ -5,9 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_DESCRIPTORSETLAYOUT_HPP
 #define CONCERTO_GRAPHICS_DESCRIPTORSETLAYOUT_HPP
 
-#include <vector>
 #include <memory>
-
+#include <vector>
 
 #include <Concerto/Core/Assert.hpp>
 
@@ -44,6 +43,6 @@ namespace cct::gfx::vk
 	using DescriptorSetLayoutPtr = std::shared_ptr<DescriptorSetLayout>;
 
 	DescriptorSetLayoutPtr CONCERTO_GRAPHICS_VULKAN_BACKEND_API MakeDescriptorSetLayout(Device& device, const std::vector<VkDescriptorSetLayoutBinding>& bindings);
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_DESCRIPTORSETLAYOUT_HPP
+#endif // CONCERTO_GRAPHICS_DESCRIPTORSETLAYOUT_HPP

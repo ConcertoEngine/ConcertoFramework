@@ -24,6 +24,6 @@ namespace cct::gfx::rhi
 	{
 		return m_depthPixelFormat;
 	}
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_SWAPCHAIN_INL
+#endif // CONCERTO_GRAPHICS_RHI_SWAPCHAIN_INL

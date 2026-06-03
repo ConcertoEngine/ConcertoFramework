@@ -18,5 +18,5 @@ namespace cct::gfx
 		static Vertices MakeCylinder(float radius, float height, UInt32 slices);
 		static Vertices MakePlane(float size);
 	};
-}
-#endif //CONCERTO_GRAPHICS_PRIMITIVES_HPP
+} // namespace cct::gfx
+#endif // CONCERTO_GRAPHICS_PRIMITIVES_HPP

@@ -5,15 +5,15 @@
 #ifndef CONCERTO_GRAPHICS_DEVICE_HPP
 #define CONCERTO_GRAPHICS_DEVICE_HPP
 
+#include <memory>
 #include <span>
 #include <unordered_map>
-#include <memory>
 #include <unordered_set>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Allocator/Allocator.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Queue/Queue.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Allocator/Allocator.hpp"
 
 namespace cct::gfx::vk
 {
@@ -52,12 +52,12 @@ namespace cct::gfx::vk
 		Allocator& GetAllocator() const;
 		Instance& GetInstance() const;
 
-		bool IsExtensionEnabled(const std::string& ext) const; //fixme: use std::string_view
+		bool IsExtensionEnabled(const std::string& ext) const; // fixme: use std::string_view
 
-		#define CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func) PFN_##func func = nullptr;
-		#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_FUNCTION(func, ...) CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func)
+#define CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func) PFN_##func func = nullptr;
+#define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_FUNCTION(func, ...) CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func)
 
-		#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/DeviceFunction.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/DeviceFunction.hpp"
 	private:
 		void CreateAllocator();
 
@@ -67,6 +67,6 @@ namespace cct::gfx::vk
 		std::unordered_set<std::string> m_extensions;
 	};
 
-} // cct::gfx::vk
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_DEVICE_HPP
+#endif // CONCERTO_GRAPHICS_DEVICE_HPP

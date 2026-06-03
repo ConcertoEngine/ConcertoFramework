@@ -6,12 +6,12 @@
 #define CONCERTO_CORE_ANY_HPP
 
 #include <array>
-#include <variant>
 #include <type_traits>
 #include <utility>
+#include <variant>
 
-#include "Concerto/Core/Types/Types.hpp"
 #include "Concerto/Core/Defines.hpp"
+#include "Concerto/Core/Types/Types.hpp"
 
 namespace cct
 {
@@ -75,9 +75,9 @@ namespace cct
 		void* DataPtr() noexcept;
 		const void* DataPtr() const noexcept;
 
-		using DestroyFn = void(*)(Any&);
-		using CopyFn = void(*)(const Any&, Any&);
-		using MoveFn = void(*)(Any&, Any&);
+		using DestroyFn = void (*)(Any&);
+		using CopyFn = void (*)(const Any&, Any&);
+		using MoveFn = void (*)(Any&, Any&);
 
 		template<typename Exposed>
 		static void DestroyImpl(Any& a);
@@ -92,12 +92,12 @@ namespace cct
 		void EmplaceImpl(Args&&... args);
 
 		UInt64 m_typeId = 0;
-		Storage m_storage = { AlignedBuffer() };
+		Storage m_storage = {AlignedBuffer()};
 		DestroyFn m_destroy = nullptr;
 		CopyFn m_copy = nullptr;
 		MoveFn m_move = nullptr;
 	};
-}
+} // namespace cct
 
 #include "Concerto/Core/Any/Any.inl"
 

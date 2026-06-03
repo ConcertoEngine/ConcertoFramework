@@ -19,6 +19,6 @@ namespace cct::gfx::rhi
 
 		virtual void Submit(CommandBuffer& cmdBuf, Fence* fence = nullptr) = 0;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_QUEUE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_QUEUE_HPP

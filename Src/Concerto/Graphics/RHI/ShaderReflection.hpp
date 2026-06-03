@@ -8,13 +8,11 @@
 #include <unordered_map>
 #include <vector>
 
-
-#include <NZSL/Ast/RecursiveVisitor.hpp>
-#include <NZSL/Math/FieldOffsets.hpp>
-#include <NZSL/Ast/Module.hpp>
-
 #include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/ShaderTypes.hpp"
+#include <NZSL/Ast/Module.hpp>
+#include <NZSL/Ast/RecursiveVisitor.hpp>
+#include <NZSL/Math/FieldOffsets.hpp>
 
 namespace cct::gfx
 {
@@ -31,6 +29,6 @@ namespace cct::gfx
 
 		std::vector<Binding> bindings;
 	};
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_INCLUDE_SHADERREFLECTION_HPP_
+#endif // CONCERTO_GRAPHICS_INCLUDE_SHADERREFLECTION_HPP_

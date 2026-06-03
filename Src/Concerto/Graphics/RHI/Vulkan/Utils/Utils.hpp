@@ -5,10 +5,10 @@
 #ifndef CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_UTILS_HPP
 #define CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_UTILS_HPP
 
-#include <vulkan/vulkan_core.h>
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Enums.hpp"
-#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
+#include <vulkan/vulkan_core.h>
 
 namespace cct::gfx::rhi
 {
@@ -30,9 +30,8 @@ namespace cct::gfx::rhi
 
 		static constexpr inline VkFlags ToVulkan(PipelineStageFlags flags);
 		static constexpr inline VkFlags ToVulkan(MemoryAccessFlags flags);
-
 	};
-}
+} // namespace cct::gfx::rhi
 
 #include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.inl"
-#endif //CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_UTILS_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_UTILS_HPP

@@ -26,6 +26,6 @@ namespace cct::gfx
 		float minDepth;
 		float maxDepth;
 	};
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_UTILS_HPP
+#endif // CONCERTO_GRAPHICS_UTILS_HPP

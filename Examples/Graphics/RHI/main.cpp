@@ -2,22 +2,22 @@
 // Created by arthur on 12/07/2022.
 //
 
-#pragma optimize( "", off )
+#pragma optimize("", off)
 
 #include <chrono>
+
 #include <Concerto/Core/Math/Algorithm.hpp>
 #include <Concerto/Graphics/Core/Window/Window.hpp>
+#include <Concerto/Graphics/RHI/CommandBuffer.hpp>
+#include <Concerto/Graphics/RHI/Frame.hpp>
+#include <Concerto/Graphics/RHI/FrameBuffer.hpp>
 #include <Concerto/Graphics/RHI/Instance/APIImpl.hpp>
 #include <Concerto/Graphics/RHI/Instance/Instance.hpp>
-#include <Concerto/Graphics/RHI/SwapChain.hpp>
-#include <Concerto/Graphics/RHI/RenderPass.hpp>
-#include <Concerto/Graphics/RHI/FrameBuffer.hpp>
-#include <Concerto/Graphics/RHI/Texture.hpp>
 #include <Concerto/Graphics/RHI/MaterialBuilder.hpp>
-#include <Concerto/Graphics/RHI/CommandBuffer.hpp>
-
-#include <Concerto/Graphics/RHI/Frame.hpp>
 #include <Concerto/Graphics/RHI/Mesh/Mesh.hpp>
+#include <Concerto/Graphics/RHI/RenderPass.hpp>
+#include <Concerto/Graphics/RHI/SwapChain.hpp>
+#include <Concerto/Graphics/RHI/Texture.hpp>
 
 #include "Concerto/Graphics/Core/Camera/Camera.hpp"
 #include "Concerto/Graphics/Core/DisplayManager/DisplayManager.hpp"
@@ -81,9 +81,9 @@ int main()
 		std::unique_ptr<rhi::TextureBuilder> textureBuilder = device->CreateTextureBuilder();
 		std::shared_ptr<rhi::GpuMesh> gpuMesh = device->CreateMesh("./assets/sponza/sponza.obj", *materialBuilder, *renderPass);
 
-		//GraphicPass& pbrPass = graphBuilder.AddPass("pbr", rhi::PipelineStage::AllGraphics);
-		//pbrPass.AddColorOutput("albedo", ??);
-		//pbrPass.AddColorOutput("normal", ??);
+		// GraphicPass& pbrPass = graphBuilder.AddPass("pbr", rhi::PipelineStage::AllGraphics);
+		// pbrPass.AddColorOutput("albedo", ??);
+		// pbrPass.AddColorOutput("normal", ??);
 
 		float aspect = static_cast<float>(window->GetWidth()) / static_cast<float>(window->GetHeight());
 		Camera camera(ToRadians(90.f), 0.1f, 1000000.f, aspect);
@@ -92,49 +92,37 @@ int main()
 		float speed = 15000.f;
 		window->SetCursorDisabled(cursorDisabled);
 		window->RegisterResizeCallback([&](Window& window)
-		{
+									   {
 			aspect = static_cast<float>(window.GetWidth()) / static_cast<float>(window.GetHeight());
 			camera.SetAspectRatio(aspect);
 			camera.SetFov(45.f);
 			camera.SetNear(0.0001f);
-			camera.SetFar(1000.f);
-		});
+			camera.SetFar(1000.f); });
 		inputManager.Register("MouseMoved", MouseEvent::Type::Moved, [&camera](const MouseEvent& e)
-		{
-			camera.Rotate(e.mouseMove.deltaX, -e.mouseMove.deltaY);
-		});
+							  { camera.Rotate(e.mouseMove.deltaX, -e.mouseMove.deltaY); });
 
 		inputManager.Register("Forward", Key::Z, TriggerType::Pressed, [&camera, &speed, &deltaTime]()
-		{
-			camera.Move(Camera::CameraMovement::Forward, deltaTime * speed);
-		});
+							  { camera.Move(Camera::CameraMovement::Forward, deltaTime * speed); });
 
 		inputManager.Register("Backward", Key::S, TriggerType::Pressed, [&camera, &speed, &deltaTime]()
-		{
-			camera.Move(Camera::CameraMovement::Backward, deltaTime * speed);
-		});
+							  { camera.Move(Camera::CameraMovement::Backward, deltaTime * speed); });
 
 		inputManager.Register("Left", Key::Q, TriggerType::Pressed, [&camera, &speed, &deltaTime]()
-		{
-			camera.Move(Camera::CameraMovement::Left, deltaTime * speed);
-		});
+							  { camera.Move(Camera::CameraMovement::Left, deltaTime * speed); });
 
 		inputManager.Register("Right", Key::D, TriggerType::Pressed, [&camera, &speed, &deltaTime]()
-		{
-			camera.Move(Camera::CameraMovement::Right, deltaTime * speed);
-		});
+							  { camera.Move(Camera::CameraMovement::Right, deltaTime * speed); });
 
 		inputManager.Register("MouseFocused", Key::LeftAlt, TriggerType::Pressed, [&cursorDisabled, &window]()
-		{
+							  {
 			cursorDisabled = !cursorDisabled;
-			window->SetCursorDisabled(cursorDisabled);
-		});
+			window->SetCursorDisabled(cursorDisabled); });
 
 		Scene sceneParameters = {};
-		sceneParameters.gpuSceneData.sunlightDirection = Vector4f{ 3.1f, 1.f, -1.f, 0 };
-		sceneParameters.gpuSceneData.ambientColor = Vector4f{ 0.f, 0.f, 0.f, 1.f };
-		sceneParameters.gpuSceneData.sunlightColor = Vector4f{ 255.f, 109.f, 39.f, 1.f };
-		sceneParameters.clearColor = Vector4f{ 0.1f, 0.1f, 0.1f, 1.f };
+		sceneParameters.gpuSceneData.sunlightDirection = Vector4f{3.1f, 1.f, -1.f, 0};
+		sceneParameters.gpuSceneData.ambientColor = Vector4f{0.f, 0.f, 0.f, 1.f};
+		sceneParameters.gpuSceneData.sunlightColor = Vector4f{255.f, 109.f, 39.f, 1.f};
+		sceneParameters.clearColor = Vector4f{0.1f, 0.1f, 0.1f, 1.f};
 
 		const Vector3f position(0.f, 0.f, 0.f);
 		const EulerAnglesf rotation(0, 0, 0);
@@ -152,7 +140,6 @@ int main()
 		materialBuilder->Update(*sceneBuffer, 0, 1);
 		materialBuilder->Update(*objectsBuffer, 1, 0);
 
-		
 		std::chrono::high_resolution_clock::time_point lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!window->ShouldClose())
 		{
@@ -185,7 +172,7 @@ int main()
 				dynamicScissor.height = window->GetHeight();
 				commandBuffer.SetViewport(viewport);
 				commandBuffer.SetScissor(dynamicScissor);
-				commandBuffer.BeginRenderPass(*renderPass, currentFrame.GetFrameBuffer(), Vector3f{ 1.f, 0.f, 0.f });
+				commandBuffer.BeginRenderPass(*renderPass, currentFrame.GetFrameBuffer(), Vector3f{1.f, 0.f, 0.f});
 				{
 					std::size_t lastBoundMaterial = 0;
 					for (const auto& subMesh : gpuMesh->subMeshes)

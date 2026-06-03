@@ -5,8 +5,8 @@
 #ifndef CONCERTO_CORE_TYPE_HPP
 #define CONCERTO_CORE_TYPE_HPP
 
-#include <string_view>
 #include <functional>
+#include <string_view>
 
 #include "Concerto/Core/Types/Types.hpp"
 
@@ -15,7 +15,7 @@ namespace cct
 	template<typename T>
 	constexpr std::string_view TypeName()
 	{
-		//from https://github.com/NazaraEngine/NazaraUtils/blob/main/include/NazaraUtils/TypeName.inl
+		// from https://github.com/NazaraEngine/NazaraUtils/blob/main/include/NazaraUtils/TypeName.inl
 		using namespace std::string_view_literals;
 
 		constexpr std::string_view functionSignature = CCT_FUNCTION_SIGNATURE;
@@ -61,8 +61,8 @@ namespace cct
 	constexpr UInt64 TypeId()
 	{
 		constexpr std::string_view typeName = TypeName<T>();
-		return std::hash<std::string_view>{}(typeName); //FIXME: Use constexpr CRC32/64
+		return std::hash<std::string_view>{}(typeName); // FIXME: Use constexpr CRC32/64
 	}
-}
+} // namespace cct
 
 #endif

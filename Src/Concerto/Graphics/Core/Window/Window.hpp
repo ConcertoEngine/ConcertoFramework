@@ -5,14 +5,14 @@
 #ifndef CONCERTO_GRAPHICS_WINDOW_HPP
 #define CONCERTO_GRAPHICS_WINDOW_HPP
 
-#include <string>
 #include <functional>
+#include <string>
 #include <vector>
 
 #include "Concerto/Graphics/Core/Defines.hpp"
+#include "Concerto/Graphics/Core/Input/Input.hpp"
 #include "Concerto/Graphics/Core/PixelFormat.hpp"
 #include "Concerto/Graphics/Core/Window/Key.hpp"
-#include "Concerto/Graphics/Core/Input/Input.hpp"
 #include "Concerto/Graphics/Core/Window/NativeWindow.hpp"
 
 struct SDL_Window;
@@ -28,16 +28,16 @@ namespace cct::gfx
 
 	enum class HitTestResult : int
 	{
-		Normal             = 0,
-		Draggable          = 1,
-		ResizeTopLeft      = 2,
-		ResizeTop          = 3,
-		ResizeTopRight     = 4,
-		ResizeRight        = 5,
-		ResizeBottomRight  = 6,
-		ResizeBottom       = 7,
-		ResizeBottomLeft   = 8,
-		ResizeLeft         = 9,
+		Normal = 0,
+		Draggable = 1,
+		ResizeTopLeft = 2,
+		ResizeTop = 3,
+		ResizeTopRight = 4,
+		ResizeRight = 5,
+		ResizeBottomRight = 6,
+		ResizeBottom = 7,
+		ResizeBottomLeft = 8,
+		ResizeLeft = 9,
 	};
 
 	class CONCERTO_GRAPHICS_CORE_API Window
@@ -108,6 +108,7 @@ namespace cct::gfx
 		void SetTextInputCallback(std::function<void(const char*)> cb);
 		void StartTextInput();
 		void StopTextInput();
+
 	private:
 		std::string m_title;
 		std::size_t m_width;
@@ -125,6 +126,6 @@ namespace cct::gfx
 		int m_titleBarHeight;
 		std::vector<DraggableRect> m_nonDraggableRects;
 	};
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_WINDOW_HPP
+#endif // CONCERTO_GRAPHICS_WINDOW_HPP

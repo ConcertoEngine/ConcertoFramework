@@ -39,6 +39,7 @@ namespace cct::gfx::vk
 			VkPipelineColorBlendStateCreateInfo colorBlend;
 			VkGraphicsPipelineCreateInfo pipelineCreateInfo;
 		};
+
 	private:
 		PipelineInfo m_pipelineInfo;
 		CreateInfo m_createInfo;
@@ -50,6 +51,6 @@ namespace cct::gfx::vk
 	};
 
 	using PipelinePtr = std::shared_ptr<Pipeline>;
-} // Concerto
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_PIPELINE_HPP
+#endif // CONCERTO_GRAPHICS_PIPELINE_HPP

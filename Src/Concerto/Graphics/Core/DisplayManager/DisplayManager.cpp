@@ -46,7 +46,7 @@ namespace cct::gfx
 	} // namespace
 	DisplayManager::DisplayManager()
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 		if (!SDL_Init(SDL_INIT_VIDEO))
 		{
 			CCT_ASSERT_FALSE("ConcertoGraphics: SDL initialization failed message: {}", SDL_GetError());
@@ -61,7 +61,7 @@ namespace cct::gfx
 
 	std::vector<DisplayInfo> DisplayManager::EnumerateDisplaysInfos()
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 		std::vector<DisplayInfo> displayInfos;
 		int numDisplay = 0;
 		SDL_DisplayID* displays = SDL_GetDisplays(&numDisplay);

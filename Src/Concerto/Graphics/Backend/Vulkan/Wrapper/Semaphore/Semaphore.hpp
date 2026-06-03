@@ -31,4 +31,4 @@ namespace cct::gfx::vk
 	};
 } // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_SEMAPHORE_HPP
+#endif // CONCERTO_GRAPHICS_SEMAPHORE_HPP

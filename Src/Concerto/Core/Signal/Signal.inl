@@ -35,7 +35,8 @@ namespace cct
 			{
 				state.slots.erase(
 					std::remove_if(state.slots.begin(), state.slots.end(),
-								   [id](const Slot& s) { return s.id == id; }),
+								   [id](const Slot& s)
+								   { return s.id == id; }),
 					state.slots.end());
 			}
 			return;
@@ -65,7 +66,8 @@ namespace cct
 						else
 							state->slots.erase(
 								std::remove_if(state->slots.begin(), state->slots.end(),
-											   [id](const Slot& e) { return e.id == id; }),
+											   [id](const Slot& e)
+											   { return e.id == id; }),
 								state->slots.end());
 						return;
 					}
@@ -78,14 +80,16 @@ namespace cct
 	template<typename T>
 	Connection Signal<Args...>::Connect(T* obj, void (T::*method)(Args...))
 	{
-		return Connect([obj, method](Args... args) { (obj->*method)(args...); });
+		return Connect([obj, method](Args... args)
+					   { (obj->*method)(args...); });
 	}
 
 	template<typename... Args>
 	template<typename T>
 	Connection Signal<Args...>::Connect(const T* obj, void (T::*method)(Args...) const)
 	{
-		return Connect([obj, method](Args... args) { (obj->*method)(args...); });
+		return Connect([obj, method](Args... args)
+					   { (obj->*method)(args...); });
 	}
 
 	template<typename... Args>
@@ -120,7 +124,8 @@ namespace cct
 		{
 			state.slots.erase(
 				std::remove_if(state.slots.begin(), state.slots.end(),
-							   [](const Slot& s) { return !s.active; }),
+							   [](const Slot& s)
+							   { return !s.active; }),
 				state.slots.end());
 		}
 	}
@@ -138,7 +143,8 @@ namespace cct
 			return 0;
 		return static_cast<std::size_t>(
 			std::count_if(m_state->slots.begin(), m_state->slots.end(),
-						  [](const Slot& s) { return s.active; }));
+						  [](const Slot& s)
+						  { return s.active; }));
 	}
 
 	template<typename... Args>

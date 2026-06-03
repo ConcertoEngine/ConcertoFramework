@@ -19,6 +19,6 @@ namespace cct::gfx::rhi
 		Pipeline() = default;
 		virtual ~Pipeline() = default;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_PIPELINE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_PIPELINE_HPP

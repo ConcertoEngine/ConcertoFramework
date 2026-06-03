@@ -6,9 +6,10 @@
 #define CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIPIPELINE_HPP
 
 #include <memory>
+
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Pipeline.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -28,6 +29,6 @@ namespace cct::gfx::rhi
 		std::shared_ptr<vk::Pipeline> m_pipeline;
 		std::shared_ptr<VkRHIPipelineLayout> m_pipelineLayout;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIPIPELINE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIPIPELINE_HPP

@@ -5,9 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_QUERYPOOL_HPP
 #define CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_QUERYPOOL_HPP
 
-#include <vulkan/vulkan.h>
-
 #include "Concerto/Graphics/RHI/QueryPool.hpp"
+#include <vulkan/vulkan.h>
 
 namespace cct::gfx::rhi
 {
@@ -21,16 +20,19 @@ namespace cct::gfx::rhi
 
 		void BeginFrame(CommandBuffer& cmd) override;
 		void EndFrame(CommandBuffer& cmd) override;
-		float ReadLastFrameMs() const override { return m_lastMs; }
+		float ReadLastFrameMs() const override
+		{
+			return m_lastMs;
+		}
 
 	private:
-		VkRHIDevice&  m_device;
-		VkQueryPool   m_queryPool       = VK_NULL_HANDLE;
-		float         m_timestampPeriod = 1.0F; // nanoseconds per tick
-		int           m_frameIndex      = 0;    // double-buffer: 0 or 1
-		uint32_t      m_frameCount      = 0;    // counts BeginFrame calls; read only after >= 2
-		float         m_lastMs          = 0.0F;
+		VkRHIDevice& m_device;
+		VkQueryPool m_queryPool = VK_NULL_HANDLE;
+		float m_timestampPeriod = 1.0F; // nanoseconds per tick
+		int m_frameIndex = 0; // double-buffer: 0 or 1
+		uint32_t m_frameCount = 0; // counts BeginFrame calls; read only after >= 2
+		float m_lastMs = 0.0F;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_QUERYPOOL_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_QUERYPOOL_HPP

@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_TEXTURE_HPP
 
 #include <memory>
+
 #include "Concerto/Core/Types/Types.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Enums.hpp"
@@ -18,13 +19,22 @@ namespace cct::gfx::rhi
 	{
 	public:
 		virtual ~Texture() = default;
-		virtual std::unique_ptr<TextureView> CreateView() const { return nullptr; }
+		virtual std::unique_ptr<TextureView> CreateView() const
+		{
+			return nullptr;
+		}
 
-		UInt32 GetWidth()  const { return m_width; }
-		UInt32 GetHeight() const { return m_height; }
+		UInt32 GetWidth() const
+		{
+			return m_width;
+		}
+		UInt32 GetHeight() const
+		{
+			return m_height;
+		}
 
 	protected:
-		UInt32 m_width  = 0;
+		UInt32 m_width = 0;
 		UInt32 m_height = 0;
 	};
 
@@ -33,7 +43,6 @@ namespace cct::gfx::rhi
 	public:
 		virtual ~TextureView() = default;
 	};
-}
+} // namespace cct::gfx::rhi
 
-
-#endif //CONCERTO_GRAPHICS_RHI_TEXTURE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_TEXTURE_HPP

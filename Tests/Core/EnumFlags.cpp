@@ -2,9 +2,9 @@
 // Created by Arthur on 06/10/2025.
 //
 
-#include <catch2/catch_test_macros.hpp>
-
 #include <Concerto/Core/EnumFlags/EnumFlags.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 enum class MyFlags : unsigned
 {
@@ -66,7 +66,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 				f.Set(MyFlags::C);
 				CHECK(f.Contains(MyFlags::C));
 				f.Reset(MyFlags::B);
-				THEN("B is no longer set") { CHECK_FALSE(f.Contains(MyFlags::B)); }
+				THEN("B is no longer set")
+				{
+					CHECK_FALSE(f.Contains(MyFlags::B));
+				}
 			}
 		}
 	}
@@ -81,7 +84,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			{
 				auto notA = ~EnumFlags<MyFlags>(MyFlags::A);
 				auto masked = notA & MyFlags::A;
-				THEN("The masked result has no bits set") { CHECK(masked.None()); }
+				THEN("The masked result has no bits set")
+				{
+					CHECK(masked.None());
+				}
 			}
 
 			WHEN("Clear() is called")

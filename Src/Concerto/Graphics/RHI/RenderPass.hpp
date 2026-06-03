@@ -8,8 +8,8 @@
 #include <optional>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -49,6 +49,6 @@ namespace cct::gfx::rhi
 			MemoryAccessFlags dstAccessFlags;
 		};
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_RENDERPASS_HPP
+#endif // CONCERTO_GRAPHICS_RHI_RENDERPASS_HPP

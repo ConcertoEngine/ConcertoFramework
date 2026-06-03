@@ -34,7 +34,6 @@ namespace VulkanInitializer
 	CONCERTO_GRAPHICS_VULKAN_BACKEND_API VkSamplerCreateInfo SamplerCreateInfo(VkFilter filter, VkSamplerAddressMode samplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT);
 
 	CONCERTO_GRAPHICS_VULKAN_BACKEND_API VkWriteDescriptorSet WriteDescriptorImage(VkDescriptorType type, VkDescriptorSet pT, VkDescriptorImageInfo* pInfo, cct::UInt32 i);
-};
+}; // namespace VulkanInitializer
 
-
-#endif //ENGINE_VULKANINITIALIZER_HPP
+#endif // ENGINE_VULKANINITIALIZER_HPP

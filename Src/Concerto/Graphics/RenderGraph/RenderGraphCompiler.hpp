@@ -10,10 +10,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphPass.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphResource.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -46,13 +46,13 @@ namespace cct::gfx::rhi
 		void CullPasses(std::vector<RGPass>& passes, RGTextureHandle finalOutput);
 		std::vector<UInt32> TopologicalSort(const std::vector<RGPass>& passes);
 		void BuildRenderPassObjects(RGCompiledPass& compiled, RGPass& pass,
-		                            UInt32 passIdx, const std::unordered_set<UInt16>& alreadyWritten,
-		                            const RenderGraphResourceRegistry& registry, Device& device);
+									UInt32 passIdx, const std::unordered_set<UInt16>& alreadyWritten,
+									const RenderGraphResourceRegistry& registry, Device& device);
 
 		std::unordered_map<UInt16, UInt32> m_textureLastWriter; // texIdx → last writer passIdx
 		std::vector<PassDep> m_deps;
 		std::vector<std::vector<UInt32>> m_adjOut; // outgoing edges: adjOut[A] = {B,...} A→B
 	};
-}
+} // namespace cct::gfx::rhi
 
 #endif // CONCERTO_GRAPHICS_RHI_RENDERGRAPH_COMPILER_HPP

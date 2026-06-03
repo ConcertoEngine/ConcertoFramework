@@ -5,16 +5,14 @@
 #ifndef CONCERTO_GRAPHICS_SWAPCHAIN_HPP
 #define CONCERTO_GRAPHICS_SWAPCHAIN_HPP
 
-#include <vector>
 #include <optional>
 #include <span>
-
+#include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
 namespace cct::gfx
 {
@@ -56,6 +54,7 @@ namespace cct::gfx::vk
 		VkResult AcquireNextImage(const Semaphore& semaphore, UInt32& imageIndex, const Fence* fence = nullptr, UInt64 timeout = std::numeric_limits<UInt64>::max());
 
 		Window& GetWindow() const;
+
 	private:
 		VkResult CreateSurface();
 
@@ -69,6 +68,6 @@ namespace cct::gfx::vk
 		UInt32 m_currentImageIndex;
 		VkSurfaceKHR m_surface;
 	};
-} // cct::gfx::vk
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_SWAPCHAIN_HPP
+#endif // CONCERTO_GRAPHICS_SWAPCHAIN_HPP

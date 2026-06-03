@@ -7,10 +7,10 @@
 
 #include <memory>
 
-#include "Concerto/Graphics/Core/Defines.hpp"
-#include "Concerto/Graphics/RHI/Texture.hpp"
-#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/FrameBuffer/FrameBuffer.hpp"
+#include "Concerto/Graphics/Core/Defines.hpp"
+#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
+#include "Concerto/Graphics/RHI/Texture.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -25,6 +25,6 @@ namespace cct::gfx::rhi
 		UInt32 GetWidth() const override;
 		UInt32 GetHeight() const override;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_FRAMEBUFFER_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_FRAMEBUFFER_HPP

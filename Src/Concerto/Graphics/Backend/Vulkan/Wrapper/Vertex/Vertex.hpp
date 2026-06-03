@@ -13,7 +13,6 @@ namespace cct::gfx::vk
 {
 	struct VertexInputDescription
 	{
-
 		std::vector<VkVertexInputBindingDescription> bindings;
 		std::vector<VkVertexInputAttributeDescription> attributes;
 
@@ -22,6 +21,6 @@ namespace cct::gfx::vk
 
 	VertexInputDescription CONCERTO_GRAPHICS_VULKAN_BACKEND_API GetVertexDescription();
 
-} // Concerto
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_BACKEND_VULKAN_VERTEX_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_VULKAN_VERTEX_HPP

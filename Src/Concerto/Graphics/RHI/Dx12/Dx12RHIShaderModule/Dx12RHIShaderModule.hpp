@@ -9,14 +9,14 @@
 #define NOMINMAX
 #endif
 
-#include <vector>
+#include <d3d12.h>
 #include <string>
 #include <unordered_map>
-#include <d3d12.h>
+#include <vector>
 
+#include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/ShaderModule.hpp"
-#include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -48,6 +48,6 @@ namespace cct::gfx::rhi
 		std::vector<Byte> m_compiledBytecode; // DXIL bytecode
 		std::vector<UInt32> m_emptyShaderBytes; // empty, for interface compat
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHISHADERMODULE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHISHADERMODULE_HPP

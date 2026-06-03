@@ -47,7 +47,7 @@ namespace cct::gfx::vk
 	void Queue::Submit(const CommandBuffer& commandBuffer, const Semaphore* presentSemaphore, const Semaphore* renderSemaphore, const Fence& renderFence) const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		constexpr VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		VkSubmitInfo submit = {};
@@ -68,7 +68,7 @@ namespace cct::gfx::vk
 	bool Queue::Present(const Semaphore& renderSemaphore, SwapChain& swapchain, UInt32 swapchainImageIndex) const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		VkPresentInfoKHR present = {};
 		present.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

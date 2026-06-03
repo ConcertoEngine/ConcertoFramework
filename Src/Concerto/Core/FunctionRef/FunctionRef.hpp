@@ -39,14 +39,14 @@ namespace cct
 		ReturnValue operator()(FunctorArgs&&... args) const;
 
 	private:
-		using CallBack = ReturnValue(*)(void*, Args...);
+		using CallBack = ReturnValue (*)(void*, Args...);
 		CallBack _callback;
 		void* _functionPointer = nullptr;
 	};
 
 	template<typename ReturnValue, typename... Args>
-	FunctionRef(ReturnValue(*)(Args...)) -> FunctionRef<ReturnValue(Args...)>;
-}
+	FunctionRef(ReturnValue (*)(Args...)) -> FunctionRef<ReturnValue(Args...)>;
+} // namespace cct
 
 #include "Concerto/Core/FunctionRef/FunctionRef.inl"
 

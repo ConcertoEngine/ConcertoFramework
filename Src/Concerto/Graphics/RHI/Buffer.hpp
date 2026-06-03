@@ -7,6 +7,7 @@
 
 #include <span>
 #include <type_traits>
+
 #include <Concerto/Core/FunctionRef/FunctionRef.hpp>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
@@ -28,11 +29,11 @@ namespace cct::gfx::rhi
 			requires std::is_trivially_copyable_v<T>
 		void Write(T& object, UInt32 padding = 0);
 
-		template <typename DestBuffer, typename SrcObj>
+		template<typename DestBuffer, typename SrcObj>
 		void Write(std::span<SrcObj> objects, FunctionRef<void(DestBuffer& destBuffer, SrcObj& srcObj)>&& copyFunc, std::size_t padding = 0);
 	};
-}
+} // namespace cct::gfx::rhi
 
 #include "Concerto/Graphics/RHI/Buffer.inl"
 
-#endif //CONCERTO_GRAPHICS_RHI_HPP
+#endif // CONCERTO_GRAPHICS_RHI_HPP

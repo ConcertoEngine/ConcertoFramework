@@ -5,18 +5,20 @@
 #ifndef CONCERTO_CORE_RESULT_HPP
 #define CONCERTO_CORE_RESULT_HPP
 
-#include <variant>
-#include <type_traits>
 #include <optional>
+#include <type_traits>
+#include <variant>
 
 namespace cct
 {
 	template<typename Value, typename Error>
-	requires (!std::is_void_v<Error>)
+		requires(!std::is_void_v<Error>)
 	class Result
 	{
 	public:
-		constexpr Result() requires(std::default_initializable<Value>) = default;
+		constexpr Result()
+			requires(std::default_initializable<Value>)
+		= default;
 
 		template<typename... Args>
 		Result(std::in_place_type_t<Value>, Args&&... args);
@@ -28,11 +30,11 @@ namespace cct
 		constexpr Result(Error&& error);
 
 		constexpr Value& GetValue() &;
-		constexpr const Value& GetValue() const &;
+		constexpr const Value& GetValue() const&;
 		constexpr Value&& GetValue() &&;
 
 		constexpr Error& GetError() &;
-		constexpr const Error& GetError() const &;
+		constexpr const Error& GetError() const&;
 		constexpr Error&& GetError() &&;
 
 		constexpr bool IsError() const;
@@ -47,7 +49,7 @@ namespace cct
 	};
 
 	template<typename Error>
-	requires (!std::is_void_v<Error>)
+		requires(!std::is_void_v<Error>)
 	class Result<void, Error>
 	{
 	public:
@@ -57,9 +59,9 @@ namespace cct
 
 		constexpr Result(Error&& error);
 
-		constexpr Error& GetError()&;
+		constexpr Error& GetError() &;
 		constexpr const Error& GetError() const&;
-		constexpr Error&& GetError()&&;
+		constexpr Error&& GetError() &&;
 
 		constexpr bool IsError() const;
 		constexpr bool IsOk() const;
@@ -69,7 +71,7 @@ namespace cct
 	private:
 		std::optional<Error> m_value;
 	};
-}
+} // namespace cct
 
 #include "Concerto/Core/Result/Result.inl"
-#endif //CONCERTO_CORE_RESULT_HPP
+#endif // CONCERTO_CORE_RESULT_HPP

@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <vector>
+
 #include "Concerto/Core/Types/Types.hpp"
 
 namespace cct
@@ -38,12 +39,13 @@ namespace cct
 
 		template<typename T>
 		Stream& operator>>(T& data);
-	 protected:
+
+	protected:
 		UInt64 _cursorPos;
 		std::vector<Byte> _buffer;
 	};
-}
+} // namespace cct
 
 #include "Concerto/Core/Stream/Stream.inl"
 
-#endif //CONCERTO_CORE_STREAM_HPP
+#endif // CONCERTO_CORE_STREAM_HPP

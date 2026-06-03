@@ -37,9 +37,9 @@ namespace cct::gfx
 	};
 
 	using ShaderStageFlags = EnumFlags<ShaderStage>;
-}
+} // namespace cct::gfx
 
 CCT_ENABLE_ENUM_FLAGS(cct::gfx::ShaderBindingType);
 CCT_ENABLE_ENUM_FLAGS(cct::gfx::ShaderStage);
 
-#endif //CONCERTO_GRAPHICS_CORE_SHADERTYPES_HPP
+#endif // CONCERTO_GRAPHICS_CORE_SHADERTYPES_HPP

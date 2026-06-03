@@ -73,16 +73,16 @@
 #define CCT_REFL_LOG_ERROR(channel, fmt, ...) CCT_LOG_ERROR("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define CCT_REFL_LOG_CRITICAL(channel, fmt, ...) CCT_LOG_CRITICAL("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
 
-#define CCT_REFL_CREATE(PackageName)                                          \
+#define CCT_REFL_CREATE(PackageName)                                               \
 	extern "C" CCT_EXPORT cct::refl::Package* cct_refl_create(cct::Logger* logger) \
-	{                                                           \
-		cct::Logger::SetContext(logger);\
-		return new PackageName();\
+	{                                                                              \
+		cct::Logger::SetContext(logger);                                           \
+		return new PackageName();                                                  \
 	}
 
-#define CCT_REFL_DESTROY()                                         \
+#define CCT_REFL_DESTROY()                                                   \
 	extern "C" CCT_EXPORT void cct_refl_destroy(cct::refl::Package* package) \
-	{                                                           \
-		delete package;\
+	{                                                                        \
+		delete package;                                                      \
 	}
 #endif // CONCERTO_REFLECTION_DEFINE_HPP

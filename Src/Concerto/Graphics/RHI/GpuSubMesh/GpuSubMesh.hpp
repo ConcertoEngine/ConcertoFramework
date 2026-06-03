@@ -9,9 +9,8 @@
 
 #include "Concerto/Graphics/RHI/Buffer.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/SubMesh/SubMesh.hpp"
 #include "Concerto/Graphics/RHI/Material.hpp"
-#include "Concerto/Graphics/RHI/Buffer.hpp"
+#include "Concerto/Graphics/RHI/SubMesh/SubMesh.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -37,6 +36,6 @@ namespace cct::gfx::rhi
 		std::unique_ptr<rhi::Buffer> m_vertexBuffer;
 	};
 	using GpuSubMeshPtr = std::shared_ptr<GpuSubMesh>;
-} // cct::gfx::rhi
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_GPUSUBMESH_HPP
+#endif // CONCERTO_GRAPHICS_RHI_GPUSUBMESH_HPP

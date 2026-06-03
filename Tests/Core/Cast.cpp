@@ -4,9 +4,9 @@
 
 #include <string_view>
 
-#include <catch2/catch_test_macros.hpp>
-
 #include <Concerto/Core/Cast.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {
@@ -15,17 +15,21 @@ namespace CCT_ANONYMOUS_NAMESPACE
 	constexpr std::string_view BaseStr = "Base";
 	constexpr std::string_view DerivedStr = "Derived";
 
-	class Base {
+	class Base
+	{
 	public:
 		virtual ~Base() = default;
-		virtual std::string_view Speak() const {
+		virtual std::string_view Speak() const
+		{
 			return BaseStr;
 		}
 	};
 
-	class Derived : public Base {
+	class Derived : public Base
+	{
 	public:
-		std::string_view Speak() const override {
+		std::string_view Speak() const override
+		{
 			return DerivedStr;
 		}
 	};
@@ -40,7 +44,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			WHEN("Cast to Derived&")
 			{
 				Derived& casted = Cast<Derived&>(base);
-				THEN("The cast succeeds and Speak() returns DerivedStr") { CHECK(casted.Speak() == DerivedStr); }
+				THEN("The cast succeeds and Speak() returns DerivedStr")
+				{
+					CHECK(casted.Speak() == DerivedStr);
+				}
 			}
 		}
 
@@ -52,7 +59,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			WHEN("Cast to Derived&&")
 			{
 				Derived&& casted = Cast<Derived&&>(std::move(base));
-				THEN("The cast succeeds") { CHECK(casted.Speak() == DerivedStr); }
+				THEN("The cast succeeds")
+				{
+					CHECK(casted.Speak() == DerivedStr);
+				}
 			}
 		}
 
@@ -64,7 +74,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			WHEN("Cast to const Derived&")
 			{
 				auto& casted = Cast<const Derived&>(base);
-				THEN("The cast succeeds") { CHECK(casted.Speak() == DerivedStr); }
+				THEN("The cast succeeds")
+				{
+					CHECK(casted.Speak() == DerivedStr);
+				}
 			}
 		}
 	}

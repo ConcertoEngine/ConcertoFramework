@@ -6,8 +6,8 @@
 #define CONCERTO_GRAPHICS_UPLOADCONTEXT_HPP
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandPool/CommandPool.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandPool/CommandPool.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
 
 namespace cct::gfx::vk
@@ -37,10 +37,11 @@ namespace cct::gfx::vk
 		Fence m_uploadFence;
 		CommandPool m_commandPool;
 		CommandBuffer m_commandBuffer;
+
 	private:
 		std::size_t m_nextSecondaryCommandBuffer;
 		std::vector<CommandBuffer> m_secondCommandBuffers;
 	};
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_UPLOADCONTEXT_HPP
+#endif // CONCERTO_GRAPHICS_UPLOADCONTEXT_HPP

@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
+#include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/PixelFormat.hpp"
 #include "Concerto/Graphics/Core/Window/Window.hpp"
-#include "Concerto/Graphics/Core/Defines.hpp"
 
 namespace cct::gfx
 {
@@ -50,8 +50,9 @@ namespace cct::gfx
 		std::unique_ptr<Window> CreateWindow(Int32 displayIndex, const std::string& name, Int32 width, Int32 height);
 		std::unique_ptr<Window> CreateWindow(Int32 displayIndex, const std::string& name, Int32 width, Int32 height, bool borderless);
 		void DispatchEvents();
+
 	private:
 	};
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_DISPLAYMANAGER_HPP
+#endif // CONCERTO_GRAPHICS_DISPLAYMANAGER_HPP

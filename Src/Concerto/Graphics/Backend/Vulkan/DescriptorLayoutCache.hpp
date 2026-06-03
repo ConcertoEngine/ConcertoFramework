@@ -5,20 +5,18 @@
 #ifndef CONCERTO_GRAPHICS_INCLUDE_DESCRIPTORLAYOUTCACHE_HPP_
 #define CONCERTO_GRAPHICS_INCLUDE_DESCRIPTORLAYOUTCACHE_HPP_
 
-#include <unordered_map>
 #include <algorithm>
-
-
+#include <unordered_map>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSetLayout/DescriptorSetLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Device/Device.hpp"
 
 namespace cct::gfx::vk
 {
-//	template<typename HashMap = std::unordered_map<void, void>>
+	//	template<typename HashMap = std::unordered_map<void, void>>
 	class DescriptorLayoutCache
 	{
-	 public:
+	public:
 		struct DescriptorLayoutInfo
 		{
 			std::vector<VkDescriptorSetLayoutBinding> bindings;
@@ -46,13 +44,14 @@ namespace cct::gfx::vk
 				std::size_t result = std::hash<std::size_t>()(bindings.size());
 				for (const VkDescriptorSetLayoutBinding& b : bindings)
 				{
-					std::size_t	binding_hash = b.binding | b.descriptorType << 8 | b.descriptorCount << 16 | b.stageFlags << 24;
+					std::size_t binding_hash = b.binding | b.descriptorType << 8 | b.descriptorCount << 16 | b.stageFlags << 24;
 					result ^= std::hash<std::size_t>()(binding_hash);
 				}
 				return result;
 			}
 		};
-	 private:
+
+	private:
 		struct DescriptorLayoutHash
 		{
 			std::size_t operator()(const DescriptorLayoutInfo& descriptorLayoutInfo) const
@@ -60,7 +59,8 @@ namespace cct::gfx::vk
 				return descriptorLayoutInfo.hash();
 			}
 		};
-	 public:
+
+	public:
 		explicit DescriptorLayoutCache(Device& device) :
 			m_device(&device)
 		{
@@ -79,17 +79,18 @@ namespace cct::gfx::vk
 
 				if (createInfo.pBindings[i].binding > lastBinding)
 					lastBinding = createInfo.pBindings[i].binding;
-				else isSorted = false;
+				else
+					isSorted = false;
 			}
 
 			if (!isSorted)
 			{
 				std::sort(layoutInfo.bindings.begin(),
-					layoutInfo.bindings.end(),
-					[](VkDescriptorSetLayoutBinding& a, VkDescriptorSetLayoutBinding& b)
-					{
-					  return a.binding < b.binding;
-					});
+						  layoutInfo.bindings.end(),
+						  [](VkDescriptorSetLayoutBinding& a, VkDescriptorSetLayoutBinding& b)
+						  {
+							  return a.binding < b.binding;
+						  });
 			}
 
 			auto it = m_layoutsCache.find(layoutInfo);
@@ -100,9 +101,9 @@ namespace cct::gfx::vk
 			return elementIt->second;
 		}
 
-	 private:
+	private:
 		Device* m_device;
 		std::unordered_map<DescriptorLayoutInfo, DescriptorSetLayoutPtr, DescriptorLayoutHash> m_layoutsCache;
 	};
-}
-#endif //CONCERTO_GRAPHICS_INCLUDE_DESCRIPTORLAYOUTCACHE_HPP_
+} // namespace cct::gfx::vk
+#endif // CONCERTO_GRAPHICS_INCLUDE_DESCRIPTORLAYOUTCACHE_HPP_

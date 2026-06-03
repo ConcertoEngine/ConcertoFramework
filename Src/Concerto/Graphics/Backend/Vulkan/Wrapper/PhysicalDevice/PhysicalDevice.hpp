@@ -5,10 +5,10 @@
 #ifndef CONCERTO_GRAPHICS_PHYSICALDEVICE_HPP
 #define CONCERTO_GRAPHICS_PHYSICALDEVICE_HPP
 
-#include <span>
 #include <optional>
-#include <vector>
+#include <span>
 #include <unordered_map>
+#include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 
@@ -66,8 +66,8 @@ namespace cct::gfx::vk
 		mutable std::optional<std::vector<VkPresentModeKHR>> m_presentModes;
 		VkPhysicalDevice m_physicalDevice = VK_NULL_HANDLE;
 		vk::Instance* m_instance;
-};
+	};
 
-} // cct::gfx::vk
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_PHYSICALDEVICE_HPP
+#endif // CONCERTO_GRAPHICS_PHYSICALDEVICE_HPP

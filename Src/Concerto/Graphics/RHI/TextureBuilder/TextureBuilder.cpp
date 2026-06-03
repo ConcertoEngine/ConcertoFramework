@@ -40,7 +40,7 @@ namespace cct::gfx::rhi
 
 	std::shared_ptr<Texture> TextureBuilder::BuildTexture(const std::string& path)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 		Int32 width, height, channels;
 		stbi_uc* pixels;
 		{
@@ -116,7 +116,7 @@ namespace cct::gfx::rhi
 
 	void TextureBuilder::Commit()
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		if (m_pendingUploads.empty())
 			return;

@@ -20,5 +20,5 @@ namespace cct::gfx::rhi
 	};
 
 	using GpuMeshPtr = std::shared_ptr<GpuMesh>;
-}
-#endif //CONCERTO_GRAPHICS_RHI_GPUMESH_HPP
+} // namespace cct::gfx::rhi
+#endif // CONCERTO_GRAPHICS_RHI_GPUMESH_HPP

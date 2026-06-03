@@ -6,19 +6,20 @@
 #define CONCERTO_GRAPHICS_RHI_ENUMS_HPP
 
 #include <vector>
-#include <Concerto/Core/Types/Types.hpp>
+
 #include <Concerto/Core/EnumFlags/EnumFlags.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Graphics/Core/PixelFormat.hpp>
 
 namespace cct::gfx::rhi
 {
 	enum class DeviceType : UInt8
 	{
-		Other,      //Unknown device type
-		Integrated, //GPU integrated to the CPU
-		Dedicated,  //GPU dedicated to the graphics
-		Virtual,    //Virtual GPU provided by a virtualization system
-		Software    //CPU software renderer
+		Other, // Unknown device type
+		Integrated, // GPU integrated to the CPU
+		Dedicated, // GPU dedicated to the graphics
+		Virtual, // Virtual GPU provided by a virtualization system
+		Software // CPU software renderer
 	};
 
 	enum class ValidationLevel : UInt8
@@ -114,20 +115,20 @@ namespace cct::gfx::rhi
 
 	enum class QueueFamily : UInt8
 	{
-		Compute,  /**< Compute queue for parallel computation. */
+		Compute, /**< Compute queue for parallel computation. */
 		Graphics, /**< Graphics queue for rendering operations. */
-		Transfer  /**< Transfer queue for memory operations. */
+		Transfer /**< Transfer queue for memory operations. */
 	};
 
 	enum class BufferUsage : UInt32
 	{
-		Uniform     = 0x00000001,
-		Vertex      = 0x00000002,
-		Storage     = 0x00000004,
+		Uniform = 0x00000001,
+		Vertex = 0x00000002,
+		Storage = 0x00000004,
 		TransferSrc = 0x00000008,
 		TransferDst = 0x00000010,
-		Indirect    = 0x00000020,
-		Index       = 0x00000040
+		Indirect = 0x00000020,
+		Index = 0x00000040
 	};
 	using BufferUsageFlags = cct::EnumFlags<BufferUsage>;
 
@@ -140,9 +141,9 @@ namespace cct::gfx::rhi
 
 	struct VertexAttribute
 	{
-		UInt32                location;
+		UInt32 location;
 		VertexAttributeFormat format;
-		UInt32                offset;
+		UInt32 offset;
 	};
 
 	enum class BlendPreset : UInt8
@@ -159,13 +160,13 @@ namespace cct::gfx::rhi
 
 	struct PipelineConfig
 	{
-		UInt32                       vertexStride = 0;
+		UInt32 vertexStride = 0;
 		std::vector<VertexAttribute> vertexAttributes;
-		bool                         blendEnable        = false;
-		bool                         premultipliedAlpha = false;
-		BlendPreset                  blendPreset        = BlendPreset::Default;
-		bool                         depthTestEnable    = true;
-		bool                         depthWriteEnable   = true;
+		bool blendEnable = false;
+		bool premultipliedAlpha = false;
+		BlendPreset blendPreset = BlendPreset::Default;
+		bool depthTestEnable = true;
+		bool depthWriteEnable = true;
 	};
 
 	inline std::size_t PadUniformBuffer(std::size_t size, std::size_t minUniformBufferOffsetAlignment)
@@ -174,10 +175,10 @@ namespace cct::gfx::rhi
 			return (size + minUniformBufferOffsetAlignment - 1) & ~(minUniformBufferOffsetAlignment - 1);
 		return size;
 	}
-}
+} // namespace cct::gfx::rhi
 
 CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::PipelineStage)
 CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::MemoryAccess)
 CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::BufferUsage)
 
-#endif //CONCERTO_GRAPHICS_RHI_ENUMS_HPP
+#endif // CONCERTO_GRAPHICS_RHI_ENUMS_HPP

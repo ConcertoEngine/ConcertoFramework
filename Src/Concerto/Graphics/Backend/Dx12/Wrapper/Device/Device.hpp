@@ -26,9 +26,10 @@ namespace cct::gfx::dx12
 
 		HRESULT Create(ID3D12Device& device, PhysicalDevice& physicalDevice);
 		PhysicalDevice& GetPhysicalDevice() const;
+
 	private:
 		PhysicalDevice* m_physicalDevice;
 	};
-} // cct::gfx::dx12
+} // namespace cct::gfx::dx12
 
-#endif //CONCERTO_GRAPHICS_BACKEND_D3D12_DEVICE_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_D3D12_DEVICE_HPP

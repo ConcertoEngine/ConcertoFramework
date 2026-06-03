@@ -15,5 +15,5 @@ namespace cct::gfx
 		UInt32 minor;
 		UInt32 patch;
 	};
-}
-#endif //CONCERTO_GRAPHICS_VERSION_HPP
+} // namespace cct::gfx
+#endif // CONCERTO_GRAPHICS_VERSION_HPP

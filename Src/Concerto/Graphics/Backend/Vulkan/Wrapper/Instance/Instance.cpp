@@ -39,7 +39,7 @@ namespace cct::gfx::vk
 			}
 			else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
 			{
-				CCT_VK_LOG_INFO("{}", pCallbackData->pMessage);
+				CCT_VK_LOG_TRACE("{}", pCallbackData->pMessage);
 			}
 			else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 			{
@@ -77,7 +77,7 @@ namespace cct::gfx::vk
 							  const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
 							  std::span<const char*> layers)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 		m_apiVersion = apiVersion;
 
 		VkApplicationInfo appInfo = {};

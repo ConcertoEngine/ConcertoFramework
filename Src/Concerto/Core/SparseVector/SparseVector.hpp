@@ -5,17 +5,17 @@
 #ifndef CONCERTO_CORE_SPARSEVECTOR_HPP
 #define CONCERTO_CORE_SPARSEVECTOR_HPP
 
-#include <vector>
 #include <optional>
+#include <vector>
 
 namespace cct
 {
 	/**
-	* @brief SparseVector
-	* A container which offers fixed time access to individual elements in any order, its indices can contain gaps.
-	* @tparam ValueType Type of the elements
-	* @tparam Allocator Allocator used to allocate the elements
-	*/
+	 * @brief SparseVector
+	 * A container which offers fixed time access to individual elements in any order, its indices can contain gaps.
+	 * @tparam ValueType Type of the elements
+	 * @tparam Allocator Allocator used to allocate the elements
+	 */
 	template<typename ValueType, typename Allocator = std::allocator<std::optional<ValueType>>>
 	class SparseVector
 	{
@@ -45,48 +45,49 @@ namespace cct
 		[[nodiscard]] const_iterator end() const;
 
 		/**
-		* @brief Subscript access to the data contained in the %SparseVector.
-		* @param index The index of the element for which data should be accessed.
-		* @return Returns a read/write reference to the element at specified location.
-		*/
+		 * @brief Subscript access to the data contained in the %SparseVector.
+		 * @param index The index of the element for which data should be accessed.
+		 * @return Returns a read/write reference to the element at specified location.
+		 */
 		reference_type operator[](size_type index);
 
 		/**
-		* @brief Subscript access to the data contained in the %SparseVector.
-		* @param index The index of the element for which data should be accessed.
-		* @return Read-only (constant) reference to data.
-		*/
+		 * @brief Subscript access to the data contained in the %SparseVector.
+		 * @param index The index of the element for which data should be accessed.
+		 * @return Read-only (constant) reference to data.
+		 */
 		const_reference_type operator[](size_type index) const;
 
 		/**
-		* @brief Attempts to build and insert an element into the %SparseVector.
-		* @param index The index of the element to be inserted.
-		* @param args Arguments used to construct the element.
-		* @return
-		*/
+		 * @brief Attempts to build and insert an element into the %SparseVector.
+		 * @param index The index of the element to be inserted.
+		 * @param args Arguments used to construct the element.
+		 * @return
+		 */
 		template<typename... Args>
-		reference_type Emplace(size_type index, Args&& ... args);
+		reference_type Emplace(size_type index, Args&&... args);
 
 		/**
-		* @brief Removes the element at specified index from the %SparseVector.
-		* @param index The index of the element to be removed.
-		*/
+		 * @brief Removes the element at specified index from the %SparseVector.
+		 * @param index The index of the element to be removed.
+		 */
 		void Erase(size_type index);
 
 		/**
-		* @param index The index of the element to be tested.
-		* @return Returns true if the element at specified location Has a value.
-		*/
+		 * @param index The index of the element to be tested.
+		 * @return Returns true if the element at specified location Has a value.
+		 */
 		[[nodiscard]] bool Has(size_type index) const;
 
 		/**
-		* @brief Removes all elements from the %SparseVector.
-		*/
+		 * @brief Removes all elements from the %SparseVector.
+		 */
 		void Clear();
+
 	private:
 		container_type _container;
 	};
-}
+} // namespace cct
 
 #include "Concerto/Core/SparseVector/SparseVector.inl"
 #endif // CONCERTO_CORE_SPARSEVECTOR_HPP

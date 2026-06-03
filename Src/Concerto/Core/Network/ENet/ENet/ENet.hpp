@@ -13,11 +13,11 @@ namespace cct::net
 {
 	class CCT_CORE_PUBLIC_API ENet
 	{
-	 public:
+	public:
 		static void Initialize();
 		static void Deinitialize();
 	};
-}// namespace cct::net
+} // namespace cct::net
 
 #endif // CONCERTO_CORE_NETWORK_ENET_HPP
 

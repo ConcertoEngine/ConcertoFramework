@@ -7,9 +7,9 @@
 
 #include <cstddef>
 #include <memory>
-#include <vector>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Enums.hpp"
@@ -38,6 +38,7 @@ namespace cct::gfx::rhi
 		std::shared_ptr<Texture> BuildTexture(const std::string& path);
 		std::shared_ptr<Texture> BuildTextureFromMemory(const std::byte* pixels, UInt32 width, UInt32 height, PixelFormat format);
 		void Commit();
+
 	private:
 		Device& m_device;
 		std::unique_ptr<CommandPool> m_commandPool;
@@ -47,6 +48,6 @@ namespace cct::gfx::rhi
 		using PendingUpload = std::pair<std::shared_ptr<Texture>, std::unique_ptr<Buffer>>;
 		ThreadSafeHashMap<size_t, std::unique_ptr<Buffer>> m_pendingUploads;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_TEXTUREBUILDER_HPP
+#endif // CONCERTO_GRAPHICS_RHI_TEXTUREBUILDER_HPP

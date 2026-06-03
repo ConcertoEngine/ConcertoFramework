@@ -7,10 +7,10 @@
 
 #include <Concerto/Core/Math/Vector/Vector.hpp>
 
-#include "Concerto/Graphics/RHI/Frame.hpp"
-#include "Concerto/Graphics/RHI/RenderPass.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Enums.hpp"
+#include "Concerto/Graphics/RHI/Frame.hpp"
+#include "Concerto/Graphics/RHI/RenderPass.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -35,8 +35,8 @@ namespace cct::gfx::rhi
 		PixelFormat m_pixelFormat;
 		PixelFormat m_depthPixelFormat;
 	};
-}
+} // namespace cct::gfx::rhi
 
 #include "Concerto/Graphics/RHI/SwapChain.inl"
 
-#endif //CONCERTO_GRAPHICS_RHI_SWAPCHAIN_HPP
+#endif // CONCERTO_GRAPHICS_RHI_SWAPCHAIN_HPP

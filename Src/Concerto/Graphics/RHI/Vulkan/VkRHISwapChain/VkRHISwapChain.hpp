@@ -5,23 +5,21 @@
 #ifndef CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_SWAPCHAIN_HPP
 #define CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_SWAPCHAIN_HPP
 
-#include "Concerto/Graphics/RHI/Defines.hpp"
-
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/SwapChain/SwapChain.hpp"
-
+#include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/SwapChain.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandPool/VkRHICommandPool.hpp"
+#include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 
 namespace cct::gfx::vk
 {
 	class Queue;
 	class CommandPool;
-}
+} // namespace cct::gfx::vk
 
 namespace cct::gfx::rhi
 {
@@ -44,6 +42,7 @@ namespace cct::gfx::rhi
 		inline const rhi::FrameBuffer& GetCurrentFrameBuffer() const;
 
 		void Present(UInt32 imageIndex);
+
 	private:
 		void CreateFrameBuffers(rhi::VkRHIDevice& device);
 		void CreateRenderPass();
@@ -66,6 +65,7 @@ namespace cct::gfx::rhi
 			const vk::Fence& GetRenderFence() const;
 
 			static constexpr UInt32 InvalidFrameIndex = std::numeric_limits<UInt32>::max();
+
 		private:
 			std::unique_ptr<rhi::CommandBuffer> m_commandBuffer;
 			vk::Fence m_renderFence;
@@ -88,6 +88,6 @@ namespace cct::gfx::rhi
 		UInt32 m_lastFrameIndex = 0;
 		bool m_needResize = false;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_SWAPCHAIN_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_RHI_VULKAN_SWAPCHAIN_HPP

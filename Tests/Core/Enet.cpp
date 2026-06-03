@@ -4,15 +4,16 @@
 
 #ifdef CCT_ENABLE_ENET
 
-#include <thread>
 #include <chrono>
 #include <span>
+#include <thread>
 
-#include <catch2/catch_test_macros.hpp>
 #include <Concerto/Core/Logger/Logger.hpp>
+#include <Concerto/Core/Network/ENet/Client/Client.hpp>
 #include <Concerto/Core/Network/ENet/ENet/ENet.hpp>
 #include <Concerto/Core/Network/ENet/Server/Server.hpp>
-#include <Concerto/Core/Network/ENet/Client/Client.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {
@@ -25,7 +26,8 @@ namespace CCT_ANONYMOUS_NAMESPACE
 		{
 			ENet::Initialize();
 			bool running = true;
-			std::thread serverThread([&]() {
+			std::thread serverThread([&]()
+									 {
 				IpAddress listeningIp("0.0.0.0", 2121);
 				EnetServer server(listeningIp);
 				Int32 count = -1;
@@ -40,8 +42,7 @@ namespace CCT_ANONYMOUS_NAMESPACE
 					else if (event.eventType == ENetEvent::Type::Disconnect)
 						count--;
 				}
-				REQUIRE(count == 0);
-			});
+				REQUIRE(count == 0); });
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 			WHEN("A client connects then disconnects")
@@ -82,7 +83,8 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			ENet::Initialize();
 			bool running = true;
 			constexpr UInt8 PacketType = 0xF;
-			std::thread serverThread([&]() {
+			std::thread serverThread([&]()
+									 {
 				IpAddress listeningIp("0.0.0.0", 2121);
 				EnetServer server(listeningIp);
 				ENetEvent event;
@@ -103,8 +105,7 @@ namespace CCT_ANONYMOUS_NAMESPACE
 						REQUIRE(v84 == 84);
 						REQUIRE(server.SendPacket(packet, event.peer.get()));
 					}
-				}
-			});
+				} });
 			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
 			WHEN("A client sends a packet with PacketType, 42, 84")

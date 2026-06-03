@@ -4,6 +4,7 @@
 
 #include <exception>
 #include <future>
+
 #include "Concerto/Core/Assert.hpp"
 
 namespace cct

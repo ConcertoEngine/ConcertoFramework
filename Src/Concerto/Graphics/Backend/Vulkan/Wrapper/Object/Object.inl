@@ -14,8 +14,9 @@
 
 namespace cct::gfx::vk
 {
-	template <typename VkType>
-	Object<VkType>::Object() : ObjectDebug(),
+	template<typename VkType>
+	Object<VkType>::Object() :
+		ObjectDebug(),
 		m_handle(nullptr),
 		m_device(nullptr),
 		m_lastResult(VK_SUCCESS)
@@ -33,10 +34,9 @@ namespace cct::gfx::vk
 		m_device(&device),
 		m_lastResult(VK_SUCCESS)
 	{
-
 	}
 
-	template <typename VkType>
+	template<typename VkType>
 	Object<VkType>::~Object()
 	{
 	}
@@ -74,9 +74,10 @@ namespace cct::gfx::vk
 		return m_handle != nullptr;
 	}
 
-	template <typename VkType>
-	Device* Object<VkType>::GetDevice() const requires (!std::is_same_v<VkType, VkDevice> && !std::is_same_v<
-		VkType, VkInstance>)
+	template<typename VkType>
+	Device* Object<VkType>::GetDevice() const
+		requires(!std::is_same_v<VkType, VkDevice> && !std::is_same_v<
+														  VkType, VkInstance>)
 	{
 		CCT_ASSERT(m_device, "Invalid device");
 		return m_device;
@@ -87,6 +88,6 @@ namespace cct::gfx::vk
 	{
 		return m_lastResult;
 	}
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_OBJECT_INL
+#endif // CONCERTO_GRAPHICS_OBJECT_INL

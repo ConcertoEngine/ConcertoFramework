@@ -26,7 +26,7 @@ namespace cct::gfx::rhi
 
 	rhi::ShaderModule& BaseMaterialBuilder::GetOrLoadShaderModule(const std::string& path)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		auto it = m_shaderModules.find(path);
 		if (it == m_shaderModules.end())
@@ -42,7 +42,7 @@ namespace cct::gfx::rhi
 		const rhi::ShaderModule& vertexShader,
 		const rhi::ShaderModule& fragmentShader)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		std::unordered_map<UInt32, std::vector<cct::gfx::DescriptorSetLayoutBinding>> merged(vertexShader.GetBindings());
 
@@ -84,7 +84,7 @@ namespace cct::gfx::rhi
 
 	MaterialPtr BaseMaterialBuilder::BuildMaterial(rhi::MaterialInfo& material, const rhi::RenderPass& renderPass)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		// Load shaders
 		auto& vertexShader = GetOrLoadShaderModule(material.vertexShaderPath);
@@ -195,7 +195,7 @@ namespace cct::gfx::rhi
 
 	void BaseMaterialBuilder::Update(const rhi::Buffer& buffer, UInt32 setIndex, UInt32 bindingIndex)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		// Update all materials' descriptor sets with the new buffer
 		for (const auto& material : m_materialsCache)

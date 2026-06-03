@@ -21,6 +21,6 @@ namespace cct::gfx::rhi
 	private:
 		Dx12RHIDevice* m_device;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHICOMMANDPOOL_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHICOMMANDPOOL_HPP

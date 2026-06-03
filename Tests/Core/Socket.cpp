@@ -2,12 +2,13 @@
 // Created by arthur on 23/02/2023.
 //
 
+#include "Concerto/Core/Network/Socket/Socket.hpp"
+
 #include <cstring>
 #include <thread>
 
-#include <catch2/catch_test_macros.hpp>
-#include "Concerto/Core/Network/Socket/Socket.hpp"
 #include "Concerto/Core/Buffer/Buffer.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 #ifdef CCT_PLATFORM_MACOS // because the CI is failing in release mode
 #include <thread>
@@ -89,7 +90,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 				std::size_t receivedSize = server.Receive(receivedBuffer);
 				receivedBuffer.Resize(receivedSize);
 
-				THEN("The received buffer matches the sent buffer") { REQUIRE(receivedBuffer == buffer); }
+				THEN("The received buffer matches the sent buffer")
+				{
+					REQUIRE(receivedBuffer == buffer);
+				}
 			}
 
 			Socket::UnInitialize();
@@ -106,7 +110,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 
 			WHEN("Accept is called with a UDP client")
 			{
-				THEN("Accept returns false") { CHECK_FALSE(server.Accept(client)); }
+				THEN("Accept returns false")
+				{
+					CHECK_FALSE(server.Accept(client));
+				}
 			}
 
 			Socket::UnInitialize();

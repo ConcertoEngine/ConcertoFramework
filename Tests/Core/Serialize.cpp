@@ -2,8 +2,9 @@
 // Created by arthur on 10/08/2023.
 //
 
-#include <catch2/catch_test_macros.hpp>
 #include <Concerto/Core/Math/Transform/Transform.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {
@@ -27,7 +28,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 				Transform result;
 				result.Deserialize(stream);
 
-				THEN("The deserialized Transform equals the original") { REQUIRE(transform == result); }
+				THEN("The deserialized Transform equals the original")
+				{
+					REQUIRE(transform == result);
+				}
 			}
 		}
 	}

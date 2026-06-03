@@ -6,8 +6,8 @@
 #define CONCERTO_GRAPHICS_CORE_SHADERMODULE_HPP
 
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/ShaderTypes.hpp"
@@ -27,9 +27,9 @@ namespace cct::gfx
 	public:
 		ShaderModule() = default;
 		ShaderModule(std::vector<UInt32> shaderBytes,
-			std::unordered_map<UInt32, std::vector<DescriptorSetLayoutBinding>> bindings,
-			std::string entryPointName,
-			ShaderStage stage);
+					 std::unordered_map<UInt32, std::vector<DescriptorSetLayoutBinding>> bindings,
+					 std::string entryPointName,
+					 ShaderStage stage);
 		ShaderModule(const ShaderModule&) = delete;
 		ShaderModule(ShaderModule&&) = default;
 
@@ -47,6 +47,6 @@ namespace cct::gfx
 		std::string m_entryPointName;
 		ShaderStage m_stage;
 	};
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_CORE_SHADERMODULE_HPP
+#endif // CONCERTO_GRAPHICS_CORE_SHADERMODULE_HPP

@@ -5,13 +5,13 @@
 #ifndef CONCERTO_GRAPHICS_RHI_VKRHICOMMANDBUFFER_HPP
 #define CONCERTO_GRAPHICS_RHI_VKRHICOMMANDBUFFER_HPP
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/CommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
 
 namespace cct::gfx::rhi
 {
-	class CONCERTO_GRAPHICS_RHI_BASE_API VkRHICommandBuffer final: public rhi::CommandBuffer, public vk::CommandBuffer
+	class CONCERTO_GRAPHICS_RHI_BASE_API VkRHICommandBuffer final : public rhi::CommandBuffer, public vk::CommandBuffer
 	{
 	public:
 		VkRHICommandBuffer(VkRHIDevice& device, vk::CommandPool& commandPool, CommandBufferUsage usage);
@@ -38,16 +38,19 @@ namespace cct::gfx::rhi
 		void ClearTexture(const Texture& texture, const Vector4f& clearColor) override;
 		void ExecuteCommands(std::span<rhi::CommandBuffer*> secondaryCmdBufs) override;
 		void PipelineBarrier(const Texture& texture,
-		                     ImageLayout oldLayout,
-		                     ImageLayout newLayout,
-		                     PipelineStageFlags srcStage,
-		                     PipelineStageFlags dstStage,
-		                     MemoryAccessFlags srcAccess,
-		                     MemoryAccessFlags dstAccess) override;
+							 ImageLayout oldLayout,
+							 ImageLayout newLayout,
+							 PipelineStageFlags srcStage,
+							 PipelineStageFlags dstStage,
+							 MemoryAccessFlags srcAccess,
+							 MemoryAccessFlags dstAccess) override;
+
+		void BeginDebugLabel(const char* name, float r, float g, float b) override;
+		void EndDebugLabel() override;
 
 	private:
 		VkRHIDevice* m_device = nullptr;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VKRHICOMMANDBUFFER_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VKRHICOMMANDBUFFER_HPP

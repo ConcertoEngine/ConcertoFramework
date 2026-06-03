@@ -7,10 +7,11 @@
 
 #include <memory>
 #include <unordered_map>
-#include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/DescriptorSet.hpp"
+
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSet/DescriptorSet.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Sampler/Sampler.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/DescriptorSet.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -18,7 +19,7 @@ namespace cct::gfx::rhi
 	{
 	public:
 		VkRHIDescriptorSet(vk::DescriptorSetPtr vkDescriptorSet,
-		                   std::shared_ptr<DescriptorSetLayout> layout);
+						   std::shared_ptr<DescriptorSetLayout> layout);
 
 		~VkRHIDescriptorSet() override;
 
@@ -38,6 +39,6 @@ namespace cct::gfx::rhi
 		// One sampler per binding, created once and reused every frame.
 		std::unordered_map<UInt32, std::unique_ptr<vk::Sampler>> m_samplerCache;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIDESCRIPTORSET_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIDESCRIPTORSET_HPP

@@ -50,7 +50,10 @@ namespace cct
 			m_connection(std::move(connection))
 		{
 		}
-		~ScopedConnection() { m_connection.Disconnect(); }
+		~ScopedConnection()
+		{
+			m_connection.Disconnect();
+		}
 
 		ScopedConnection(const ScopedConnection&) = delete;
 		ScopedConnection& operator=(const ScopedConnection&) = delete;

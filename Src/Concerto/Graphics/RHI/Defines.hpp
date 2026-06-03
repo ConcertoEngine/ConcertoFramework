@@ -5,11 +5,11 @@
 #ifndef CONCERTO_GRAPHICS_RHI_DEFINES_HPP
 #define CONCERTO_GRAPHICS_RHI_DEFINES_HPP
 
-#include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Core/Assert.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 
 #ifdef CCT_COMPILER_MSVC
-#pragma warning(disable: 4251) // Disable warning about DLL interface needed
+#pragma warning(disable : 4251) // Disable warning about DLL interface needed
 #endif
 
 #ifdef CONCERTO_GRAPHICS_RHI_MODULE_BUILD
@@ -18,10 +18,10 @@
 #define CONCERTO_GRAPHICS_RHI_BASE_API CCT_IMPORT
 #endif // CONCERTO_GRAPHICS_RHI_MODULE_BUILD
 
-#include "Concerto/Profiler/Profiler.hpp"
-
-#include <mutex>
 #include <memory>
+#include <mutex>
+
+#include "Concerto/Profiler/Profiler.hpp"
 #include <parallel_hashmap/phmap.h>
 
 namespace cct::gfx::rhi
@@ -31,7 +31,7 @@ namespace cct::gfx::rhi
 
 	template<typename T>
 	using ThreadSafeHashSet = phmap::parallel_flat_hash_set<T, phmap::priv::hash_default_hash<T>, phmap::priv::hash_default_eq<T>, phmap::priv::Allocator<T>, 4, std::mutex>;
-}
+} // namespace cct::gfx::rhi
 
 #include <Concerto/Graphics/Core/Defines.hpp>
 
@@ -42,4 +42,4 @@ namespace cct::gfx::rhi
 #define CCT_RHI_LOG_ERROR(fmt, ...) CCT_GFX_LOG_ERROR("RHI", fmt __VA_OPT__(, ) __VA_ARGS__)
 #define CCT_RHI_LOG_CRITICAL(fmt, ...) CCT_GFX_LOG_CRITICAL("RHI", fmt __VA_OPT__(, ) __VA_ARGS__)
 
-#endif //CONCERTO_GRAPHICS_RHI_DEFINES_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DEFINES_HPP

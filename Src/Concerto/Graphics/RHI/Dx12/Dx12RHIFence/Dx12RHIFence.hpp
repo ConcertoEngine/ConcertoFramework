@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_FENCE_HPP
 #define CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_FENCE_HPP
 
-#include "Concerto/Graphics/RHI/Fence.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Fence/Fence.hpp"
+#include "Concerto/Graphics/RHI/Fence.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -21,11 +21,14 @@ namespace cct::gfx::rhi
 		void Wait() override;
 		void Reset() override;
 
-		dx12::Fence& GetFence() { return m_fence; }
+		dx12::Fence& GetFence()
+		{
+			return m_fence;
+		}
 
 	private:
 		dx12::Fence m_fence;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_FENCE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12_RHI_FENCE_HPP

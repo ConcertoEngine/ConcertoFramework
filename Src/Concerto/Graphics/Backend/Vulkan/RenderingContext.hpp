@@ -37,5 +37,5 @@ namespace cct::gfx::vk
 		CommandPool* commandPool;
 		RenderPass* renderPass;
 	};
-} // cct::gfx::vk
-#endif //CONCERTO_GRAPHICS_RENDERINGCONTEXT_HPP
+} // namespace cct::gfx::vk
+#endif // CONCERTO_GRAPHICS_RENDERINGCONTEXT_HPP

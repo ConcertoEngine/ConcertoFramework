@@ -180,8 +180,10 @@ namespace cct::refl
 			return nullptr;
 		return GetNativeMemberVariable<T>(memberVariable->GetIndex());
 	}
-	inline ScopedObjectFlag::ScopedObjectFlag(Object& obj, ObjectFlags flag, Callback onExit)
-		: m_obj(obj), m_flag(flag), m_onExit(std::move(onExit))
+	inline ScopedObjectFlag::ScopedObjectFlag(Object& obj, ObjectFlags flag, Callback onExit) :
+		m_obj(obj),
+		m_flag(flag),
+		m_onExit(std::move(onExit))
 	{
 		m_obj.SetFlag(m_flag);
 	}

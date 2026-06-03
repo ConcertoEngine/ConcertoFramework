@@ -6,8 +6,8 @@
 #include <ConcertoReflectionTestsPackage.gen.hpp>
 
 #include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>
-#include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 #include <Concerto/Reflection/Int32/Int32.refl.hpp>
+#include <Concerto/Reflection/PackageLoader/PackageLoader.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/Instance/APIImpl.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
+#include "Concerto/Graphics/RHI/Instance/APIImpl.hpp"
 
 namespace cct::gfx
 {
@@ -25,11 +25,12 @@ namespace cct::gfx
 		std::unique_ptr<rhi::Device> CreateDevice(std::size_t index) override;
 		static constexpr inline rhi::DeviceType FromVulkan(VkPhysicalDeviceType deviceType);
 		static void SetLogger(Logger& logger);
+
 	private:
 		std::unique_ptr<vk::Instance> m_instance;
 		std::vector<rhi::DeviceInfo> m_devicesInfo;
 		std::vector<rhi::Device> m_devices;
 	};
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_VULKAN_VKRHI_HPP
+#endif // CONCERTO_GRAPHICS_VULKAN_VKRHI_HPP

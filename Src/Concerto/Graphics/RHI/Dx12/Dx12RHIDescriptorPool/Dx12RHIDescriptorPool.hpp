@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Dx12DescriptorHeap.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
 
 namespace cct::gfx::dx12
 {
@@ -37,10 +37,10 @@ namespace cct::gfx::rhi
 		// @param samplerHeapSize: Size of GPU-visible sampler heap
 		// @param framesInFlight: Number of frames in flight
 		void Initialize(dx12::Device& device,
-		                UINT maxSets,
-		                UINT gpuHeapSize = 10000,
-		                UINT samplerHeapSize = 2048,
-		                UINT framesInFlight = 3);
+						UINT maxSets,
+						UINT gpuHeapSize = 10000,
+						UINT samplerHeapSize = 2048,
+						UINT framesInFlight = 3);
 
 		// Allocate a descriptor set from this pool
 		// @param layout: The layout describing what descriptors to allocate
@@ -51,30 +51,45 @@ namespace cct::gfx::rhi
 		void BeginFrame(UINT frameIndex);
 
 		// Get the GPU-visible heap for CBV/SRV/UAV
-		dx12::Dx12DescriptorHeap* GetGpuHeap() noexcept { return &m_gpuHeap; }
+		dx12::Dx12DescriptorHeap* GetGpuHeap() noexcept
+		{
+			return &m_gpuHeap;
+		}
 
 		// Get the GPU-visible sampler heap
-		dx12::Dx12DescriptorHeap* GetSamplerHeap() noexcept { return &m_samplerHeap; }
+		dx12::Dx12DescriptorHeap* GetSamplerHeap() noexcept
+		{
+			return &m_samplerHeap;
+		}
 
 		// Get the CPU staging heap
-		dx12::Dx12DescriptorHeap* GetCpuStagingHeap() noexcept { return &m_cpuStagingHeap; }
+		dx12::Dx12DescriptorHeap* GetCpuStagingHeap() noexcept
+		{
+			return &m_cpuStagingHeap;
+		}
 
 		// Get the allocator for GPU heap
-		dx12::Dx12DescriptorAllocator* GetGpuAllocator() noexcept { return &m_gpuAllocator; }
+		dx12::Dx12DescriptorAllocator* GetGpuAllocator() noexcept
+		{
+			return &m_gpuAllocator;
+		}
 
 		// Get the allocator for sampler heap
-		dx12::Dx12DescriptorAllocator* GetSamplerAllocator() noexcept { return &m_samplerAllocator; }
+		dx12::Dx12DescriptorAllocator* GetSamplerAllocator() noexcept
+		{
+			return &m_samplerAllocator;
+		}
 
 	private:
-		dx12::Dx12DescriptorHeap m_gpuHeap;            // GPU-visible CBV/SRV/UAV heap
-		dx12::Dx12DescriptorHeap m_samplerHeap;        // GPU-visible sampler heap
-		dx12::Dx12DescriptorHeap m_cpuStagingHeap;     // CPU-only staging heap
+		dx12::Dx12DescriptorHeap m_gpuHeap; // GPU-visible CBV/SRV/UAV heap
+		dx12::Dx12DescriptorHeap m_samplerHeap; // GPU-visible sampler heap
+		dx12::Dx12DescriptorHeap m_cpuStagingHeap; // CPU-only staging heap
 
-		dx12::Dx12DescriptorAllocator m_gpuAllocator;      // Allocator for GPU heap
-		dx12::Dx12DescriptorAllocator m_samplerAllocator;  // Allocator for sampler heap
+		dx12::Dx12DescriptorAllocator m_gpuAllocator; // Allocator for GPU heap
+		dx12::Dx12DescriptorAllocator m_samplerAllocator; // Allocator for sampler heap
 
 		dx12::Device* m_device = nullptr;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHIDESCRIPTORPOOL_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHIDESCRIPTORPOOL_HPP

@@ -5,12 +5,12 @@
 #ifndef CONCERTO_GRAPHICS_RHI_INSTANCE_HPP
 #define CONCERTO_GRAPHICS_RHI_INSTANCE_HPP
 
-#include <span>
 #include <memory>
+#include <span>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/RHI/Device.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -36,10 +36,11 @@ namespace cct::gfx::rhi
 		inline APIImpl* GetImpl() const;
 
 		static void SetLogger(Logger& logger);
+
 	private:
 		std::unique_ptr<APIImpl> m_apiImpl;
 		Backend m_backend;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_INSTANCE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_INSTANCE_HPP

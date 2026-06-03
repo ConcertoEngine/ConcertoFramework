@@ -20,7 +20,6 @@ namespace cct::gfx::rhi
 		virtual UInt32 GetWidth() const = 0;
 		virtual UInt32 GetHeight() const = 0;
 	};
-}
+} // namespace cct::gfx::rhi
 
-
-#endif //CONCERTO_GRAPHICS_RHI_FRAMEBUFFER_HPP
+#endif // CONCERTO_GRAPHICS_RHI_FRAMEBUFFER_HPP

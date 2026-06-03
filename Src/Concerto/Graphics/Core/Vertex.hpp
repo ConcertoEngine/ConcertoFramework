@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_VERTEX_HPP
 
 #include <vector>
+
 #include <Concerto/Core/Math/Vector/Vector.hpp>
 
 namespace cct::gfx
@@ -18,6 +19,6 @@ namespace cct::gfx
 		Vector2f uv;
 	};
 	using Vertices = std::vector<Vertex>;
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_VERTEX_HPP
+#endif // CONCERTO_GRAPHICS_VERTEX_HPP

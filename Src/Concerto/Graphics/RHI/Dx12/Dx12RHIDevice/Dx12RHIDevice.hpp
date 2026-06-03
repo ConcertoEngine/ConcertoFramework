@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_RHI_DX12_DX12RHIDEVICE_HPP
 #define CONCERTO_GRAPHICS_RHI_DX12_DX12RHIDEVICE_HPP
 
-#include <optional>
 #include <memory>
+#include <optional>
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/RHI/Device.hpp"
@@ -36,12 +36,12 @@ namespace cct::gfx::rhi
 		std::unique_ptr<CommandPool> CreateCommandPool(rhi::QueueFamily family, CommandBufferUsage usage) override;
 		std::unique_ptr<Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) override;
 		std::shared_ptr<rhi::ShaderModule> CreateShaderModule(const std::string& path,
-		                                                       cct::gfx::ShaderStage stageFilter) override;
+															  cct::gfx::ShaderStage stageFilter) override;
 		std::shared_ptr<rhi::DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) override;
 		std::shared_ptr<rhi::PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<rhi::DescriptorSetLayout>>& descriptorSetLayouts) override;
 		std::shared_ptr<rhi::Pipeline> CreatePipeline(const rhi::ShaderModule& vertexShader, const rhi::ShaderModule& fragmentShader,
-		                                               const rhi::RenderPass& renderPass, const rhi::PipelineLayout& pipelineLayout,
-		                                               const Vector2u& windowExtent) override;
+													  const rhi::RenderPass& renderPass, const rhi::PipelineLayout& pipelineLayout,
+													  const Vector2u& windowExtent) override;
 		std::unique_ptr<rhi::DescriptorSet> CreateDescriptorSet(const rhi::DescriptorSetLayout& layout) override;
 		std::size_t GetMinimumUniformBufferOffsetAlignment() const override;
 		std::shared_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height) override;
@@ -55,7 +55,10 @@ namespace cct::gfx::rhi
 		Dx12RHIDescriptorPool& GetDescriptorPool();
 
 		void RegisterRenderQueue(ID3D12CommandQueue* queue);
-		[[nodiscard]] ID3D12CommandQueue* GetRenderQueue() const { return m_renderQueue; }
+		[[nodiscard]] ID3D12CommandQueue* GetRenderQueue() const
+		{
+			return m_renderQueue;
+		}
 		void ExecuteAndWait(ID3D12GraphicsCommandList* cmdList);
 
 	private:
@@ -66,6 +69,6 @@ namespace cct::gfx::rhi
 		UInt64 m_uploadFenceValue = 0;
 		std::unique_ptr<Dx12RHIQueue> m_graphicsQueue;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHIDEVICE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHIDEVICE_HPP

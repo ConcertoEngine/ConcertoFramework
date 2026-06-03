@@ -17,6 +17,6 @@ namespace cct::gfx::rhi
 		virtual void Wait() = 0;
 		virtual void Reset() = 0;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_FENCE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_FENCE_HPP

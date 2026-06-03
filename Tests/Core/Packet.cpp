@@ -2,9 +2,11 @@
 // Created by arthur on 30/05/2023.
 //
 
-#include <catch2/catch_test_macros.hpp>
-#include <array>
 #include "Concerto/Core/Network/Packet/Packet.hpp"
+
+#include <array>
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {

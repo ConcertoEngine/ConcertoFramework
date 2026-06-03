@@ -66,7 +66,7 @@ namespace cct::gfx::rhi
 
 	void VkRHICommandBuffer::BeginRenderPass(const rhi::RenderPass& renderPass, const rhi::FrameBuffer& frameBuffer, const Vector3f& clearColor)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		const VkRHIRenderPass& vkRenderPass = Cast<const VkRHIRenderPass&>(renderPass);
 		const VkRHIFrameBuffer& vkRhiFrameBuffer = Cast<const VkRHIFrameBuffer&>(frameBuffer);
@@ -89,14 +89,14 @@ namespace cct::gfx::rhi
 
 	void VkRHICommandBuffer::EndRenderPass()
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		vk::CommandBuffer::EndRenderPass();
 	}
 
 	void VkRHICommandBuffer::BindMaterial(const Material& material)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		CCT_ASSERT(material.pipeline, "Invalid pointer");
 		const auto& pipeline = Cast<const VkRHIPipeline&>(*material.pipeline);
@@ -120,7 +120,7 @@ namespace cct::gfx::rhi
 
 	void VkRHICommandBuffer::BindVertexBuffer(const rhi::Buffer& buffer)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		const VkRHIBuffer& vkBuffer = Cast<const VkRHIBuffer&>(buffer);
 		vk::CommandBuffer::BindVertexBuffers(vkBuffer);
@@ -128,7 +128,7 @@ namespace cct::gfx::rhi
 
 	void VkRHICommandBuffer::Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		vk::CommandBuffer::Draw(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
@@ -367,5 +367,26 @@ namespace cct::gfx::rhi
 			0, nullptr,
 			0, nullptr,
 			1, &barrier);
+	}
+
+	void VkRHICommandBuffer::BeginDebugLabel(const char* name, float r, float g, float b)
+	{
+		if (m_device->vkCmdDebugMarkerBeginEXT == nullptr || !m_device->IsExtensionEnabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
+			return;
+		VkDebugMarkerMarkerInfoEXT info{};
+		info.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+		info.pMarkerName = name;
+		info.color[0] = r;
+		info.color[1] = g;
+		info.color[2] = b;
+		info.color[3] = 1.F;
+		m_device->vkCmdDebugMarkerBeginEXT(*vk::CommandBuffer::Get(), &info);
+	}
+
+	void VkRHICommandBuffer::EndDebugLabel()
+	{
+		if (m_device->vkCmdDebugMarkerEndEXT == nullptr || !m_device->IsExtensionEnabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
+			return;
+		m_device->vkCmdDebugMarkerEndEXT(*vk::CommandBuffer::Get());
 	}
 } // namespace cct::gfx::rhi

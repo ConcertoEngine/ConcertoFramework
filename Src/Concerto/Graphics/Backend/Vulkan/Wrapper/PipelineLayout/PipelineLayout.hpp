@@ -5,10 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_PIPELINELAYOUT_HPP
 #define CONCERTO_GRAPHICS_PIPELINELAYOUT_HPP
 
-#include <vector>
 #include <memory>
-
-
+#include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
@@ -34,9 +32,10 @@ namespace cct::gfx::vk
 		VkResult Create(Device& device, const std::vector<std::shared_ptr<DescriptorSetLayout>>& descriptorSetLayouts);
 
 		[[nodiscard]] const std::vector<std::shared_ptr<DescriptorSetLayout>>& GetDescriptorSetLayouts() const;
+
 	private:
 		std::vector<std::shared_ptr<DescriptorSetLayout>> m_descriptorSetLayouts;
 	};
-} // cct::gfx::vk
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_PIPELINELAYOUT_HPP
+#endif // CONCERTO_GRAPHICS_PIPELINELAYOUT_HPP

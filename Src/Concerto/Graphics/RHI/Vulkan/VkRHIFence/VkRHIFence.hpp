@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_FENCE_HPP
 #define CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_FENCE_HPP
 
-#include "Concerto/Graphics/RHI/Fence.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
+#include "Concerto/Graphics/RHI/Fence.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -21,11 +21,14 @@ namespace cct::gfx::rhi
 		void Wait() override;
 		void Reset() override;
 
-		vk::Fence& GetFence() { return m_fence; }
+		vk::Fence& GetFence()
+		{
+			return m_fence;
+		}
 
 	private:
 		vk::Fence m_fence;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_FENCE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_FENCE_HPP

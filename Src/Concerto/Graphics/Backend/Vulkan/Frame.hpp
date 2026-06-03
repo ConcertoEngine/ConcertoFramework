@@ -7,13 +7,12 @@
 
 #include <memory>
 
-#include "Concerto/Graphics/Core/Defines.hpp"
-
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandPool/CommandPool.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
+#include "Concerto/Graphics/Core/Defines.hpp"
 
 #define MAX_OBJECTS 1000
 
@@ -46,5 +45,5 @@ namespace cct::gfx::vk
 		Buffer indirectBuffer;
 		bool isResized;
 	};
-}
-#endif //CONCERTO_GRAPHICS_FRAME_HPP
+} // namespace cct::gfx::vk
+#endif // CONCERTO_GRAPHICS_FRAME_HPP

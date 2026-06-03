@@ -8,8 +8,8 @@
 #include <optional>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Defines.hpp"
+#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -17,18 +17,36 @@ namespace cct::gfx::rhi
 	{
 	public:
 		Dx12RHIFrameBuffer(UInt32 width, UInt32 height,
-		                   std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles,
-		                   std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetResources,
-		                   std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandle = std::nullopt,
-		                   Microsoft::WRL::ComPtr<ID3D12Resource> depthResource = nullptr);
+						   std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles,
+						   std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetResources,
+						   std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandle = std::nullopt,
+						   Microsoft::WRL::ComPtr<ID3D12Resource> depthResource = nullptr);
 
-		UInt32 GetWidth() const override { return m_width; }
-		UInt32 GetHeight() const override { return m_height; }
+		UInt32 GetWidth() const override
+		{
+			return m_width;
+		}
+		UInt32 GetHeight() const override
+		{
+			return m_height;
+		}
 
-		[[nodiscard]] const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetRTVHandles() const { return m_rtvHandles; }
-		[[nodiscard]] const std::optional<D3D12_CPU_DESCRIPTOR_HANDLE>& GetDSVHandle() const { return m_dsvHandle; }
-		[[nodiscard]] const std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>& GetRenderTargetResources() const { return m_renderTargetResources; }
-		[[nodiscard]] ID3D12Resource* GetDepthResource() const { return m_depthResource.Get(); }
+		[[nodiscard]] const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& GetRTVHandles() const
+		{
+			return m_rtvHandles;
+		}
+		[[nodiscard]] const std::optional<D3D12_CPU_DESCRIPTOR_HANDLE>& GetDSVHandle() const
+		{
+			return m_dsvHandle;
+		}
+		[[nodiscard]] const std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>& GetRenderTargetResources() const
+		{
+			return m_renderTargetResources;
+		}
+		[[nodiscard]] ID3D12Resource* GetDepthResource() const
+		{
+			return m_depthResource.Get();
+		}
 
 	private:
 		UInt32 m_width;
@@ -38,6 +56,6 @@ namespace cct::gfx::rhi
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_renderTargetResources;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_depthResource;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHIFRAMEBUFFER_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHIFRAMEBUFFER_HPP

@@ -16,7 +16,6 @@ namespace cct::gfx::vk
 	class RenderPass;
 	class ImageView;
 
-
 	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API FrameBuffer : public Object<VkFramebuffer>
 	{
 	public:
@@ -33,10 +32,11 @@ namespace cct::gfx::vk
 		VkResult Create(const RenderPass& renderPass, const std::vector<VkImageView>& attachments, VkExtent2D extent);
 
 		VkExtent2D GetExtent2D() const;
+
 	private:
 		VkExtent2D m_extent;
 	};
 
-} // cct::gfx::vk
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_FRAMEBUFFER_HPP
+#endif // CONCERTO_GRAPHICS_FRAMEBUFFER_HPP

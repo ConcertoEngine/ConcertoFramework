@@ -7,15 +7,16 @@
 
 namespace cct
 {
-	template <typename F>
-	DeferredExit<F>::DeferredExit(F&& functor) : m_functor(std::move(functor))
+	template<typename F>
+	DeferredExit<F>::DeferredExit(F&& functor) :
+		m_functor(std::move(functor))
 	{
 	}
 
-	template <typename F>
+	template<typename F>
 	DeferredExit<F>::~DeferredExit()
 	{
 		m_functor();
 	}
-}
-#endif //CONCERTO_CORE_DEFEREDEXIT_INL
+} // namespace cct
+#endif // CONCERTO_CORE_DEFEREDEXIT_INL

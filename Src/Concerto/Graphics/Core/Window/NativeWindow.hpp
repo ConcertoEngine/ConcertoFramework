@@ -23,7 +23,6 @@ namespace cct::gfx
 #elif defined(CCT_PLATFORM_MACOS)
 	struct NativeWindow
 	{
-
 	};
 #elif defined(CCT_PLATFORM_LINUX)
 	struct NativeWindow
@@ -43,6 +42,6 @@ namespace cct::gfx
 		std::variant<X11, Wayland> platform;
 	};
 #endif
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_NATIVEWINDOW_HPP
+#endif // CONCERTO_GRAPHICS_NATIVEWINDOW_HPP

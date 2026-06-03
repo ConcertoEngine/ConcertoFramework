@@ -4,9 +4,8 @@
 #include <Concerto/Core/FunctionRef/FunctionRef.hpp>
 #include <Concerto/Core/Types/Types.hpp>
 #include <Concerto/Reflection/Defines.hpp>
-#include <Concerto/Reflection/Object/Object.refl.hpp>
 #include <Concerto/Reflection/Int32/Int32.refl.hpp>
-
+#include <Concerto/Reflection/Object/Object.refl.hpp>
 
 #include "Defines.hpp"
 

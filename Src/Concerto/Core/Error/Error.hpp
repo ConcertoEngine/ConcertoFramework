@@ -15,5 +15,5 @@ namespace cct
 	public:
 		static std::string GetLastSystemErrorString();
 	};
-}
+} // namespace cct
 #endif // CONCERTO_CORE_ERROR_HPP

@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_RENDERGRAPH_RESOURCE_HPP
 
 #include <limits>
+
 #include "Concerto/Graphics/RHI/Enums.hpp"
 
 namespace cct::gfx::rhi
@@ -14,7 +15,10 @@ namespace cct::gfx::rhi
 	{
 		UInt16 index = std::numeric_limits<UInt16>::max();
 		UInt16 version = 0;
-		[[nodiscard]] bool IsValid() const { return index != std::numeric_limits<UInt16>::max(); }
+		[[nodiscard]] bool IsValid() const
+		{
+			return index != std::numeric_limits<UInt16>::max();
+		}
 		bool operator==(const RGTextureHandle&) const = default;
 	};
 
@@ -22,7 +26,10 @@ namespace cct::gfx::rhi
 	{
 		UInt16 index = std::numeric_limits<UInt16>::max();
 		UInt16 version = 0;
-		[[nodiscard]] bool IsValid() const { return index != std::numeric_limits<UInt16>::max(); }
+		[[nodiscard]] bool IsValid() const
+		{
+			return index != std::numeric_limits<UInt16>::max();
+		}
 		bool operator==(const RGBufferHandle&) const = default;
 	};
 
@@ -42,8 +49,17 @@ namespace cct::gfx::rhi
 		const char* name = "";
 	};
 
-	enum class RGPassType { Graphics, Compute, Transfer };
-	enum class RGResourceAccess { Read, Write };
-}
+	enum class RGPassType
+	{
+		Graphics,
+		Compute,
+		Transfer
+	};
+	enum class RGResourceAccess
+	{
+		Read,
+		Write
+	};
+} // namespace cct::gfx::rhi
 
 #endif // CONCERTO_GRAPHICS_RHI_RENDERGRAPH_RESOURCE_HPP

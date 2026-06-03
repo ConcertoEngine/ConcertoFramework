@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_APIIMPL_HPP
 
 #include <span>
+
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Device.hpp"
 
@@ -21,6 +22,6 @@ namespace cct::gfx::rhi
 		virtual std::span<const DeviceInfo> EnumerateDevices() = 0;
 		virtual std::unique_ptr<Device> CreateDevice(std::size_t index) = 0;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_APIIMPL_HPP
+#endif // CONCERTO_GRAPHICS_RHI_APIIMPL_HPP

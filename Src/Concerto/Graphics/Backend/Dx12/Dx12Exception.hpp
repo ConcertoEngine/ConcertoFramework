@@ -12,8 +12,8 @@ namespace cct::gfx::dx12
 	class Dx12Exception : public std::runtime_error
 	{
 	public:
-		Dx12Exception(HRESULT hr)
-			: std::runtime_error("DirectX 12 error"),
+		Dx12Exception(HRESULT hr) :
+			std::runtime_error("DirectX 12 error"),
 			m_errorCode(hr)
 		{
 		}
@@ -22,6 +22,7 @@ namespace cct::gfx::dx12
 		{
 			return m_errorCode;
 		}
+
 	private:
 		HRESULT m_errorCode;
 	};

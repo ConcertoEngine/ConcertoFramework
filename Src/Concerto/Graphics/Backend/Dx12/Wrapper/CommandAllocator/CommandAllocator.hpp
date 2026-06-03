@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_BACKEND_D3D12_COMMAND_ALLOCATOR_HPP
 #define CONCERTO_GRAPHICS_BACKEND_D3D12_COMMAND_ALLOCATOR_HPP
 
-#include "Concerto/Graphics/Backend/Dx12/Wrapper/Object/Object.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandList/CommandList.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/Object/Object.hpp"
 
 namespace cct::gfx::dx12
 {
@@ -31,6 +31,6 @@ namespace cct::gfx::dx12
 	private:
 		D3D12_COMMAND_LIST_TYPE m_type;
 	};
-} // cct::gfx::dx12
+} // namespace cct::gfx::dx12
 
-#endif //CONCERTO_GRAPHICS_BACKEND_D3D12_COMMAND_ALLOCATOR_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_D3D12_COMMAND_ALLOCATOR_HPP

@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_QUEUE_HPP
 #define CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_QUEUE_HPP
 
-#include "Concerto/Graphics/RHI/Queue.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Queue/Queue.hpp"
+#include "Concerto/Graphics/RHI/Queue.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -24,6 +24,6 @@ namespace cct::gfx::rhi
 		vk::Queue* m_queue;
 		VkRHIDevice* m_device;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_QUEUE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VK_RHI_QUEUE_HPP

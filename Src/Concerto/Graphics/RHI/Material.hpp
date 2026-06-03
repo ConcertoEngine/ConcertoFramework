@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_INCLUDE_MATERIAL_HPP_
 #define CONCERTO_GRAPHICS_INCLUDE_MATERIAL_HPP_
 
-#include <string>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include <Concerto/Core/Math/Vector/Vector.hpp>
@@ -34,10 +34,7 @@ namespace cct::gfx::rhi
 		MaterialInfo() = default;
 		bool operator==(const MaterialInfo& other) const
 		{
-			return diffuseTexture == other.diffuseTexture && diffuseColor == other.diffuseColor
-				&& metallic == other.metallic && specular == other.specular && roughness == other.roughness
-				&& anisotropy == other.anisotropy && emissiveColor == other.emissiveColor
-				&& normalTexture == other.normalTexture;
+			return diffuseTexture == other.diffuseTexture && diffuseColor == other.diffuseColor && metallic == other.metallic && specular == other.specular && roughness == other.roughness && anisotropy == other.anisotropy && emissiveColor == other.emissiveColor && normalTexture == other.normalTexture;
 		}
 
 		[[nodiscard]] std::size_t GetHash() const
@@ -68,7 +65,10 @@ namespace cct::gfx::rhi
 	{
 	public:
 		Material() = default;
-		Material(MaterialInfo info) : MaterialInfo(std::move(info)) {}
+		Material(MaterialInfo info) :
+			MaterialInfo(std::move(info))
+		{
+		}
 
 		// Delete copy operations (descriptor sets are unique_ptr)
 		Material(const Material&) = delete;
@@ -84,5 +84,5 @@ namespace cct::gfx::rhi
 	};
 
 	using MaterialPtr = std::shared_ptr<rhi::Material>;
-}
-#endif //CONCERTO_GRAPHICS_INCLUDE_MATERIAL_HPP_
+} // namespace cct::gfx::rhi
+#endif // CONCERTO_GRAPHICS_INCLUDE_MATERIAL_HPP_

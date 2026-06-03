@@ -4,13 +4,13 @@
 
 #pragma once
 
-#include <d3d12.h>
-#include <wrl/client.h>
 #include <cstdint>
+#include <d3d12.h>
 #include <mutex>
 
 #include "Concerto/Graphics/Backend/Dx12/Defines.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Dx12Helpers.hpp"
+#include <wrl/client.h>
 
 namespace cct::gfx::dx12
 {
@@ -19,11 +19,14 @@ namespace cct::gfx::dx12
 	// Represents a handle to a descriptor in a heap
 	struct DescriptorHandle
 	{
-		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle{ 0 };
-		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle{ 0 };
+		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle{0};
+		D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle{0};
 		UINT index = 0;
 
-		bool IsValid() const noexcept { return cpuHandle.ptr != 0; }
+		bool IsValid() const noexcept
+		{
+			return cpuHandle.ptr != 0;
+		}
 	};
 
 	// A contiguous range of descriptors
@@ -58,24 +61,39 @@ namespace cct::gfx::dx12
 		// @param numDescriptors: Total capacity
 		// @param shaderVisible: Whether this heap is GPU-visible
 		void Initialize(ID3D12Device* device,
-		                D3D12_DESCRIPTOR_HEAP_TYPE type,
-		                UINT numDescriptors,
-		                bool shaderVisible);
+						D3D12_DESCRIPTOR_HEAP_TYPE type,
+						UINT numDescriptors,
+						bool shaderVisible);
 
 		// Get the D3D12 heap
-		ID3D12DescriptorHeap* GetHeap() const noexcept { return m_heap.Get(); }
+		ID3D12DescriptorHeap* GetHeap() const noexcept
+		{
+			return m_heap.Get();
+		}
 
 		// Get descriptor increment size
-		UINT GetDescriptorSize() const noexcept { return m_descriptorSize; }
+		UINT GetDescriptorSize() const noexcept
+		{
+			return m_descriptorSize;
+		}
 
 		// Get total capacity
-		UINT GetCapacity() const noexcept { return m_capacity; }
+		UINT GetCapacity() const noexcept
+		{
+			return m_capacity;
+		}
 
 		// Check if GPU-visible
-		bool IsShaderVisible() const noexcept { return m_shaderVisible; }
+		bool IsShaderVisible() const noexcept
+		{
+			return m_shaderVisible;
+		}
 
 		// Get heap type
-		D3D12_DESCRIPTOR_HEAP_TYPE GetType() const noexcept { return m_type; }
+		D3D12_DESCRIPTOR_HEAP_TYPE GetType() const noexcept
+		{
+			return m_type;
+		}
 
 		// Get a handle at a specific index
 		DescriptorHandle GetHandle(UINT index) const noexcept;
@@ -136,4 +154,4 @@ namespace cct::gfx::dx12
 		std::vector<std::vector<FrameAllocation>> m_frameAllocations; // Per-frame allocation tracking
 		mutable std::mutex m_allocationMutex;
 	};
-}
+} // namespace cct::gfx::dx12

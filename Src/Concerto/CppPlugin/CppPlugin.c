@@ -345,13 +345,26 @@ static void BeforeClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx
 				crpGenerationContextWrite(ctx, "SetBaseClass(baseClass);");
 			}
 
+			{
+				size_t attrCount = crpClassGetAttributeCount(cls);
+				for (size_t i = 0; i < attrCount; i++)
+				{
+					const char* key = crpClassGetAttributeKey(cls, i);
+					const char* val = crpClassGetAttributeValue(cls, i);
+					if (key && val)
+					{
+						crpGenerationContextWrite(ctx, "AddAttribute(\"%s\", \"%s\");", key, val);
+					}
+				}
+			}
+
 			crpGenerationContextNewLine(ctx);
 		}
 	}
 }
 
 static void EmitAttrCalls(CrpGenerationContext* ctx, const CrpClassMember* member,
-                          const char* varName, const char* attrName)
+						  const char* varName, const char* attrName)
 {
 	if (crpClassMemberAttributeIsTable(member, attrName))
 	{

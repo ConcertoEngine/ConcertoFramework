@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_PIPELINEINFO_HPP
 #define CONCERTO_GRAPHICS_PIPELINEINFO_HPP
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Vertex/Vertex.hpp"
@@ -33,6 +33,6 @@ namespace cct::gfx::vk
 		VkPipelineDepthStencilStateCreateInfo m_depthStencil;
 	};
 
-} // cct::gfx::vk
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_PIPELINEINFO_HPP
+#endif // CONCERTO_GRAPHICS_PIPELINEINFO_HPP

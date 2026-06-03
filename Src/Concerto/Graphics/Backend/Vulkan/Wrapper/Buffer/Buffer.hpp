@@ -7,9 +7,9 @@
 
 #include <cstddef>
 #include <functional>
+#include <vk_mem_alloc.h>
 
 #include <Concerto/Core/Assert.hpp>
-#include <vk_mem_alloc.h>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
@@ -19,7 +19,7 @@ namespace cct::gfx::vk
 
 	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Buffer : public Object<VkBuffer>
 	{
-	 public:
+	public:
 		Buffer();
 		Buffer(Allocator& allocator, std::size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, bool allowBufferMapping);
 		~Buffer() override;
@@ -56,12 +56,12 @@ namespace cct::gfx::vk
 		UInt32 m_mapCount = 0;
 		std::size_t m_allocatedSize;
 		Allocator* m_allocator;
-		VmaAllocation m_allocation{ VK_NULL_HANDLE };
+		VmaAllocation m_allocation{VK_NULL_HANDLE};
 		VkBufferUsageFlags m_usage;
 	};
 
-} // cct::gfx::vk
+} // namespace cct::gfx::vk
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Buffer/Buffer.inl"
 
-#endif //CONCERTO_GRAPHICS_BUFFER_HPP
+#endif // CONCERTO_GRAPHICS_BUFFER_HPP

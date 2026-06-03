@@ -7,10 +7,10 @@
 
 #include <memory>
 
-#include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/Texture.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Texture.hpp"
 
 namespace cct::gfx::vk
 {
@@ -18,7 +18,7 @@ namespace cct::gfx::vk
 	class CommandBuffer;
 	class UploadContext;
 	class Queue;
-}
+} // namespace cct::gfx::vk
 
 namespace cct::gfx::rhi
 {
@@ -43,9 +43,10 @@ namespace cct::gfx::rhi
 	public:
 		VkRHITextureView(const vk::ImageView& image);
 		const vk::ImageView& GetImageView() const;
+
 	private:
 		const vk::ImageView* m_imageView;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VKRHITEXTURE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VKRHITEXTURE_HPP

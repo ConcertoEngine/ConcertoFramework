@@ -6,8 +6,8 @@
 #define CONCERTO_GRAPHICS_COMMANDBUFFER_HPP
 
 #include <functional>
-#include <span>
 #include <memory>
+#include <span>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
@@ -48,8 +48,8 @@ namespace cct::gfx::vk
 		void BindPipeline(VkPipelineBindPoint pipelineBindPoint, const Pipeline& pipeline) const;
 		void BindPipeline(VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline) const;
 
-		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout,UInt32 firstSet, UInt32 descriptorSetCount, const DescriptorSet& descriptorSet,UInt32 dynamicOffsets) const;
-		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout,UInt32 firstSet, UInt32 descriptorSetCount, const DescriptorSet& descriptorSet) const;
+		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, UInt32 firstSet, UInt32 descriptorSetCount, const DescriptorSet& descriptorSet, UInt32 dynamicOffsets) const;
+		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, UInt32 firstSet, UInt32 descriptorSetCount, const DescriptorSet& descriptorSet) const;
 		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, std::span<VkDescriptorSet> descriptorSets) const;
 		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, std::span<DescriptorSet> descriptorSets) const;
 		void BindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout pipelineLayout, std::span<std::shared_ptr<DescriptorSet>> descriptorSets) const;
@@ -60,12 +60,11 @@ namespace cct::gfx::vk
 		void UpdatePushConstants(VkPipelineLayout pipelineLayout, const MeshPushConstants& meshPushConstants) const;
 
 		void Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex,
-				UInt32 firstInstance) const;
+				  UInt32 firstInstance) const;
 		void DrawIndirect(const Buffer& buffer, UInt32 offset, UInt32 drawCount, UInt32 stride) const;
 
-		
 		void ImmediateSubmit(const Fence& fence, const CommandPool& commandPool, const Queue& queue,
-				std::function<void(CommandBuffer&)>&& function);
+							 std::function<void(CommandBuffer&)>&& function);
 		void Submit(const Fence& fence, const CommandPool& commandPool, const Queue& queue);
 
 		void ExecuteCommands(std::span<CommandBuffer> commandBuffers) const;
@@ -81,4 +80,4 @@ namespace cct::gfx::vk
 	};
 } // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_COMMANDBUFFER_HPP
+#endif // CONCERTO_GRAPHICS_COMMANDBUFFER_HPP

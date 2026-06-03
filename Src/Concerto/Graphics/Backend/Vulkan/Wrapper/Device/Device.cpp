@@ -28,7 +28,6 @@ namespace cct::gfx::vk
 #endif
 	};
 
-
 	Device::Device(PhysicalDevice& physicalDevice) :
 		m_physicalDevice(&physicalDevice),
 		m_allocator(nullptr)

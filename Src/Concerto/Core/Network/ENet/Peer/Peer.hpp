@@ -8,8 +8,9 @@
 #define CONCERTO_CORE_NETWORK_ENET_PEER_HPP
 
 #include <cstddef>
-#include "Concerto/Core/Types/Types.hpp"
+
 #include "Concerto/Core/Network/ENet/Packet/Packet.hpp"
+#include "Concerto/Core/Types/Types.hpp"
 
 namespace cct::net
 {
@@ -39,10 +40,11 @@ namespace cct::net
 
 		ENetPeer& operator=(const ENetPeer&) = delete;
 		ENetPeer& operator=(ENetPeer&&) = default;
+
 	private:
 		ENetPeerHandle _peer;
 	};
-}
+} // namespace cct::net
 
 #endif // CONCERTO_CORE_NETWORK_ENET_PEER_HPP
 

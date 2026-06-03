@@ -5,12 +5,12 @@
 #pragma once
 
 #include <d3d12.h>
-#include <wrl/client.h>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "Concerto/Graphics/Backend/Dx12/Defines.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Dx12Helpers.hpp"
+#include <wrl/client.h>
 
 namespace cct::gfx::dx12
 {
@@ -39,10 +39,16 @@ namespace cct::gfx::dx12
 		void Build(ID3D12Device* device, const std::vector<DescriptorTableInfo>& tables);
 
 		// Get the root signature
-		ID3D12RootSignature* Get() const noexcept { return m_rootSignature.Get(); }
+		ID3D12RootSignature* Get() const noexcept
+		{
+			return m_rootSignature.Get();
+		}
 
 		// Get number of root parameters (descriptor tables)
-		UINT GetNumParameters() const noexcept { return static_cast<UINT>(m_parameterCount); }
+		UINT GetNumParameters() const noexcept
+		{
+			return static_cast<UINT>(m_parameterCount);
+		}
 
 		// Get the root parameter index for a given descriptor set index
 		// Returns UINT_MAX if not found
@@ -50,8 +56,13 @@ namespace cct::gfx::dx12
 
 	private:
 		ComPtr<ID3D12RootSignature> m_rootSignature;
-		struct RootParamMapping { UINT setIndex; UINT rootParamIndex; bool isSampler; };
+		struct RootParamMapping
+		{
+			UINT setIndex;
+			UINT rootParamIndex;
+			bool isSampler;
+		};
 		std::vector<RootParamMapping> m_setIndexToRootParam;
 		size_t m_parameterCount = 0;
 	};
-}
+} // namespace cct::gfx::dx12

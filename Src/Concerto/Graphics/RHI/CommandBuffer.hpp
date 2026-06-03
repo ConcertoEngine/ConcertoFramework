@@ -6,12 +6,12 @@
 #define CONCERTO_GRAPHICS_RHI_COMMANDBUFFER_HPP
 
 #include <span>
+
 #include <Concerto/Core/Math/Vector/Vector.hpp>
 
-#include "Concerto/Graphics/RHI/Utils/Utils.hpp"
-#include "Concerto/Graphics/RHI/Enums.hpp"
-
 #include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
+#include "Concerto/Graphics/RHI/Utils/Utils.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -43,22 +43,45 @@ namespace cct::gfx::rhi
 		virtual void Copy(const Texture& src, const Buffer& dst) = 0;
 		virtual void TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout) = 0;
 
-		virtual void BindPipeline(const Pipeline& pipeline) {}
-		virtual void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set, UInt32 dynamicOffset) {}
-		virtual void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set) {}
-		virtual void BindIndexBuffer(const Buffer& buffer, bool use32bitIndices) {}
-		virtual void DrawIndexed(UInt32 indexCount, UInt32 instanceCount, UInt32 firstIndex, Int32 vertexOffset, UInt32 firstInstance) {}
-		virtual void ClearTexture(const Texture& texture, const Vector4f& clearColor) {}
-		virtual void ExecuteCommands(std::span<CommandBuffer*> /*secondaryCmdBufs*/) {}
+		virtual void BindPipeline(const Pipeline& pipeline)
+		{
+		}
+		virtual void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set, UInt32 dynamicOffset)
+		{
+		}
+		virtual void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set)
+		{
+		}
+		virtual void BindIndexBuffer(const Buffer& buffer, bool use32bitIndices)
+		{
+		}
+		virtual void DrawIndexed(UInt32 indexCount, UInt32 instanceCount, UInt32 firstIndex, Int32 vertexOffset, UInt32 firstInstance)
+		{
+		}
+		virtual void ClearTexture(const Texture& texture, const Vector4f& clearColor)
+		{
+		}
+		virtual void ExecuteCommands(std::span<CommandBuffer*> /*secondaryCmdBufs*/)
+		{
+		}
 
 		virtual void PipelineBarrier(const Texture& texture,
-		                              ImageLayout oldLayout,
-		                              ImageLayout newLayout,
-		                              PipelineStageFlags srcStage,
-		                              PipelineStageFlags dstStage,
-		                              MemoryAccessFlags srcAccess,
-		                              MemoryAccessFlags dstAccess) {}
-	};
-}
+									 ImageLayout oldLayout,
+									 ImageLayout newLayout,
+									 PipelineStageFlags srcStage,
+									 PipelineStageFlags dstStage,
+									 MemoryAccessFlags srcAccess,
+									 MemoryAccessFlags dstAccess)
+		{
+		}
 
-#endif //CONCERTO_GRAPHICS_RHI_COMMANDBUFFER_HPP
+		virtual void BeginDebugLabel(const char* name, float r = 1.F, float g = 1.F, float b = 1.F)
+		{
+		}
+		virtual void EndDebugLabel()
+		{
+		}
+	};
+} // namespace cct::gfx::rhi
+
+#endif // CONCERTO_GRAPHICS_RHI_COMMANDBUFFER_HPP

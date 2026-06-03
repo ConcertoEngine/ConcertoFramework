@@ -6,26 +6,26 @@
 #define CONCERTO_GRAPHICS_RHI_DEVICE_HPP
 
 #include <filesystem>
-#include <string>
-#include <string_view>
 #include <memory>
 #include <span>
+#include <string>
+#include <string_view>
 #include <vector>
 
-#include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
-#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
-#include "Concerto/Graphics/RHI/Texture.hpp"
-#include "Concerto/Graphics/RHI/Enums.hpp"
-#include "Concerto/Graphics/RHI/RenderPass.hpp"
-#include "Concerto/Graphics/RHI/MaterialBuilder.hpp"
-#include "Concerto/Graphics/RHI/CommandPool.hpp"
-#include "Concerto/Graphics/RHI/Buffer.hpp"
-#include "Concerto/Graphics/RHI/GpuMesh.hpp"
-#include "Concerto/Graphics/RHI/Queue.hpp"
-#include "Concerto/Graphics/RHI/Fence.hpp"
-#include "Concerto/Graphics/RHI/QueryPool.hpp"
 #include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
+#include "Concerto/Graphics/RHI/Buffer.hpp"
+#include "Concerto/Graphics/RHI/CommandPool.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
+#include "Concerto/Graphics/RHI/Fence.hpp"
+#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
+#include "Concerto/Graphics/RHI/GpuMesh.hpp"
+#include "Concerto/Graphics/RHI/MaterialBuilder.hpp"
+#include "Concerto/Graphics/RHI/QueryPool.hpp"
+#include "Concerto/Graphics/RHI/Queue.hpp"
+#include "Concerto/Graphics/RHI/RenderPass.hpp"
+#include "Concerto/Graphics/RHI/Texture.hpp"
+#include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
 #include "Concerto/Graphics/RHI/TextureImportInfo.hpp"
 
 namespace cct::gfx
@@ -40,9 +40,9 @@ namespace cct::gfx::rhi
 	enum class VendorId : UInt32
 	{
 		Unknown = 0x0000,
-		AMD     = 0x1002,
-		Intel   = 0x8086,
-		NVIDIA  = 0x10DE,
+		AMD = 0x1002,
+		Intel = 0x8086,
+		NVIDIA = 0x10DE,
 	};
 
 	struct DeviceInfo
@@ -72,7 +72,7 @@ namespace cct::gfx::rhi
 		virtual std::unique_ptr<CommandPool> CreateCommandPool(rhi::QueueFamily family, CommandBufferUsage usage) = 0;
 		virtual std::unique_ptr<Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) = 0;
 		virtual std::shared_ptr<ShaderModule> CreateShaderModule(const std::string& path,
-		                                                          cct::gfx::ShaderStage stageFilter = cct::gfx::ShaderStage::None) = 0;
+																 cct::gfx::ShaderStage stageFilter = cct::gfx::ShaderStage::None) = 0;
 		virtual std::shared_ptr<ShaderModule> CreateShaderModuleFromSource(std::string_view source, std::string_view label = "<generated>", cct::gfx::ShaderStage stageFilter = cct::gfx::ShaderStage::None)
 		{
 			return nullptr;
@@ -80,11 +80,11 @@ namespace cct::gfx::rhi
 		virtual std::shared_ptr<DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) = 0;
 		virtual std::shared_ptr<PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<DescriptorSetLayout>>& descriptorSetLayouts) = 0;
 		virtual std::shared_ptr<Pipeline> CreatePipeline(const ShaderModule& vertexShader, const ShaderModule& fragmentShader,
-		                                                  const RenderPass& renderPass, const PipelineLayout& pipelineLayout,
-		                                                  const Vector2u& windowExtent) = 0;
+														 const RenderPass& renderPass, const PipelineLayout& pipelineLayout,
+														 const Vector2u& windowExtent) = 0;
 		virtual std::shared_ptr<Pipeline> CreatePipeline(const ShaderModule& vertexShader, const ShaderModule& fragmentShader,
-		                                                  const RenderPass& renderPass, const PipelineLayout& pipelineLayout,
-		                                                  const Vector2u& windowExtent, const PipelineConfig& config)
+														 const RenderPass& renderPass, const PipelineLayout& pipelineLayout,
+														 const Vector2u& windowExtent, const PipelineConfig& config)
 		{
 			return CreatePipeline(vertexShader, fragmentShader, renderPass, pipelineLayout, windowExtent);
 		}
@@ -96,10 +96,18 @@ namespace cct::gfx::rhi
 
 		virtual Queue& GetQueue(rhi::QueueFamily family) = 0;
 		virtual std::unique_ptr<Fence> CreateFence() = 0;
-		virtual std::unique_ptr<QueryPool> CreateQueryPool() { return nullptr; }
-		virtual std::shared_ptr<Texture> ImportTexture(const TextureImportInfo& /*info*/) { return nullptr; }
-		virtual void SetShaderModuleSearchPath(const std::filesystem::path& /*path*/) {}
+		virtual std::unique_ptr<QueryPool> CreateQueryPool()
+		{
+			return nullptr;
+		}
+		virtual std::shared_ptr<Texture> ImportTexture(const TextureImportInfo& /*info*/)
+		{
+			return nullptr;
+		}
+		virtual void SetShaderModuleSearchPath(const std::filesystem::path& /*path*/)
+		{
+		}
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DEVICE_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DEVICE_HPP

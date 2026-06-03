@@ -8,14 +8,14 @@
 #include <Concerto/Core/Math/Quaternion/Quaternion.hpp>
 #include <Concerto/Core/Math/Vector/Vector.hpp>
 
-#include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/Camera/GPUData.hpp"
+#include "Concerto/Graphics/Core/Defines.hpp"
 
 namespace cct::gfx
 {
 	class CONCERTO_GRAPHICS_CORE_API Camera : public GPUCamera
 	{
-	 public:
+	public:
 		enum class CameraMovement
 		{
 			Forward,
@@ -63,6 +63,6 @@ namespace cct::gfx
 		float m_aspectRatio;
 		Vector4f m_clearColor;
 	};
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_CAMERA_HPP
+#endif // CONCERTO_GRAPHICS_CAMERA_HPP

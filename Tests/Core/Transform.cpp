@@ -2,8 +2,9 @@
 // Created by arthur on 23/02/2023.
 //
 
-#include <catch2/catch_test_macros.hpp>
 #include "Concerto/Core/Math/Transform/Transform.hpp"
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {

@@ -7,8 +7,8 @@
 
 #include <cstddef>
 
-#include "Concerto/Core/Network/Socket/SocketHandle.hpp"
 #include "Concerto/Core/Network/IpAddress/IpAddress.hpp"
+#include "Concerto/Core/Network/Socket/SocketHandle.hpp"
 
 namespace cct
 {
@@ -19,7 +19,7 @@ namespace cct::net
 {
 	class CCT_CORE_PUBLIC_API Socket final
 	{
-	 public:
+	public:
 		Socket() = delete;
 		~Socket();
 		Socket(SocketType socketType, IpProtocol ipProtocol);
@@ -49,13 +49,14 @@ namespace cct::net
 
 		static bool Initialize();
 		static bool UnInitialize();
-	 protected:
+
+	protected:
 		SocketHandle _handle{};
 		SocketType _type;
 		SocketError _lastError;
 		IpProtocol _ipProtocol;
 		bool _blocking;
 	};
-}
+} // namespace cct::net
 
-#endif //CONCERTO_CORE_NETWORK_SOCKET_HPP
+#endif // CONCERTO_CORE_NETWORK_SOCKET_HPP

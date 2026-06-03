@@ -10,10 +10,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include <NZSL/Ast/Module.hpp>
-
 #include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
+#include <NZSL/Ast/Module.hpp>
 
 namespace cct::gfx
 {
@@ -35,24 +34,27 @@ namespace cct::gfx
 		ShaderModuleLoader& operator=(const ShaderModuleLoader&) = delete;
 		ShaderModuleLoader& operator=(ShaderModuleLoader&&) = default;
 
-		void SetModuleSearchPath(const std::filesystem::path& dir) { m_modulePath = dir; }
+		void SetModuleSearchPath(const std::filesystem::path& dir)
+		{
+			m_modulePath = dir;
+		}
 
 		ResolvedShaderModule ResolveShaderModule(const std::string& path,
-		                                         ShaderStage stageFilter = ShaderStage::None);
+												 ShaderStage stageFilter = ShaderStage::None);
 		ResolvedShaderModule ResolveShaderModuleFromSource(std::string_view source,
-		                                                   std::string_view label = "<generated>",
-		                                                   ShaderStage stageFilter = ShaderStage::None);
+														   std::string_view label = "<generated>",
+														   ShaderStage stageFilter = ShaderStage::None);
 		ShaderModule LoadShaderModule(const std::string& path,
-		                              ShaderStage stageFilter = ShaderStage::None);
+									  ShaderStage stageFilter = ShaderStage::None);
 		ShaderModule LoadShaderModuleFromSource(std::string_view source,
-		                                        std::string_view label = "<generated>",
-		                                        ShaderStage stageFilter = ShaderStage::None);
+												std::string_view label = "<generated>",
+												ShaderStage stageFilter = ShaderStage::None);
 
 	private:
 		static ShaderBindingType GetBindingType(const nzsl::Ast::ExpressionType* varType);
 
 		std::filesystem::path m_modulePath;
 	};
-}
+} // namespace cct::gfx
 
-#endif //CONCERTO_GRAPHICS_CORE_SHADERMODULELOADER_HPP
+#endif // CONCERTO_GRAPHICS_CORE_SHADERMODULELOADER_HPP

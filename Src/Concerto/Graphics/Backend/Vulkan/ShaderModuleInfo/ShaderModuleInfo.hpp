@@ -5,18 +5,16 @@
 #ifndef CONCERTO_GRAPHICS_INCLUDE_SHADERMODULEINFO_HPP_
 #define CONCERTO_GRAPHICS_INCLUDE_SHADERMODULEINFO_HPP_
 
-
-#include <NZSL/Parser.hpp>
-#include <NZSL/SpirvWriter.hpp>
-#include <NZSL/Ast/ReflectVisitor.hpp>
+#include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ShaderModule/ShaderModule.hpp"
 #include <NZSL/Ast/Cloner.hpp>
-#include <NZSL/Ast/TransformerExecutor.hpp>
+#include <NZSL/Ast/ReflectVisitor.hpp>
 #include <NZSL/Ast/Transformations/BindingResolverTransformer.hpp>
 #include <NZSL/Ast/Transformations/ResolveTransformer.hpp>
 #include <NZSL/Ast/Transformations/ValidationTransformer.hpp>
-
-#include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/ShaderModule/ShaderModule.hpp"
+#include <NZSL/Ast/TransformerExecutor.hpp>
+#include <NZSL/Parser.hpp>
+#include <NZSL/SpirvWriter.hpp>
 
 namespace cct::gfx::vk
 {
@@ -41,8 +39,9 @@ namespace cct::gfx::vk
 		std::unordered_map<UInt32 /*binding set*/, std::vector<VkDescriptorSetLayoutBinding>> bindings;
 		std::string entryPointName;
 		VkShaderStageFlagBits stage;
+
 	private:
 		VkDescriptorType GetBindingType(const nzsl::Ast::ExpressionType* varType);
 	};
-}
-#endif //CONCERTO_GRAPHICS_INCLUDE_SHADERMODULEINFO_HPP_
+} // namespace cct::gfx::vk
+#endif // CONCERTO_GRAPHICS_INCLUDE_SHADERMODULEINFO_HPP_

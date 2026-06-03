@@ -46,7 +46,7 @@ namespace cct::gfx::vk
 	void Fence::Wait(UInt64 timeout) const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		const VkResult result = m_device->vkWaitForFences(*m_device->Get(), 1, &m_handle, true, timeout);
 		CCT_ASSERT(result == VK_SUCCESS, "ConcertoGraphics: vkWaitForFences failed VKResult={}", static_cast<int>(result));

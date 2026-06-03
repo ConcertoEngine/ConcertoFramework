@@ -25,9 +25,9 @@ namespace cct::gfx
 	struct GPUSceneData
 	{
 		Vector4f fogColor; // w is for exponent
-		Vector4f fogDistances; //x for min, y for max, zw unused.
+		Vector4f fogDistances; // x for min, y for max, zw unused.
 		Vector4f ambientColor;
-		Vector4f sunlightDirection; //w for sun power
+		Vector4f sunlightDirection; // w for sun power
 		Vector4f sunlightColor;
 	};
 
@@ -36,5 +36,5 @@ namespace cct::gfx
 		GPUSceneData gpuSceneData;
 		Vector4f clearColor;
 	};
-}
-#endif //CONCERTO_GRAPHICS_GPUDATA_HPP
+} // namespace cct::gfx
+#endif // CONCERTO_GRAPHICS_GPUDATA_HPP

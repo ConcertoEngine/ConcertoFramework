@@ -31,6 +31,6 @@ namespace cct::gfx::rhi
 	protected:
 		QueryPool() = default;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_QUERYPOOL_HPP
+#endif // CONCERTO_GRAPHICS_RHI_QUERYPOOL_HPP

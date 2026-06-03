@@ -5,12 +5,11 @@
 #ifndef CONCERTO_CORE_DYNLIB_HPP
 #define CONCERTO_CORE_DYNLIB_HPP
 
-
 #include <filesystem>
 #include <memory>
 
-#include "Concerto/Core/Types/Types.hpp"
 #include "Concerto/Core/FunctionRef/FunctionRef.hpp"
+#include "Concerto/Core/Types/Types.hpp"
 
 #ifdef CCT_PLATFORM_WINDOWS
 #define CONCERTO_DYNLIB_EXTENSION ".dll"
@@ -26,7 +25,7 @@ namespace cct
 
 	class CCT_CORE_PUBLIC_API DynLib
 	{
-	 public:
+	public:
 		DynLib() = default;
 		DynLib(DynLib&&) = default;
 		DynLib(const DynLib&) = delete;
@@ -50,15 +49,16 @@ namespace cct
 		T* GetValue(const std::string& valueName);
 
 	private:
-		struct ImplDeleter {
+		struct ImplDeleter
+		{
 			void operator()(void* impl) const;
 		};
 		std::unique_ptr<void, ImplDeleter> _impl;
 		mutable std::string _lastError;
 	};
 
-}// namespace cct
+} // namespace cct
 
 #include "Concerto/Core/DynLib/DynLib.inl"
 
-#endif//CONCERTO_CORE_DYNLIB_HPP
+#endif // CONCERTO_CORE_DYNLIB_HPP

@@ -44,7 +44,7 @@ namespace cct::gfx::rhi
 
 	bool Mesh::LoadFromFile(const std::string& fileName)
 	{
-		CCT_PROFILER_SCOPE();
+		CCT_AUTO_PROFILER_SCOPE();
 
 		std::string err;
 		tinyobj::ObjReaderConfig readerConfig;

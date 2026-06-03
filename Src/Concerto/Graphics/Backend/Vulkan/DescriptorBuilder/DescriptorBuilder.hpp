@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_INCLUDE_DESCRIPTORBUILDER_HPP_
 #define CONCERTO_GRAPHICS_INCLUDE_DESCRIPTORBUILDER_HPP_
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 
@@ -19,7 +19,7 @@ namespace cct::gfx::vk
 
 	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API DescriptorBuilder
 	{
-	 public:
+	public:
 		DescriptorBuilder(DescriptorLayoutCache& layoutCache, DescriptorAllocator& allocator);
 
 		DescriptorBuilder& BindBuffer(UInt32 binding, VkDescriptorBufferInfo* bufferInfo, VkDescriptorType type, VkShaderStageFlags stageFlags);
@@ -27,13 +27,13 @@ namespace cct::gfx::vk
 
 		bool Build(std::shared_ptr<DescriptorSet>& set, std::shared_ptr<DescriptorSetLayout>& layout);
 		bool Build(std::shared_ptr<DescriptorSet>& set);
-	 private:
 
+	private:
 		std::vector<VkWriteDescriptorSet> m_writes;
 		std::vector<VkDescriptorSetLayoutBinding> m_bindings;
 
 		DescriptorLayoutCache& m_cache;
 		DescriptorAllocator& m_alloc;
 	};
-}
-#endif //CONCERTO_GRAPHICS_INCLUDE_DESCRIPTORBUILDER_HPP_
+} // namespace cct::gfx::vk
+#endif // CONCERTO_GRAPHICS_INCLUDE_DESCRIPTORBUILDER_HPP_

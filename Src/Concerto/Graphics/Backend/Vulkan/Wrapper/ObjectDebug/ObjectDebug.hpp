@@ -55,6 +55,6 @@ namespace cct::gfx::vk
 #endif // CCT_ENABLE_OBJECT_DEBUG
 	};
 
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_BACKEND_VULKAN_OBJECTDEBUG_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_VULKAN_OBJECTDEBUG_HPP

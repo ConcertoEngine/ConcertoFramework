@@ -8,9 +8,9 @@
 #include <memory>
 #include <span>
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/PipelineLayout.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineLayout/PipelineLayout.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -26,6 +26,6 @@ namespace cct::gfx::rhi
 	private:
 		std::vector<std::shared_ptr<DescriptorSetLayout>> m_descriptorSetLayouts;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIPIPELINELAYOUT_HPP
+#endif // CONCERTO_GRAPHICS_RHI_VULKAN_VKRHIPIPELINELAYOUT_HPP

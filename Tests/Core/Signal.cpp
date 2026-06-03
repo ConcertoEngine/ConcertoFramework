@@ -3,10 +3,10 @@
 //
 
 #define CATCH_CONFIG_RUNNER
-#include <catch2/catch_test_macros.hpp>
-
 #include <Concerto/Core/Signal/Connection.hpp>
 #include <Concerto/Core/Signal/Signal.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 // Helper: tracks how many times a slot was called and captures the last value
 struct CallTracker
@@ -14,7 +14,10 @@ struct CallTracker
 	int callCount = 0;
 	std::string lastValue;
 
-	void OnChanged() { ++callCount; }
+	void OnChanged()
+	{
+		++callCount;
+	}
 	void OnStringChanged(const std::string& value)
 	{
 		++callCount;
@@ -37,7 +40,8 @@ SCENARIO("Signal - basic connectivity")
 		WHEN("A lambda is connected")
 		{
 			int callCount = 0;
-			auto conn = signal.Connect([&callCount]() { ++callCount; });
+			auto conn = signal.Connect([&callCount]()
+									   { ++callCount; });
 
 			THEN("GetConnectionCount reflects it")
 			{
@@ -49,13 +53,19 @@ SCENARIO("Signal - basic connectivity")
 			AND_WHEN("The signal is emitted")
 			{
 				signal.Emit();
-				THEN("The lambda is called once") { CHECK(callCount == 1); }
+				THEN("The lambda is called once")
+				{
+					CHECK(callCount == 1);
+				}
 			}
 
 			AND_WHEN("The signal is emitted via operator()")
 			{
 				signal();
-				THEN("The lambda is called once") { CHECK(callCount == 1); }
+				THEN("The lambda is called once")
+				{
+					CHECK(callCount == 1);
+				}
 			}
 
 			AND_WHEN("The connection is manually disconnected")
@@ -85,9 +95,12 @@ SCENARIO("Signal - basic connectivity")
 		WHEN("Multiple lambdas are connected")
 		{
 			int a = 0, b = 0, c = 0;
-			auto connA = signal.Connect([&a]() { ++a; });
-			auto connB = signal.Connect([&b]() { ++b; });
-			auto connC = signal.Connect([&c]() { ++c; });
+			auto connA = signal.Connect([&a]()
+										{ ++a; });
+			auto connB = signal.Connect([&b]()
+										{ ++b; });
+			auto connC = signal.Connect([&c]()
+										{ ++c; });
 
 			signal.Emit();
 			THEN("All three are called")
@@ -134,7 +147,10 @@ SCENARIO("Signal - member function Connect(obj, &Class::Method)")
 			{
 				conn.Disconnect();
 				signal.Emit();
-				THEN("The method is NOT called") { CHECK(tracker.callCount == 0); }
+				THEN("The method is NOT called")
+				{
+					CHECK(tracker.callCount == 0);
+				}
 			}
 		}
 	}
@@ -168,7 +184,8 @@ SCENARIO("Signal - ScopedConnection RAII")
 		WHEN("A ScopedConnection goes out of scope")
 		{
 			{
-				cct::ScopedConnection sc{signal.Connect([&callCount]() { ++callCount; })};
+				cct::ScopedConnection sc{signal.Connect([&callCount]()
+														{ ++callCount; })};
 				CHECK(sc.IsConnected());
 				signal.Emit();
 				CHECK(callCount == 1);
@@ -184,32 +201,43 @@ SCENARIO("Signal - ScopedConnection RAII")
 
 		WHEN("A ScopedConnection is moved")
 		{
-			cct::ScopedConnection sc1{signal.Connect([&callCount]() { ++callCount; })};
+			cct::ScopedConnection sc1{signal.Connect([&callCount]()
+													 { ++callCount; })};
 			cct::ScopedConnection sc2 = std::move(sc1);
 
 			CHECK_FALSE(sc1.IsConnected());
 			CHECK(sc2.IsConnected());
 
 			signal.Emit();
-			THEN("Only the moved-into connection fires") { CHECK(callCount == 1); }
+			THEN("Only the moved-into connection fires")
+			{
+				CHECK(callCount == 1);
+			}
 		}
 
 		WHEN("Release() is called on a ScopedConnection")
 		{
 			cct::Connection conn;
 			{
-				cct::ScopedConnection sc{signal.Connect([&callCount]() { ++callCount; })};
+				cct::ScopedConnection sc{signal.Connect([&callCount]()
+														{ ++callCount; })};
 				conn = sc.Release();
 				CHECK_FALSE(sc.IsConnected());
 				CHECK(conn.IsConnected());
 			} // no auto-disconnect
 
 			signal.Emit();
-			THEN("The slot is still active after scope exit") { CHECK(callCount == 1); }
+			THEN("The slot is still active after scope exit")
+			{
+				CHECK(callCount == 1);
+			}
 
 			conn.Disconnect();
 			signal.Emit();
-			THEN("After manual disconnect, slot is gone") { CHECK(callCount == 1); }
+			THEN("After manual disconnect, slot is gone")
+			{
+				CHECK(callCount == 1);
+			}
 		}
 	}
 }
@@ -225,10 +253,10 @@ SCENARIO("Signal - reentrancy: disconnect inside Emit()")
 		selfConn = signal.Connect([&]()
 								  {
 			++callCount;
-			selfConn.Disconnect();
-		});
+			selfConn.Disconnect(); });
 		int bCount = 0;
-		signal.Connect([&bCount]() { ++bCount; });
+		signal.Connect([&bCount]()
+					   { ++bCount; });
 
 		signal.Emit();
 		THEN("No crash, self-disconnected slot called once, other slot called")
@@ -255,7 +283,8 @@ SCENARIO("Signal - lifetime safety: Signal destroyed before Connection")
 		{
 			cct::Signal<> signal;
 			int callCount = 0;
-			conn = signal.Connect([&callCount]() { ++callCount; });
+			conn = signal.Connect([&callCount]()
+								  { ++callCount; });
 			CHECK(conn.IsConnected());
 		} // signal destroyed here
 
@@ -273,7 +302,8 @@ SCENARIO("Signal - copy and move semantics")
 	{
 		int callCount = 0;
 		cct::Signal<> original;
-		auto conn = original.Connect([&callCount]() { ++callCount; });
+		auto conn = original.Connect([&callCount]()
+									 { ++callCount; });
 
 		WHEN("The Signal is copied")
 		{
@@ -286,7 +316,10 @@ SCENARIO("Signal - copy and move semantics")
 			}
 
 			original.Emit();
-			THEN("The original still fires its connection") { CHECK(callCount == 1); }
+			THEN("The original still fires its connection")
+			{
+				CHECK(callCount == 1);
+			}
 		}
 
 		WHEN("The Signal is moved")

@@ -34,6 +34,7 @@ namespace cct::gfx::vk
 		VkResult Create(Device& device, const std::vector<UInt32>& bytes, VkShaderStageFlagBits stageFlags, const std::string& entryPoint = "main");
 
 		[[nodiscard]] VkPipelineShaderStageCreateInfo GetPipelineShaderStageCreateInfo() const;
+
 	private:
 		void LoadShaderModule(const std::string& shaderPath);
 
@@ -43,8 +44,7 @@ namespace cct::gfx::vk
 		std::vector<UInt32> m_buffer;
 		VkShaderStageFlagBits m_stageFlags;
 		std::string m_entryPoint;
-
 	};
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_SHADERMODULE_HPP
+#endif // CONCERTO_GRAPHICS_SHADERMODULE_HPP

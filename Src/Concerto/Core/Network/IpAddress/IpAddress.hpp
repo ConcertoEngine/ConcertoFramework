@@ -6,8 +6,9 @@
 #define CONCERTO_CORE_NETWORK_IPADRESS_HPP
 
 #include <array>
-#include <string_view>
 #include <string>
+#include <string_view>
+
 #include "Concerto/Core/Types/Types.hpp"
 
 namespace cct::net
@@ -17,12 +18,12 @@ namespace cct::net
 		Error = -1,
 		Ipv4,
 		Ipv6,
-		Any = Ipv4 //Fixme
+		Any = Ipv4 // Fixme
 	};
 
 	class CCT_CORE_PUBLIC_API IpAddress
 	{
-	 public:
+	public:
 		using IPv4 = std::array<UInt8, 4>;
 		using IPv6 = std::array<UInt16, 16>;
 
@@ -49,7 +50,8 @@ namespace cct::net
 		void SetPort(UInt16 port);
 
 		static const IpAddress AnyIPV4;
-	 private:
+
+	private:
 		union
 		{
 			IPv4 _ipv4;
@@ -58,5 +60,5 @@ namespace cct::net
 		IpProtocol _protocol;
 		UInt16 _port;
 	};
-}
-#endif //CONCERTO_CORE_NETWORK_IPADRESS_HPP
+} // namespace cct::net
+#endif // CONCERTO_CORE_NETWORK_IPADRESS_HPP

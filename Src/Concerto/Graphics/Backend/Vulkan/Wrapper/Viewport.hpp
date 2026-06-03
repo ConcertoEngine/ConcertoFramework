@@ -17,6 +17,6 @@ namespace cct::gfx::vk
 		float maxDepth;
 	};
 
-} // cct::gfx::vk
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_VIEWPORT_HPP
+#endif // CONCERTO_GRAPHICS_VIEWPORT_HPP

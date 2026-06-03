@@ -19,6 +19,6 @@ namespace cct::gfx::rhi
 		std::size_t GetCurrentFrameIndex() override;
 		rhi::FrameBuffer& GetFrameBuffer() override;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DX12_DX12RHIFRAME_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DX12_DX12RHIFRAME_HPP

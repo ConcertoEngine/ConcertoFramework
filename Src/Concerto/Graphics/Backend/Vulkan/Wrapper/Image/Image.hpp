@@ -5,9 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_IMAGE_HPP
 #define CONCERTO_GRAPHICS_IMAGE_HPP
 
-#include <string>
 #include <optional>
-
+#include <string>
 #include <vk_mem_alloc.h>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
@@ -59,6 +58,7 @@ namespace cct::gfx::vk
 
 		[[nodiscard]] VkFormat GetFormat() const;
 		VkExtent2D GetExtent() const;
+
 	private:
 		bool m_isAllocated;
 		VkFormat m_imageFormat = {};
@@ -68,6 +68,6 @@ namespace cct::gfx::vk
 		VkDeviceMemory m_externalMemory = VK_NULL_HANDLE;
 #endif
 	};
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_IMAGE_HPP
+#endif // CONCERTO_GRAPHICS_IMAGE_HPP

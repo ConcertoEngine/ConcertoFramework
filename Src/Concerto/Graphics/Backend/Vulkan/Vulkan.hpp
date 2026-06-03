@@ -5,14 +5,14 @@
 #ifndef CONCERTO_GRAPHICS_INCLUDE_VULKAN_HPP_
 #define CONCERTO_GRAPHICS_INCLUDE_VULKAN_HPP_
 
+#include <map>
 #include <span>
 #include <string>
-#include <map>
 
-#include "Concerto/Graphics/Core/Version.hpp"
-#include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
+#include "Concerto/Graphics/Core/Version.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
 
 namespace cct::gfx::vk
 {
@@ -47,6 +47,6 @@ namespace cct::gfx::vk
 		std::span<PhysicalDevice> m_physicalDevices;
 		std::multimap<rhi::DeviceType, Device> m_devices;
 	};
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_INCLUDE_VULKAN_HPP_
+#endif // CONCERTO_GRAPHICS_INCLUDE_VULKAN_HPP_

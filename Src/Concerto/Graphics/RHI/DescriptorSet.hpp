@@ -6,6 +6,7 @@
 #define CONCERTO_GRAPHICS_RHI_DESCRIPTORSET_HPP
 
 #include <memory>
+
 #include "Concerto/Graphics/RHI/Defines.hpp"
 
 namespace cct::gfx::rhi
@@ -37,6 +38,6 @@ namespace cct::gfx::rhi
 		 */
 		virtual const std::shared_ptr<DescriptorSetLayout>& GetLayout() const = 0;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_DESCRIPTORSET_HPP
+#endif // CONCERTO_GRAPHICS_RHI_DESCRIPTORSET_HPP

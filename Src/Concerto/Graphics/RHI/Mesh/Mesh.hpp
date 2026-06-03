@@ -6,9 +6,9 @@
 #define CONCERTO_GRAPHICS_RHI_MESH_HPP
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <string>
 
 #include <Concerto/Core/Math/Matrix/Matrix.hpp>
 
@@ -38,12 +38,13 @@ namespace cct::gfx::rhi
 		[[nodiscard]] bool LoadFromFile(const std::string& fileName);
 
 		[[nodiscard]] std::unique_ptr<GpuMesh> BuildGpuMesh(rhi::MaterialBuilder& materialBuilder, const rhi::RenderPass& renderPass, rhi::Device& device);
+
 	private:
 		std::string m_path;
 		std::vector<std::shared_ptr<rhi::SubMesh>> m_subMeshes;
 		std::unordered_map<std::string, std::shared_ptr<rhi::MaterialInfo>> m_materials;
 	};
 	using MeshPtr = std::shared_ptr<Mesh>;
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_MESH_HPP
+#endif // CONCERTO_GRAPHICS_RHI_MESH_HPP

@@ -5,13 +5,12 @@
 #ifndef CONCERTO_GRAPHICS_DESCRIPTORPOOL_HPP
 #define CONCERTO_GRAPHICS_DESCRIPTORPOOL_HPP
 
-#include <vector>
 #include <memory>
-
+#include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSet/DescriptorSet.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
 namespace cct::gfx::vk
 {
@@ -19,7 +18,7 @@ namespace cct::gfx::vk
 
 	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API DescriptorPool : public Object<VkDescriptorPool>
 	{
-	 public:
+	public:
 		DescriptorPool() = default;
 		explicit DescriptorPool(Device& device);
 		DescriptorPool(Device& device, std::vector<VkDescriptorPoolSize> poolSizes);
@@ -38,6 +37,6 @@ namespace cct::gfx::vk
 		void Reset() const;
 	};
 	using DescriptorPoolPtr = std::shared_ptr<DescriptorPool>;
-}
+} // namespace cct::gfx::vk
 
-#endif //CONCERTO_GRAPHICS_DESCRIPTORPOOL_HPP
+#endif // CONCERTO_GRAPHICS_DESCRIPTORPOOL_HPP

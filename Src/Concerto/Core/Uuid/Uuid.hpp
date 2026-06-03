@@ -17,14 +17,23 @@ namespace cct
 		using Bytes = std::array<UInt8, 16>;
 
 		constexpr Uuid() = default;
-		explicit constexpr Uuid(const Bytes& bytes) : m_bytes(bytes) {}
+		explicit constexpr Uuid(const Bytes& bytes) :
+			m_bytes(bytes)
+		{
+		}
 
 		[[nodiscard]] static Uuid Generate();
 		[[nodiscard]] static Uuid FromString(std::string_view str);
 
 		[[nodiscard]] std::string ToString() const;
-		[[nodiscard]] bool IsNil() const { return m_bytes == Bytes{}; }
-		[[nodiscard]] const Bytes& GetBytes() const { return m_bytes; }
+		[[nodiscard]] bool IsNil() const
+		{
+			return m_bytes == Bytes{};
+		}
+		[[nodiscard]] const Bytes& GetBytes() const
+		{
+			return m_bytes;
+		}
 
 		[[nodiscard]] bool operator==(const Uuid& other) const = default;
 		[[nodiscard]] bool operator!=(const Uuid& other) const = default;

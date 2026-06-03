@@ -3,8 +3,10 @@
 //
 
 #include <memory>
-#include <catch2/catch_test_macros.hpp>
+
 #include <Concerto/Core/SparseVector/SparseVector.hpp>
+
+#include <catch2/catch_test_macros.hpp>
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {
@@ -42,12 +44,18 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			{
 			public:
 				HardToCopy() = default;
-				HardToCopy(Ptr a, int b, int c) : _ptr(std::move(a)), _b(b), _c(c) {}
+				HardToCopy(Ptr a, int b, int c) :
+					_ptr(std::move(a)),
+					_b(b),
+					_c(c)
+				{
+				}
 				HardToCopy(const HardToCopy&) = delete;
 				HardToCopy(HardToCopy&&) = default;
 				~HardToCopy() = default;
 				HardToCopy& operator=(const HardToCopy&) = delete;
 				HardToCopy& operator=(HardToCopy&&) = default;
+
 			private:
 				Ptr _ptr;
 				int _b;
@@ -61,7 +69,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 				sparseVector.Emplace(0, HardToCopy());
 				auto ptr = std::make_unique<int>(5);
 				sparseVector.Emplace(1, std::move(ptr), 2, 3);
-				THEN("No crash and elements are inserted") { CHECK(sparseVector.Has(0)); }
+				THEN("No crash and elements are inserted")
+				{
+					CHECK(sparseVector.Has(0));
+				}
 			}
 		}
 	}
@@ -201,7 +212,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 					REQUIRE(value == i + 1);
 					i++;
 				}
-				THEN("All three values were visited in order") { CHECK(i == 3); }
+				THEN("All three values were visited in order")
+				{
+					CHECK(i == 3);
+				}
 			}
 
 			WHEN("Iterated with range-for (const)")
@@ -212,7 +226,10 @@ namespace CCT_ANONYMOUS_NAMESPACE
 					REQUIRE(value == i + 1);
 					i++;
 				}
-				THEN("All three values were visited in order") { CHECK(i == 3); }
+				THEN("All three values were visited in order")
+				{
+					CHECK(i == 3);
+				}
 			}
 		}
 	}

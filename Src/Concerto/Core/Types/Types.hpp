@@ -6,6 +6,7 @@
 #define CONCERTO_CORE_TYPES_HPP
 
 #include <cstdint>
+
 #include "Concerto/Core/Defines.hpp"
 
 namespace cct
@@ -28,6 +29,5 @@ namespace cct
 
 	CCT_CORE_PUBLIC_API bool IsDebuggerAttached();
 }; // namespace cct
-
 
 #endif // CONCERTO_CORE_TYPES_HPP

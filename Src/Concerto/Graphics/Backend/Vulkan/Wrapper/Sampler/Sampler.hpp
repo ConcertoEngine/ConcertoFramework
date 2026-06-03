@@ -5,8 +5,6 @@
 #ifndef CONCERTO_GRAPHICS_SAMPLER_HPP
 #define CONCERTO_GRAPHICS_SAMPLER_HPP
 
-
-
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
@@ -29,7 +27,6 @@ namespace cct::gfx::vk
 
 		VkResult Create(Device& device, VkFilter filter, VkSamplerAddressMode samplerAddressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT);
 	};
-}
+} // namespace cct::gfx::vk
 
-
-#endif //CONCERTO_GRAPHICS_SAMPLER_HPP
+#endif // CONCERTO_GRAPHICS_SAMPLER_HPP

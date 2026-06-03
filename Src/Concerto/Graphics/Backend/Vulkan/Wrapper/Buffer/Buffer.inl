@@ -13,13 +13,13 @@
 
 namespace cct::gfx::vk
 {
-	template <typename T>
+	template<typename T>
 	void Buffer::Copy(T& object, std::size_t padding)
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 
 		Byte* data = nullptr;
-		if(Map(&data) == false)
+		if (Map(&data) == false)
 		{
 			CCT_ASSERT_FALSE("ConcertoGraphics: Cannot map buffer");
 			return;
@@ -29,8 +29,8 @@ namespace cct::gfx::vk
 		UnMap();
 	}
 
-	template <typename DestBuffer, typename SrcObj>
-	void Buffer::Copy(std::vector<SrcObj>& objects,	std::function<void(DestBuffer& destBuffer, SrcObj& srcObj)>&& copyFunc, std::size_t padding)
+	template<typename DestBuffer, typename SrcObj>
+	void Buffer::Copy(std::vector<SrcObj>& objects, std::function<void(DestBuffer& destBuffer, SrcObj& srcObj)>&& copyFunc, std::size_t padding)
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
 
@@ -49,7 +49,7 @@ namespace cct::gfx::vk
 		UnMap();
 	}
 
-	template <typename T>
+	template<typename T>
 	T* Buffer::Map()
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
@@ -59,5 +59,5 @@ namespace cct::gfx::vk
 			CCT_ASSERT_FALSE("ConcertoGraphics: Cannot map buffer");
 		return reinterpret_cast<T*>(data);
 	}
-} // cct::gfx::vk
-#endif //CONCERTO_GRAPHICS_BUFFER_INL
+} // namespace cct::gfx::vk
+#endif // CONCERTO_GRAPHICS_BUFFER_INL

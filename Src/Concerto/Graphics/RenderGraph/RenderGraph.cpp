@@ -179,7 +179,9 @@ namespace cct::gfx::rhi
 			}
 
 			RenderGraphContext ctx(cmd, m_currentFrameBuffer, activeRenderPass, m_registry, frameWidth, frameHeight);
+			cmd.BeginDebugLabel(pass.name.c_str());
 			pass.execute(ctx);
+			cmd.EndDebugLabel();
 
 			if (pass.type == RGPassType::Graphics && compiled.closesRenderPass && m_currentFrameBuffer)
 			{

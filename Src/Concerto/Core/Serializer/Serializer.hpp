@@ -17,7 +17,7 @@ namespace cct
 	 * @param value The value to serialize
 	 */
 	template<typename T>
-	requires(std::is_same_v<T, bool>)
+		requires(std::is_same_v<T, bool>)
 	inline void CCT_CORE_PUBLIC_API Serialize(Stream& stream, T value);
 
 	/**
@@ -48,6 +48,6 @@ namespace cct
 	template<typename T>
 		requires((std::is_integral_v<T> || std::is_floating_point_v<T>) && !std::is_same_v<T, bool>)
 	inline void CCT_CORE_PUBLIC_API Deserialize(Stream& stream, T& value);
-}
+} // namespace cct
 #include "Concerto/Core/Serializer/Serializer.inl"
-#endif //CONCERTO_CORE_SERIALIZER_HPP
+#endif // CONCERTO_CORE_SERIALIZER_HPP

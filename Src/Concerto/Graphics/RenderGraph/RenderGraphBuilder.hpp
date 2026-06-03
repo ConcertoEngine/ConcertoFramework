@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_RHI_RENDERGRAPH_BUILDER_HPP
 #define CONCERTO_GRAPHICS_RHI_RENDERGRAPH_BUILDER_HPP
 
-#include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphResource.hpp"
+#include "Concerto/Graphics/RHI/Defines.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -18,8 +18,8 @@ namespace cct::gfx::rhi
 		RGTextureHandle Read(RGTextureHandle handle);
 		RGTextureHandle Write(RGTextureHandle handle);
 		RGTextureHandle WriteDepth(RGTextureHandle handle);
-		RGBufferHandle  Read(RGBufferHandle handle);
-		RGBufferHandle  Write(RGBufferHandle handle);
+		RGBufferHandle Read(RGBufferHandle handle);
+		RGBufferHandle Write(RGBufferHandle handle);
 		void SetSideEffect();
 
 	private:
@@ -27,6 +27,6 @@ namespace cct::gfx::rhi
 		explicit RenderGraphBuilder(RGPass& pass);
 		RGPass& m_pass;
 	};
-}
+} // namespace cct::gfx::rhi
 
 #endif // CONCERTO_GRAPHICS_RHI_RENDERGRAPH_BUILDER_HPP

@@ -28,7 +28,8 @@ namespace cct::gfx::dx12
 
 		[[nodiscard]] Dx12Type* Get() const;
 		[[nodiscard]] bool IsValid() const;
-		[[nodiscard]] Device* GetDevice() const requires (!std::is_same_v<Dx12Type, IDXGIFactory> && !std::is_same_v<Dx12Type, ID3D12Device>);
+		[[nodiscard]] Device* GetDevice() const
+			requires(!std::is_same_v<Dx12Type, IDXGIFactory> && !std::is_same_v<Dx12Type, ID3D12Device>);
 		[[nodiscard]] HRESULT GetLastResult() const;
 
 		Dx12Type* operator->();
@@ -39,8 +40,8 @@ namespace cct::gfx::dx12
 		Device* m_device;
 		mutable HRESULT m_lastResult;
 	};
-} // cct::gfx::dx12
+} // namespace cct::gfx::dx12
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Object/Object.inl"
 
-#endif //CONCERTO_GRAPHICS_BACKEND_D3D12_OBJECT_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_D3D12_OBJECT_HPP

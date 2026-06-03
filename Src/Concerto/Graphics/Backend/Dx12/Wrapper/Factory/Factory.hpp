@@ -32,9 +32,10 @@ namespace cct::gfx::dx12
 
 		static DXGI_FORMAT PixelFormatToDXGI(PixelFormat pixelFormat);
 		static void SetLogger(Logger& logger);
+
 	private:
 		std::vector<PhysicalDevice> m_physicalDevices;
 	};
-} // cct::gfx::dx12
+} // namespace cct::gfx::dx12
 
-#endif //CONCERTO_GRAPHICS_BACKEND_D3D12_FACTORY_HPP
+#endif // CONCERTO_GRAPHICS_BACKEND_D3D12_FACTORY_HPP

@@ -11,11 +11,11 @@ namespace cct
 	{
 		Undefined = -1,
 		Space = 32,
-		Apostrophe = 39  /* ' */,
-		Comma = 44  /* , */,
-		Minus = 45  /* - */,
-		Period = 46  /* . */,
-		Slash = 47  /* / */,
+		Apostrophe = 39 /* ' */,
+		Comma = 44 /* , */,
+		Minus = 45 /* - */,
+		Period = 46 /* . */,
+		Slash = 47 /* / */,
 		Zero = 48,
 		One = 49,
 		Two = 50,
@@ -26,8 +26,8 @@ namespace cct
 		Seven = 55,
 		Eight = 56,
 		Nine = 57,
-		Semicolon = 59  /* ; */,
-		Equal = 61  /* = */,
+		Semicolon = 59 /* ; */,
+		Equal = 61 /* = */,
 		A = 65,
 		B = 66,
 		C = 67,
@@ -130,4 +130,4 @@ namespace cct
 		Last = Menu,
 	};
 }
-#endif //CONCERTO_KEY_HPP
+#endif // CONCERTO_KEY_HPP

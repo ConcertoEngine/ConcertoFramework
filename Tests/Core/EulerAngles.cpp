@@ -2,10 +2,10 @@
 // Created by arthur on 14/03/2023.
 //
 
+#include "Concerto/Core/Math/EulerAngles/EulerAngles.hpp"
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-
-#include "Concerto/Core/Math/EulerAngles/EulerAngles.hpp"
 
 namespace CCT_ANONYMOUS_NAMESPACE
 {

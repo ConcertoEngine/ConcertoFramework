@@ -5,8 +5,8 @@
 #ifndef CONCERTO_GRAPHICS_RHI_PIPELINELAYOUT_HPP
 #define CONCERTO_GRAPHICS_RHI_PIPELINELAYOUT_HPP
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
 
@@ -21,6 +21,6 @@ namespace cct::gfx::rhi
 
 		virtual const std::vector<std::shared_ptr<DescriptorSetLayout>>& GetDescriptorSetLayouts() const = 0;
 	};
-}
+} // namespace cct::gfx::rhi
 
-#endif //CONCERTO_GRAPHICS_RHI_PIPELINELAYOUT_HPP
+#endif // CONCERTO_GRAPHICS_RHI_PIPELINELAYOUT_HPP
