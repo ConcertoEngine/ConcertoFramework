@@ -24,6 +24,7 @@ target("concerto-reflection", function()
         "Enumeration",
         "EnumIterator",
         "EnumValue",
+        "File",
         "Float32",
         "Float64",
         "Folder",
@@ -56,6 +57,7 @@ target("concerto-reflection", function()
     add_deps("concerto-pkg-generator", {links = false, inherit = false})
     add_deps("concerto-header-plugin", {links = false, plugin = "pkg-generator", inherit = false})
     add_deps("concerto-cpp-plugin", {links = false, plugin = "pkg-generator", inherit = false})
+    add_deps("concerto-ts-plugin", {links = false, plugin = "pkg-generator", inherit = false})
     add_deps("concerto-json-plugin", {links = false, plugin = "pkg-generator", inherit = false})
     add_deps("concerto-core", { public = true })
     add_rules("cct_cpp_reflect")

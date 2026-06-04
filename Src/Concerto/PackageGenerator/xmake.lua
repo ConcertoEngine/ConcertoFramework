@@ -49,6 +49,9 @@ target("concerto-pkg-generator", function()
     add_packages("toml11", { public = true })
     add_packages("libllvm", "cxxopts")
     add_deps("concerto-plugin-api")
+    -- LLVM 21 marks all Clang classes with CLANG_ABI (__declspec(dllimport) by default on Windows).
+    -- We link against static clang libs, so suppress the dllimport decoration.
+    add_defines("CLANG_BUILD_STATIC")
     set_policy("build.fence", true)
     add_defines("CCT_PKGGENERATOR_BUILD")
 

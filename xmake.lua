@@ -42,6 +42,8 @@ end
 if has_config("reflection") then
     includes("Src/Concerto/HeaderPlugin/xmake.lua")
     includes("Src/Concerto/CppPlugin/xmake.lua")
+    includes("Src/Concerto/TsPlugin/xmake.lua")
+    includes("Src/Concerto/JsonPlugin/xmake.lua")
     includes("Src/Concerto/PackageGenerator/xmake.lua")
     includes("Src/Concerto/Reflection/xmake.lua")
 end
