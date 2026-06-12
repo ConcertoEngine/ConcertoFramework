@@ -94,6 +94,10 @@ for targetName, targetConfig in pairs(concerto_core) do
             add_syslinks("pthread")
         end
 
+        if is_plat("linux", "macosx", "bsd") then
+            add_cxxflags("-fPIC", {force = true})
+        end
+
         local files = {
             "Any",
             "Buffer",
