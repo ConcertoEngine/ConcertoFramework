@@ -221,13 +221,29 @@ namespace cct
 	}
 } // namespace cct
 
-#define CCT_ENABLE_ENUM_FLAGS(EnumType)                   \
-	namespace cct                                         \
-	{                                                     \
-		template<>                                        \
-		struct EnableEnumFlags<EnumType> : std::true_type \
-		{                                                 \
-		};                                                \
+#define CCT_ENABLE_ENUM_FLAGS(EnumType)                                                             \
+	namespace cct                                                                                   \
+	{                                                                                               \
+		template<>                                                                                  \
+		struct EnableEnumFlags<EnumType> : std::true_type                                           \
+		{                                                                                           \
+		};                                                                                          \
+	}                                                                                               \
+	[[nodiscard]] constexpr cct::EnumFlags<EnumType> operator|(EnumType lhs, EnumType rhs) noexcept \
+	{                                                                                               \
+		return cct::EnumFlags<EnumType>(lhs) | rhs;                                                 \
+	}                                                                                               \
+	[[nodiscard]] constexpr cct::EnumFlags<EnumType> operator&(EnumType lhs, EnumType rhs) noexcept \
+	{                                                                                               \
+		return cct::EnumFlags<EnumType>(lhs) & rhs;                                                 \
+	}                                                                                               \
+	[[nodiscard]] constexpr cct::EnumFlags<EnumType> operator^(EnumType lhs, EnumType rhs) noexcept \
+	{                                                                                               \
+		return cct::EnumFlags<EnumType>(lhs) ^ rhs;                                                 \
+	}                                                                                               \
+	[[nodiscard]] constexpr cct::EnumFlags<EnumType> operator~(EnumType e) noexcept                 \
+	{                                                                                               \
+		return ~cct::EnumFlags<EnumType>(e);                                                        \
 	}
 
 #endif // CONCERTO_CORE_ENUMFLAGS_HPP
