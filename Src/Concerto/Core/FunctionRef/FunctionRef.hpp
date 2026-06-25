@@ -40,7 +40,7 @@ namespace cct
 
 	private:
 		using CallBack = ReturnValue (*)(void*, Args...);
-		CallBack _callback;
+		CallBack _callback = nullptr;
 		void* _functionPointer = nullptr;
 	};
 
