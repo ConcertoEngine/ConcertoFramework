@@ -52,6 +52,17 @@ namespace cct::gfx::rhi
 		m_uploadContext.reset();
 	}
 
+	std::unique_ptr<SwapChain> VkRHIDevice::CreateSwapChain(NativeWindow nativeWindow, UInt32 width, UInt32 height, PixelFormat pixelFormat, PixelFormat depthPixelFormat)
+	{
+		auto swapChain = std::make_unique<VkRHISwapChain>(*this, nativeWindow, width, height, pixelFormat, depthPixelFormat);
+		if (swapChain->GetLastResult() != VK_SUCCESS)
+		{
+			CCT_ASSERT_FALSE("ConcertoGraphics: Error occured during swapchain creation error={}", static_cast<Int32>(swapChain->GetLastResult()));
+			return nullptr;
+		}
+		return swapChain;
+	}
+
 	std::unique_ptr<SwapChain> VkRHIDevice::CreateSwapChain(Window& window, PixelFormat pixelFormat, PixelFormat depthPixelFormat)
 	{
 		auto swapChain = std::make_unique<VkRHISwapChain>(*this, window, pixelFormat, depthPixelFormat);

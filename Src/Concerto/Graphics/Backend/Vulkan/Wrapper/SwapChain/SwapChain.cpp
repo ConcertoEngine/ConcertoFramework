@@ -27,10 +27,28 @@ namespace cct::gfx::vk
 		m_depthImage(),
 		m_depthImageView(),
 		m_window(&window),
+		m_nativeWindow(),
 		m_currentImageIndex(0),
 		m_surface(VK_NULL_HANDLE)
 	{
 		if (Create(device, window, colorFormat, depthFormat) != VK_SUCCESS)
+			throw VkException(GetLastResult());
+	}
+
+	SwapChain::SwapChain(Device& device, NativeWindow nativeWindow, UInt32 width, UInt32 height, VkFormat colorFormat, VkFormat depthFormat) :
+		Object(device),
+		m_swapChainImages(),
+		m_swapChainImageViews(),
+		m_windowExtent(),
+		m_swapChainImageFormat(),
+		m_depthImage(),
+		m_depthImageView(),
+		m_window(nullptr),
+		m_nativeWindow(nativeWindow),
+		m_currentImageIndex(0),
+		m_surface(VK_NULL_HANDLE)
+	{
+		if (Create(device, nativeWindow, width, height, colorFormat, depthFormat) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
@@ -102,6 +120,68 @@ namespace cct::gfx::vk
 
 		m_lastResult = m_device->vkCreateSwapchainKHR(*m_device->Get(), &swapChainCreateInfo, nullptr, &m_handle);
 		CCT_ASSERT(m_lastResult == VK_SUCCESS, "ConcertoGraphics: vkCreateSemaphore failed VkResult={}", static_cast<const int>(m_lastResult));
+		return m_lastResult;
+	}
+
+	VkResult SwapChain::Create(Device& device, NativeWindow nativeWindow, UInt32 width, UInt32 height, VkFormat colorFormat, VkFormat depthFormat)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+
+		Destroy();
+
+		m_device = &device;
+		m_window = nullptr;
+		m_nativeWindow = nativeWindow;
+		m_windowExtent = {.width = width, .height = height};
+
+		m_depthImage = device.GetAllocator().AllocateImage(m_windowExtent, depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+		m_lastResult = m_depthImageView.Create(device, m_depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
+		if (m_lastResult != VK_SUCCESS)
+			return m_lastResult;
+
+		m_lastResult = CreateSurface();
+		if (m_lastResult != VK_SUCCESS)
+			return m_lastResult;
+
+		PhysicalDevice::SurfaceSupportDetails surfaceSupportDetails = m_device->GetPhysicalDevice().GetSurfaceSupportDetails(m_surface);
+
+		VkFormat selectedFormat = VK_FORMAT_UNDEFINED;
+		for (const VkSurfaceFormatKHR& surfaceFormat : surfaceSupportDetails.formats)
+		{
+			if (surfaceFormat.format == colorFormat)
+			{
+				selectedFormat = colorFormat;
+				break;
+			}
+		}
+		if (selectedFormat == VK_FORMAT_UNDEFINED && !surfaceSupportDetails.formats.empty())
+			selectedFormat = surfaceSupportDetails.formats[0].format;
+		else if (selectedFormat == VK_FORMAT_UNDEFINED)
+			selectedFormat = colorFormat;
+		m_swapChainImageFormat = selectedFormat;
+
+		VkSwapchainCreateInfoKHR swapChainCreateInfo = {};
+		UInt32 imageCount = surfaceSupportDetails.capabilities.minImageCount + 1;
+		if (surfaceSupportDetails.capabilities.maxImageCount > 0 && imageCount > surfaceSupportDetails.capabilities.maxImageCount)
+			imageCount = surfaceSupportDetails.capabilities.maxImageCount;
+
+		swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		swapChainCreateInfo.surface = m_surface;
+		swapChainCreateInfo.minImageCount = imageCount;
+		swapChainCreateInfo.imageFormat = m_swapChainImageFormat;
+		swapChainCreateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+		swapChainCreateInfo.imageExtent = m_windowExtent;
+		swapChainCreateInfo.imageArrayLayers = 1;
+		swapChainCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		swapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		swapChainCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+		swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+		swapChainCreateInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
+		swapChainCreateInfo.clipped = VK_TRUE;
+		swapChainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
+
+		m_lastResult = m_device->vkCreateSwapchainKHR(*m_device->Get(), &swapChainCreateInfo, nullptr, &m_handle);
+		CCT_ASSERT(m_lastResult == VK_SUCCESS, "ConcertoGraphics: vkCreateSwapchainKHR failed VkResult={}", static_cast<const int>(m_lastResult));
 		return m_lastResult;
 	}
 
@@ -210,7 +290,7 @@ namespace cct::gfx::vk
 
 	VkResult SwapChain::CreateSurface()
 	{
-		NativeWindow nativeWindow = m_window->GetNativeWindow();
+		NativeWindow nativeWindow = (m_window != nullptr) ? m_window->GetNativeWindow() : m_nativeWindow;
 #if defined(CCT_PLATFORM_WINDOWS)
 		const VkWin32SurfaceCreateInfoKHR createInfo = {
 			.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,

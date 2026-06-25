@@ -14,6 +14,8 @@
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
 
+#include "Concerto/Graphics/Core/Window/NativeWindow.hpp"
+
 namespace cct::gfx
 {
 	class Window;
@@ -31,6 +33,7 @@ namespace cct::gfx::vk
 	{
 	public:
 		SwapChain(Device& device, Window& window, VkFormat colorFormat = VK_FORMAT_B8G8R8A8_SRGB, VkFormat depthFormat = VK_FORMAT_D32_SFLOAT);
+		SwapChain(Device& device, NativeWindow nativeWindow, UInt32 width, UInt32 height, VkFormat colorFormat = VK_FORMAT_B8G8R8A8_SRGB, VkFormat depthFormat = VK_FORMAT_D32_SFLOAT);
 		~SwapChain() override;
 
 		SwapChain(SwapChain&&) noexcept = default;
@@ -40,6 +43,7 @@ namespace cct::gfx::vk
 		SwapChain& operator=(const SwapChain&) = delete;
 
 		VkResult Create(Device& device, Window& window, VkFormat colorFormat = VK_FORMAT_B8G8R8A8_SRGB, VkFormat depthFormat = VK_FORMAT_D32_SFLOAT);
+		VkResult Create(Device& device, NativeWindow nativeWindow, UInt32 width, UInt32 height, VkFormat colorFormat = VK_FORMAT_B8G8R8A8_SRGB, VkFormat depthFormat = VK_FORMAT_D32_SFLOAT);
 		void Destroy();
 
 		[[nodiscard]] std::span<Image> GetImages() const;
@@ -65,6 +69,7 @@ namespace cct::gfx::vk
 		Image m_depthImage;
 		ImageView m_depthImageView;
 		Window* m_window;
+		NativeWindow m_nativeWindow;
 		UInt32 m_currentImageIndex;
 		VkSurfaceKHR m_surface;
 	};

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
+#include "Concerto/Graphics/Core/Window/NativeWindow.hpp"
 #include "Concerto/Graphics/RHI/Buffer.hpp"
 #include "Concerto/Graphics/RHI/CommandPool.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
@@ -24,6 +25,7 @@
 #include "Concerto/Graphics/RHI/QueryPool.hpp"
 #include "Concerto/Graphics/RHI/Queue.hpp"
 #include "Concerto/Graphics/RHI/RenderPass.hpp"
+#include "Concerto/Graphics/RHI/SwapChain.hpp"
 #include "Concerto/Graphics/RHI/Texture.hpp"
 #include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
 #include "Concerto/Graphics/RHI/TextureImportInfo.hpp"
@@ -35,8 +37,6 @@ namespace cct::gfx
 
 namespace cct::gfx::rhi
 {
-	class SwapChain;
-
 	enum class VendorId : UInt32
 	{
 		Unknown = 0x0000,
@@ -64,6 +64,7 @@ namespace cct::gfx::rhi
 		Device() = default;
 		virtual ~Device() = default;
 		virtual std::unique_ptr<SwapChain> CreateSwapChain(Window& window, PixelFormat pixelFormat = PixelFormat::BGRA8_SRGB, PixelFormat depthPixelFormat = PixelFormat::D32f) = 0;
+		virtual std::unique_ptr<SwapChain> CreateSwapChain(NativeWindow /*nativeWindow*/, UInt32 /*width*/, UInt32 /*height*/, PixelFormat /*pixelFormat*/ = PixelFormat::BGRA8_SRGB, PixelFormat /*depthPixelFormat*/ = PixelFormat::D32f) { return nullptr; }
 		virtual std::unique_ptr<RenderPass> CreateRenderPass(std::span<RenderPass::Attachment> attachments, std::span<RenderPass::SubPassDescription> subPassDescriptions, std::span<RenderPass::SubPassDependency> subPassDependencies) = 0;
 		virtual std::unique_ptr<FrameBuffer> CreateFrameBuffer(UInt32 width, UInt32 height, const RenderPass& renderPass, const std::vector<std::unique_ptr<Texture>>& attachments) = 0;
 		virtual std::unique_ptr<FrameBuffer> CreateFrameBuffer(UInt32 width, UInt32 height, const RenderPass& renderPass, const std::vector<std::unique_ptr<TextureView>>& attachments) = 0;

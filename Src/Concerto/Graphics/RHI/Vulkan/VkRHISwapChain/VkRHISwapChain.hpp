@@ -27,6 +27,7 @@ namespace cct::gfx::rhi
 	{
 	public:
 		VkRHISwapChain(rhi::VkRHIDevice& device, Window& window, PixelFormat pixelFormat, PixelFormat depthPixelFormat);
+		VkRHISwapChain(rhi::VkRHIDevice& device, NativeWindow nativeWindow, UInt32 width, UInt32 height, PixelFormat pixelFormat, PixelFormat depthPixelFormat);
 		~VkRHISwapChain() override;
 
 		rhi::RenderPass* GetRenderPass() override;

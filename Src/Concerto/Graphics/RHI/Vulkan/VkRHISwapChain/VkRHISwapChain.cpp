@@ -31,6 +31,19 @@ namespace cct::gfx::rhi
 		CreateFrames();
 	}
 
+	VkRHISwapChain::VkRHISwapChain(rhi::VkRHIDevice& device, NativeWindow nativeWindow, UInt32 width, UInt32 height, PixelFormat pixelFormat, PixelFormat depthPixelFormat) :
+		rhi::SwapChain(pixelFormat, depthPixelFormat),
+		vk::SwapChain(device, nativeWindow, width, height, Converters::ToVulkan(pixelFormat), Converters::ToVulkan(depthPixelFormat)),
+		m_pixelFormat(pixelFormat),
+		m_depthPixelFormat(depthPixelFormat)
+	{
+		CreateRenderPass();
+		CreateFrameBuffers(device);
+		m_commandPool = device.CreateCommandPool(QueueFamily::Graphics, CommandBufferUsage::Primary);
+		m_presentQueue = std::make_unique<vk::Queue>(device, device.GetQueueFamilyIndex(vk::Queue::Type::Graphics));
+		CreateFrames();
+	}
+
 	VkRHISwapChain::~VkRHISwapChain()
 	{
 		WaitAll();
