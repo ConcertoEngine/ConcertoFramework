@@ -15,6 +15,8 @@
 
 namespace cct::gfx::rhi
 {
+	Instance::~Instance() = default;
+
 	Instance::Instance(Backend backend, ValidationLevel validationLevel) :
 		m_backend(backend)
 	{

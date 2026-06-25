@@ -30,6 +30,7 @@ namespace cct::gfx::rhi
 		};
 
 		Instance(Backend backend = Backend::Vulkan, ValidationLevel validationLevel = ValidationLevel::All);
+		~Instance();
 
 		std::span<const DeviceInfo> EnumerateDevices() const;
 		std::unique_ptr<Device> CreateDevice(std::size_t index) const;
