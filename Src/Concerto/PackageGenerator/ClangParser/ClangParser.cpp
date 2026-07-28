@@ -258,9 +258,9 @@ namespace cct
 		for (auto& include : includeDirs)
 			args.emplace_back("-I" + include);
 
-		auto diagOpts = llvm::IntrusiveRefCntPtr<DiagnosticOptions>(new DiagnosticOptions());
-		diagOpts->ShowColors = true;
-		TextDiagnosticPrinter diagPrinter(llvm::outs(), diagOpts.get());
+		DiagnosticOptions diagOpts;
+		diagOpts.ShowColors = true;
+		TextDiagnosticPrinter diagPrinter(llvm::outs(), diagOpts);
 
 		std::unique_ptr<ASTUnit> AST;
 		{
