@@ -89,6 +89,10 @@ namespace cct::gfx::rhi
 		{
 			return CreatePipeline(vertexShader, fragmentShader, renderPass, pipelineLayout, windowExtent);
 		}
+		virtual std::shared_ptr<Pipeline> CreateComputePipeline(const ShaderModule& /*computeShader*/, const PipelineLayout& /*pipelineLayout*/)
+		{
+			return nullptr;
+		}
 		virtual std::unique_ptr<DescriptorSet> CreateDescriptorSet(const DescriptorSetLayout& layout) = 0;
 		virtual std::size_t GetMinimumUniformBufferOffsetAlignment() const = 0;
 		virtual std::shared_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height) = 0;
@@ -102,6 +106,10 @@ namespace cct::gfx::rhi
 			return nullptr;
 		}
 		virtual std::shared_ptr<Texture> ImportTexture(const TextureImportInfo& /*info*/)
+		{
+			return nullptr;
+		}
+		virtual std::shared_ptr<Texture> CreateStorageTexture(PixelFormat /*format*/, Int32 /*width*/, Int32 /*height*/)
 		{
 			return nullptr;
 		}

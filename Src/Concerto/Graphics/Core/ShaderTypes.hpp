@@ -22,8 +22,9 @@ namespace cct::gfx
 		UniformBuffer = 4,
 		UniformBufferDynamic = 5,
 		CombinedImageSampler = 6,
+		StorageImage = 7,
 
-		Max = CombinedImageSampler
+		Max = StorageImage
 	};
 
 	enum class ShaderStage : UInt32

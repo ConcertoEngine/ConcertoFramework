@@ -26,6 +26,20 @@ namespace cct::gfx::vk
 			throw VkException(GetLastResult());
 	}
 
+	Pipeline::Pipeline(Device& device, const VkPipelineShaderStageCreateInfo& computeStage, VkPipelineLayout layout) :
+		Object(device),
+		m_createInfo(),
+		m_renderPass(nullptr)
+	{
+		VkComputePipelineCreateInfo info{};
+		info.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+		info.stage = computeStage;
+		info.layout = layout;
+		m_lastResult = m_device->vkCreateComputePipelines(*m_device->Get(), VK_NULL_HANDLE, 1, &info, nullptr, &m_handle);
+		if (m_lastResult != VK_SUCCESS)
+			throw VkException(GetLastResult());
+	}
+
 	Pipeline::~Pipeline()
 	{
 		if (!IsValid())

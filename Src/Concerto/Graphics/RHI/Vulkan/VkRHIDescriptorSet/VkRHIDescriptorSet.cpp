@@ -89,6 +89,22 @@ namespace cct::gfx::rhi
 		device->vkUpdateDescriptorSets(*device->Get(), 1, &write, 0, nullptr);
 	}
 
+	void VkRHIDescriptorSet::BindStorageImage(UInt32 binding, const Texture& texture)
+	{
+		auto* vkTexture = dynamic_cast<const VkRHITexture*>(&texture);
+		CCT_ASSERT(vkTexture, "VkRHIDescriptorSet::BindStorageImage expects a VkRHITexture");
+
+		auto* device = m_vkDescriptorSet->GetDevice();
+		CCT_ASSERT(device, "DescriptorSet device is null");
+
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageView = *vkTexture->GetImageView().Get();
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+		const VkWriteDescriptorSet write = VulkanInitializer::WriteDescriptorImage(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, *m_vkDescriptorSet->Get(), &imageInfo, binding);
+		device->vkUpdateDescriptorSets(*device->Get(), 1, &write, 0, nullptr);
+	}
+
 	const std::shared_ptr<DescriptorSetLayout>& VkRHIDescriptorSet::GetLayout() const
 	{
 		return m_layout;

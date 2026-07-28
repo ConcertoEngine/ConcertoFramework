@@ -22,6 +22,7 @@ namespace cct::gfx::vk
 	public:
 		Pipeline() = default;
 		Pipeline(Device& device, PipelineInfo pipeLineInfo, const RenderPass& renderPass);
+		Pipeline(Device& device, const VkPipelineShaderStageCreateInfo& computeStage, VkPipelineLayout layout);
 		~Pipeline() override;
 
 		Pipeline(Pipeline&&) = default;

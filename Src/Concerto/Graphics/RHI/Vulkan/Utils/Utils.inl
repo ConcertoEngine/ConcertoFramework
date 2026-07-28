@@ -376,6 +376,8 @@ namespace cct::gfx::rhi
 				return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 			case cct::gfx::ShaderBindingType::CombinedImageSampler:
 				return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			case cct::gfx::ShaderBindingType::StorageImage:
+				return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 		}
 		return VK_DESCRIPTOR_TYPE_SAMPLER;
 	}

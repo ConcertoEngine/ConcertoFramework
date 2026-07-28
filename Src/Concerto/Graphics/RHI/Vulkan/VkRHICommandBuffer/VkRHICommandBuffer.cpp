@@ -263,6 +263,24 @@ namespace cct::gfx::rhi
 		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline.GetPipeline());
 	}
 
+	void VkRHICommandBuffer::BindComputePipeline(const Pipeline& pipeline)
+	{
+		const auto& vkPipeline = Cast<const VkRHIPipeline&>(pipeline);
+		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline.GetPipeline());
+	}
+
+	void VkRHICommandBuffer::BindComputeDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set)
+	{
+		const auto& vkLayout = Cast<const VkRHIPipelineLayout&>(layout);
+		const auto& vkSet = Cast<const VkRHIDescriptorSet&>(set);
+		vk::CommandBuffer::BindDescriptorSets(VK_PIPELINE_BIND_POINT_COMPUTE, *vkLayout.Get(), 0, 1, *vkSet.Get());
+	}
+
+	void VkRHICommandBuffer::Dispatch(UInt32 groupCountX, UInt32 groupCountY, UInt32 groupCountZ)
+	{
+		m_device->vkCmdDispatch(*vk::CommandBuffer::Get(), groupCountX, groupCountY, groupCountZ);
+	}
+
 	void VkRHICommandBuffer::BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set, UInt32 dynamicOffset)
 	{
 		const auto& vkLayout = Cast<const VkRHIPipelineLayout&>(layout);

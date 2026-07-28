@@ -485,6 +485,24 @@ namespace cct::gfx::rhi
 		}
 	}
 
+	std::shared_ptr<Texture> VkRHIDevice::CreateStorageTexture(PixelFormat format, Int32 width, Int32 height)
+	{
+		vk::Image image = vk::Device::GetAllocator().AllocateImage(
+			VkExtent2D{static_cast<UInt32>(width), static_cast<UInt32>(height)},
+			Converters::ToVulkan(format),
+			VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+		return std::make_shared<VkRHITexture>(*this, std::move(image), VK_IMAGE_ASPECT_COLOR_BIT);
+	}
+
+	std::shared_ptr<rhi::Pipeline> VkRHIDevice::CreateComputePipeline(const rhi::ShaderModule& computeShader, const rhi::PipelineLayout& pipelineLayout)
+	{
+		const auto& rhiCs = Cast<const VkRHIShaderModule&>(computeShader);
+		auto pipelineLayoutCopy = std::make_shared<VkRHIPipelineLayout>(*this, pipelineLayout.GetDescriptorSetLayouts());
+		VkPipelineShaderStageCreateInfo stage = rhiCs.GetVulkanShaderModule().GetPipelineShaderStageCreateInfo();
+		auto vkPipeline = std::make_shared<vk::Pipeline>(*this, stage, *static_cast<vk::PipelineLayout&>(*pipelineLayoutCopy).Get());
+		return std::make_shared<VkRHIPipeline>(std::move(vkPipeline), std::move(pipelineLayoutCopy));
+	}
+
 	std::unique_ptr<QueryPool> VkRHIDevice::CreateQueryPool()
 	{
 		return std::make_unique<VkRHIQueryPool>(*this);

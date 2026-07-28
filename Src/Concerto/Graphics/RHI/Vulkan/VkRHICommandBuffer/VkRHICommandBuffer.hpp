@@ -31,6 +31,9 @@ namespace cct::gfx::rhi
 		void TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout) override;
 
 		void BindPipeline(const Pipeline& pipeline) override;
+		void BindComputePipeline(const Pipeline& pipeline) override;
+		void BindComputeDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set) override;
+		void Dispatch(UInt32 groupCountX, UInt32 groupCountY, UInt32 groupCountZ) override;
 		void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set, UInt32 dynamicOffset) override;
 		void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set) override;
 		void BindIndexBuffer(const Buffer& buffer, bool use32bitIndices) override;

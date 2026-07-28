@@ -46,6 +46,15 @@ namespace cct::gfx::rhi
 		virtual void BindPipeline(const Pipeline& pipeline)
 		{
 		}
+		virtual void BindComputePipeline(const Pipeline& pipeline)
+		{
+		}
+		virtual void BindComputeDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set)
+		{
+		}
+		virtual void Dispatch(UInt32 groupCountX, UInt32 groupCountY, UInt32 groupCountZ)
+		{
+		}
 		virtual void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set, UInt32 dynamicOffset)
 		{
 		}

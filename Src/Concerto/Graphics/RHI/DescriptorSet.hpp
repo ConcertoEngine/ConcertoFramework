@@ -33,6 +33,10 @@ namespace cct::gfx::rhi
 		 */
 		virtual void BindTexture(UInt32 binding, const Texture& texture) = 0;
 
+		virtual void BindStorageImage(UInt32 binding, const Texture& texture)
+		{
+		}
+
 		/**
 		 * @brief Get the descriptor set layout
 		 */
