@@ -18,14 +18,14 @@ namespace cct::net
 		Error = -1,
 		Ipv4,
 		Ipv6,
-		Any = Ipv4 // Fixme
+		Any // Unspecified family: let the network layer pick a dual-stack one
 	};
 
 	class CCT_CORE_PUBLIC_API IpAddress
 	{
 	public:
 		using IPv4 = std::array<UInt8, 4>;
-		using IPv6 = std::array<UInt16, 16>;
+		using IPv6 = std::array<UInt16, 8>;
 
 		IpAddress() = default;
 		IpAddress(const IPv4& ip, UInt16 port);
@@ -42,6 +42,9 @@ namespace cct::net
 		[[nodiscard]] UInt32 ToUInt32() const;
 		[[nodiscard]] std::string ToString() const;
 
+		// True for the wildcard address of either family (0.0.0.0 / ::), i.e. "bind to
+		[[nodiscard]] bool IsAny() const;
+
 		static bool IsIpV4(std::string_view ip);
 		static bool IsIpV6(std::string_view ip);
 
@@ -50,6 +53,7 @@ namespace cct::net
 		void SetPort(UInt16 port);
 
 		static const IpAddress AnyIPV4;
+		static const IpAddress AnyIPV6;
 
 	private:
 		union
@@ -57,8 +61,8 @@ namespace cct::net
 			IPv4 _ipv4;
 			IPv6 _ipv6;
 		};
-		IpProtocol _protocol;
-		UInt16 _port;
+		IpProtocol _protocol = IpProtocol::Error;
+		UInt16 _port = 0;
 	};
 } // namespace cct::net
 #endif // CONCERTO_CORE_NETWORK_IPADRESS_HPP

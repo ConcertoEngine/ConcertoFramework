@@ -8,7 +8,7 @@
 
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Logger/Logger.hpp"
-#include <enet/enet.h>
+#include <enet6/enet.h>
 
 namespace cct::net
 {

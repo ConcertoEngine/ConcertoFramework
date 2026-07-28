@@ -8,16 +8,16 @@ option("enet", { description = "Enable ENet support", default = true })
 add_requires("stduuid")
 
 if is_plat("windows") then
-    add_requires("enet",      {configs = {shared = false,      runtimes = is_mode("debug") and "MDd" or "MD"}})
-    add_requires("spdlog",    {configs = {header_only = false, runtimes = is_mode("debug") and "MDd" or "MD"}})  
+    add_requires("enet6",     {configs = {shared = false,      runtimes = is_mode("debug") and "MDd" or "MD"}})
+    add_requires("spdlog",    {configs = {header_only = false, runtimes = is_mode("debug") and "MDd" or "MD"}})
 
     if has_config("reflection") then
-        add_requires("enet~mt",   {alias = "enet-mt",   configs = {shared = false,      runtimes = "MT"}})  
-        add_requires("spdlog~mt", {alias = "spdlog-mt", configs = {header_only = false, runtimes = "MT"}})  
+        add_requires("enet6~mt",  {alias = "enet6-mt",  configs = {shared = false,      runtimes = "MT"}})
+        add_requires("spdlog~mt", {alias = "spdlog-mt", configs = {header_only = false, runtimes = "MT"}})
     end
-else  
-    add_requires("enet",   {configs = {shared = false}})  
-    add_requires("spdlog", {configs = {header_only = false}})  
+else
+    add_requires("enet6",  {configs = {shared = false}})
+    add_requires("spdlog", {configs = {header_only = false}})
 end
 
 local concerto_core = {
@@ -28,7 +28,7 @@ local concerto_core = {
         packages = {"spdlog-mt"},
         configs = {
             enet = {
-                packages = {"enet-mt"},
+                packages = {"enet6-mt"},
                 defines = {"CCT_ENABLE_ENET"}
             }
         }
@@ -40,7 +40,7 @@ local concerto_core = {
         packages = {"spdlog"},
         configs = {
             enet = {
-                packages = {"enet"},
+                packages = {"enet6"},
                 defines = {"CCT_ENABLE_ENET"}
             }
         }

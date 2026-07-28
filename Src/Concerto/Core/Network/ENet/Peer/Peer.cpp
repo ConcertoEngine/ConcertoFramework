@@ -7,7 +7,7 @@
 #include "Concerto/Core/Network/ENet/Peer/Peer.hpp"
 
 #include "Concerto/Core/Network/Packet/Packet.hpp"
-#include <enet/enet.h>
+#include <enet6/enet.h>
 
 namespace cct::net
 {

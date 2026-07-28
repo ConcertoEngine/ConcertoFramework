@@ -8,7 +8,7 @@
 
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Logger/Logger.hpp"
-#include <enet/enet.h>
+#include "Concerto/Core/Network/ENet/Address/Address.hpp"
 
 namespace cct::net
 {
@@ -18,12 +18,14 @@ namespace cct::net
 	}
 
 	ENetHost::ENetHost(IpAddress* address, std::size_t maxConnections,
-					   std::size_t maxChannels, UInt32 maxIncomingBandwidth, UInt32 maxOutgoingBandwidth) :
+					   std::size_t maxChannels, UInt32 maxIncomingBandwidth, UInt32 maxOutgoingBandwidth,
+					   IpProtocol protocol) :
 		_enetHost(nullptr),
 		_maxConnections(maxConnections),
 		_maxChannels(maxChannels),
 		_maxIncomingBandwidth(maxIncomingBandwidth),
-		_maxOutgoingBandwidth(maxOutgoingBandwidth)
+		_maxOutgoingBandwidth(maxOutgoingBandwidth),
+		_protocol(protocol)
 	{
 		[[maybe_unused]] const bool ret = CreateHost(address);
 		CCT_ASSERT(ret, "An error occurred while trying to create an ENetHost");
@@ -39,6 +41,7 @@ namespace cct::net
 		CCT_ASSERT(_enetHost != nullptr, "Invalid host");
 		::ENetEvent enetEvent;
 		const Int32 ret = enet_host_service(ToENetHost(_enetHost), &enetEvent, timeout);
+		event->timedOut = false;
 		if (ret <= 0)
 		{
 			event->eventType = ENetEvent::Type::None;
@@ -63,8 +66,10 @@ namespace cct::net
 				break;
 			}
 			case ENET_EVENT_TYPE_DISCONNECT:
+			case ENET_EVENT_TYPE_DISCONNECT_TIMEOUT:
 			{
 				event->eventType = ENetEvent::Type::Disconnect;
+				event->timedOut = (enetEvent.type == ENET_EVENT_TYPE_DISCONNECT_TIMEOUT);
 				event->peer = std::make_unique<ENetPeer>(static_cast<void*>(enetEvent.peer));
 				event->channelId = enetEvent.channelID;
 				event->data = enetEvent.data;
@@ -121,16 +126,21 @@ namespace cct::net
 
 	bool ENetHost::CreateHost(IpAddress* address)
 	{
+		const ::ENetAddressType type = ToENetAddressType(_protocol);
 		if (address == nullptr)
 		{
-			_enetHost = enet_host_create(nullptr, _maxConnections, _maxChannels, _maxIncomingBandwidth, _maxOutgoingBandwidth);
+			_enetHost = enet_host_create(type, nullptr, _maxConnections, _maxChannels, _maxIncomingBandwidth, _maxOutgoingBandwidth);
 			return _enetHost != nullptr;
 		}
 
-		::ENetAddress enetAddress = {
-			.host = address->ToUInt32(),
-			.port = address->GetPort()};
-		_enetHost = enet_host_create(&enetAddress, _maxConnections, _maxChannels, _maxIncomingBandwidth, _maxOutgoingBandwidth);
+		::ENetAddress enetAddress = {};
+		if (!ToENetAddress(*address, type, enetAddress))
+		{
+			CCT_ASSERT_FALSE("Address '{}' cannot be bound by this host", address->ToString());
+			return false;
+		}
+
+		_enetHost = enet_host_create(type, &enetAddress, _maxConnections, _maxChannels, _maxIncomingBandwidth, _maxOutgoingBandwidth);
 		return _enetHost != nullptr;
 	}
 } // namespace cct::net

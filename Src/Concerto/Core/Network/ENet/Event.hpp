@@ -29,6 +29,7 @@ namespace cct::net
 		UInt8 channelId;
 		UInt32 data;
 		std::unique_ptr<ENetPacket> packet;
+		bool timedOut = false;
 	};
 } // namespace cct::net
 

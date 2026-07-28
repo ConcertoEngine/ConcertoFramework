@@ -18,7 +18,7 @@ namespace cct::net
 	{
 	public:
 		EnetServer() = delete;
-		explicit EnetServer(IpAddress address, std::size_t maxClients = 32, UInt32 maxIncomingBandwidth = 0, UInt32 maxOutgoingBandwidth = 0);
+		explicit EnetServer(IpAddress address, std::size_t maxClients = 32, UInt32 maxIncomingBandwidth = 0, UInt32 maxOutgoingBandwidth = 0, IpProtocol protocol = IpProtocol::Any);
 
 	private:
 		IpAddress _address;

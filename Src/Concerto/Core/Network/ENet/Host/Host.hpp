@@ -18,7 +18,7 @@ namespace cct::net
 	{
 	public:
 		using Handle = void*;
-		explicit ENetHost(IpAddress* address = nullptr, std::size_t maxConnections = 1, std::size_t maxChannels = 2, UInt32 maxIncomingBandwidth = 0, UInt32 maxOutgoingBandwidth = 0);
+		explicit ENetHost(IpAddress* address = nullptr, std::size_t maxConnections = 1, std::size_t maxChannels = 2, UInt32 maxIncomingBandwidth = 0, UInt32 maxOutgoingBandwidth = 0, IpProtocol protocol = IpProtocol::Any);
 		ENetHost(const ENetHost&) = delete;
 		ENetHost(ENetHost&&) = default;
 		virtual ~ENetHost();
@@ -41,6 +41,7 @@ namespace cct::net
 		std::size_t _maxChannels;
 		UInt32 _maxIncomingBandwidth;
 		UInt32 _maxOutgoingBandwidth;
+		IpProtocol _protocol;
 	};
 } // namespace cct::net
 

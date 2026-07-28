@@ -6,12 +6,12 @@
 
 #include "Concerto/Core/Network/ENet/Server/Server.hpp"
 
-#include <enet/enet.h>
+#include <enet6/enet.h>
 
 namespace cct::net
 {
-	EnetServer::EnetServer(IpAddress address, std::size_t maxClients, UInt32 maxIncomingBandwidth, UInt32 maxOutgoingBandwidth) :
-		ENetHost(&address, maxClients, 2, maxIncomingBandwidth, maxOutgoingBandwidth),
+	EnetServer::EnetServer(IpAddress address, std::size_t maxClients, UInt32 maxIncomingBandwidth, UInt32 maxOutgoingBandwidth, IpProtocol protocol) :
+		ENetHost(&address, maxClients, 2, maxIncomingBandwidth, maxOutgoingBandwidth, protocol),
 		_address(address)
 	{
 	}

@@ -76,6 +76,43 @@ namespace CCT_ANONYMOUS_NAMESPACE
 		}
 	}
 
+	SCENARIO("Enet - IPv6Connection")
+	{
+		GIVEN("A dual-stack ENet server listening on port 2122")
+		{
+			ENet::Initialize();
+			bool running = true;
+			std::thread serverThread([&]()
+									 {
+				IpAddress listeningIp("::", 2122);
+				EnetServer server(listeningIp);
+				ENetEvent event;
+				while (running)
+					server.PollEvent(&event, 100); });
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+			WHEN("A client connects over IPv6 loopback")
+			{
+				EnetClient client;
+				REQUIRE(client.Connect(IpAddress("::1", 2122)));
+
+				ENetEvent event;
+				const Int32 ret = client.PollEvent(&event, 1000);
+
+				THEN("The connection is established")
+				{
+					REQUIRE(ret > 0);
+					REQUIRE(event.eventType == ENetEvent::Type::Connect);
+					client.Disconnect();
+				}
+			}
+
+			running = false;
+			serverThread.join();
+			ENet::Deinitialize();
+		}
+	}
+
 	SCENARIO("Enet - SendingPacket")
 	{
 		GIVEN("An ENet server listening on port 2121")

@@ -4,16 +4,63 @@
 
 #include "Concerto/Core/Network/IpAddress/IpAddress.hpp"
 
-#include <charconv>
-#include <ranges>
-#include <regex>
+#include <cstring>
+
+#ifdef CCT_PLATFORM_WINDOWS
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#undef SetPort
+#elif defined(CCT_PLATFORM_POSIX)
+#include <arpa/inet.h>
+#endif
 
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Logger/Logger.hpp"
 
 namespace cct::net
 {
+	namespace
+	{
+		bool ParseIpV4(std::string_view ip, IpAddress::IPv4& out)
+		{
+			in_addr addr = {};
+			const std::string text(ip);
+			if (inet_pton(AF_INET, text.c_str(), &addr) != 1)
+				return false;
+			std::memcpy(out.data(), &addr, out.size());
+			return true;
+		}
+
+		bool ParseIpV6(std::string_view ip, IpAddress::IPv6& out)
+		{
+			in6_addr addr = {};
+			const std::string text(ip);
+			if (inet_pton(AF_INET6, text.c_str(), &addr) != 1)
+				return false;
+
+			for (std::size_t i = 0; i < out.size(); ++i)
+				out[i] = static_cast<UInt16>((addr.s6_addr[i * 2] << 8) | addr.s6_addr[i * 2 + 1]);
+			return true;
+		}
+
+		std::string FormatIpV6(const IpAddress::IPv6& groups)
+		{
+			in6_addr addr = {};
+			for (std::size_t i = 0; i < groups.size(); ++i)
+			{
+				addr.s6_addr[i * 2] = static_cast<UInt8>(groups[i] >> 8);
+				addr.s6_addr[i * 2 + 1] = static_cast<UInt8>(groups[i] & 0xFF);
+			}
+
+			char buffer[INET6_ADDRSTRLEN] = {};
+			if (inet_ntop(AF_INET6, &addr, buffer, sizeof(buffer)) == nullptr)
+				return {};
+			return buffer;
+		}
+	} // namespace
+
 	const IpAddress IpAddress::AnyIPV4 = IpAddress(0, 0, 0, 0, 0);
+	const IpAddress IpAddress::AnyIPV6 = IpAddress(IpAddress::IPv6{}, 0);
 
 	IpAddress::IpAddress(const IpAddress::IPv4& ip, UInt16 port) :
 		_ipv4(ip),
@@ -49,35 +96,21 @@ namespace cct::net
 		_protocol(IpProtocol::Error),
 		_port(port)
 	{
-		if (IsIpV4(ip))
+		IPv4 v4{};
+		IPv6 v6{};
+		if (ParseIpV4(ip, v4))
 		{
+			_ipv4 = v4;
 			_protocol = IpProtocol::Ipv4;
-#ifdef CCT_PLATFORM_POSIX
-			auto segments = ip | std::ranges::views::split('.') | std::ranges::views::transform([](auto&& str)
-																								{ return std::string_view(&*str.begin(), std::ranges::distance(str)); });
-
-#else
-			auto segments = ip | std::views::split('.') | std::views::transform([](auto v)
-																				{ return std::string_view(v.data(), v.size()); });
-#endif
-
-			UInt8 i = 0;
-			for (const auto& segment : segments)
-			{
-				const auto result = std::from_chars(segment.data(), segment.data() + segment.size(), _ipv4[i++]);
-				if (result.ec == std::errc::invalid_argument || result.ec == std::errc::result_out_of_range)
-				{
-					CCT_ASSERT_FALSE("Cannot convert part '{}' of Ip address '{}'", segment, ip);
-				}
-			}
 			return;
 		}
-		else if (IsIpV6(ip))
+		if (ParseIpV6(ip, v6))
 		{
-			CCT_ASSERT_FALSE("Not implemented");
+			_ipv6 = v6;
+			_protocol = IpProtocol::Ipv6;
 			return;
 		}
-		_protocol = IpProtocol::Error;
+		CCT_ASSERT_FALSE("Cannot parse Ip address '{}'", ip);
 	}
 
 	IpProtocol IpAddress::GetProtocol() const
@@ -115,33 +148,40 @@ namespace cct::net
 
 	std::string IpAddress::ToString() const
 	{
-		std::string ip;
 		if (_protocol == IpProtocol::Ipv4)
+			return std::to_string(_ipv4[0]) + "." + std::to_string(_ipv4[1]) + "." + std::to_string(_ipv4[2]) + "." + std::to_string(_ipv4[3]);
+		if (_protocol == IpProtocol::Ipv6)
+			return FormatIpV6(_ipv6);
+
+		CCT_ASSERT_FALSE("Invalid Ip protocol");
+		return {};
+	}
+
+	bool IpAddress::IsAny() const
+	{
+		switch (_protocol)
 		{
-			ip = std::to_string(_ipv4[0]) + "." + std::to_string(_ipv4[1]) + "." + std::to_string(_ipv4[2]) + "." + std::to_string(_ipv4[3]);
+			case IpProtocol::Any:
+				return true;
+			case IpProtocol::Ipv4:
+				return _ipv4 == IPv4{};
+			case IpProtocol::Ipv6:
+				return _ipv6 == IPv6{};
+			default:
+				return false;
 		}
-		else if (_protocol == IpProtocol::Ipv6)
-		{
-			CCT_ASSERT_FALSE("Not implemented");
-		}
-		else
-		{
-			CCT_ASSERT_FALSE("Invalid Ip protocol");
-		}
-		return ip;
 	}
 
 	bool IpAddress::IsIpV4(std::string_view ip)
 	{
-		std::regex ipv4Pattern(R"(\b(?:\d{1,3}\.){3}\d{1,3}\b)");
-		return std::regex_match(ip.data(), ipv4Pattern);
+		IPv4 v4{};
+		return ParseIpV4(ip, v4);
 	}
 
 	bool IpAddress::IsIpV6(std::string_view ip)
 	{
-		// from https://stackoverflow.com/questions/53497/regular-expression-that-matches-valid-ipv6-addresses
-		std::regex ipv6Pattern(R"(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))");
-		return std::regex_match(ip.data(), ipv6Pattern);
+		IPv6 v6{};
+		return ParseIpV6(ip, v6);
 	}
 
 	IpProtocol IpAddress::DetectProtocol(std::string_view ip)
