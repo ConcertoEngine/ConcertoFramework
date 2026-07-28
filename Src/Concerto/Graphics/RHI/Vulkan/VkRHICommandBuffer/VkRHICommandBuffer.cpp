@@ -157,13 +157,13 @@ namespace cct::gfx::rhi
 			1, &copyRegion);
 	}
 
-	void VkRHICommandBuffer::Copy(const Texture& src, const Buffer& dst)
+	void VkRHICommandBuffer::Copy(const Texture& src, const Buffer& dst, UInt64 dstOffset)
 	{
 		const auto& vkTexture = Cast<const VkRHITexture&>(src);
 		const auto& vkBuffer = Cast<const VkRHIBuffer&>(dst);
 
 		VkBufferImageCopy copyRegion = {};
-		copyRegion.bufferOffset = 0;
+		copyRegion.bufferOffset = dstOffset;
 		copyRegion.bufferRowLength = 0;
 		copyRegion.bufferImageHeight = 0;
 		copyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -406,5 +406,10 @@ namespace cct::gfx::rhi
 		if (m_device->vkCmdDebugMarkerEndEXT == nullptr || !m_device->IsExtensionEnabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
 			return;
 		m_device->vkCmdDebugMarkerEndEXT(*vk::CommandBuffer::Get());
+	}
+
+	void* VkRHICommandBuffer::GetNativeHandle() const
+	{
+		return static_cast<void*>(*vk::CommandBuffer::Get());
 	}
 } // namespace cct::gfx::rhi

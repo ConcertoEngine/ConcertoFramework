@@ -58,6 +58,7 @@ namespace cct::gfx::rhi
 		std::unique_ptr<Fence> CreateFence() override;
 		std::unique_ptr<QueryPool> CreateQueryPool() override;
 		std::shared_ptr<Texture> ImportTexture(const rhi::TextureImportInfo& info) override;
+		std::shared_ptr<Texture> AdoptExternalImage(void* nativeImage, PixelFormat format, Int32 width, Int32 height, Int32 planeIndex = -1) override;
 		void SetShaderModuleSearchPath(const std::filesystem::path& path) override
 		{
 			m_shaderModulePath = path;
@@ -65,6 +66,18 @@ namespace cct::gfx::rhi
 
 		vk::UploadContext& GetUploadContext();
 		vk::Instance& GetVkInstance() const;
+
+		void* GetNativeInstance() const override;
+		void* GetNativePhysicalDevice() const override;
+		void* GetNativeDevice() const override;
+		UInt32 GetNativeGraphicsQueueFamily() const override;
+
+		void* GetNativeGetInstanceProcAddr() const override;
+		bool IsVideoDecodeSupported() const override;
+		UInt32 GetNativeVideoDecodeQueueFamily() const override;
+		std::vector<std::string> GetEnabledInstanceExtensions() const override;
+		std::vector<std::string> GetEnabledDeviceExtensions() const override;
+		std::vector<rhi::NativeQueueFamilyInfo> GetNativeQueueFamilies() const override;
 
 	private:
 		vk::DescriptorAllocator& GetDescriptorAllocator();

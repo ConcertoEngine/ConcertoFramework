@@ -20,11 +20,11 @@ namespace cct::gfx::vk
 	{
 	}
 
-	ImageView::ImageView(Device& device, Image& image, VkImageAspectFlags aspectFlags) :
+	ImageView::ImageView(Device& device, Image& image, VkImageAspectFlags aspectFlags, VkImageUsageFlags viewUsage) :
 		Object(device),
 		m_image(&image)
 	{
-		if (Create(device, image, aspectFlags) != VK_SUCCESS)
+		if (Create(device, image, aspectFlags, viewUsage) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
@@ -36,12 +36,20 @@ namespace cct::gfx::vk
 		m_device->vkDestroyImageView(*m_device->Get(), m_handle, nullptr);
 	}
 
-	VkResult ImageView::Create(Device& device, Image& image, VkImageAspectFlags aspectFlags)
+	VkResult ImageView::Create(Device& device, Image& image, VkImageAspectFlags aspectFlags, VkImageUsageFlags viewUsage)
 	{
 		m_device = &device;
 		m_image = &image;
 
 		auto imageInfo = VulkanInitializer::ImageViewCreateInfo(image.GetFormat(), *image.Get(), aspectFlags);
+
+		VkImageViewUsageCreateInfo usageInfo{};
+		usageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_USAGE_CREATE_INFO;
+		if (viewUsage != 0)
+		{
+			usageInfo.usage = viewUsage;
+			imageInfo.pNext = &usageInfo;
+		}
 
 		m_lastResult = m_device->vkCreateImageView(*m_device->Get(), &imageInfo, nullptr, &m_handle);
 		CCT_ASSERT(m_lastResult == VK_SUCCESS, "ConcertoGraphics: vkCreateImageView failed VkResult={}", static_cast<int>(m_lastResult));

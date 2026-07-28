@@ -54,6 +54,20 @@ namespace cct::gfx::vk
 
 		bool IsExtensionEnabled(const std::string& ext) const; // fixme: use std::string_view
 
+		[[nodiscard]] bool IsVideoDecodeSupported() const
+		{
+			return m_videoDecodeSupported;
+		}
+		[[nodiscard]] UInt32 GetVideoDecodeQueueFamilyIndex() const
+		{
+			return m_videoDecodeQueueFamily;
+		}
+
+		[[nodiscard]] const std::unordered_set<std::string>& GetEnabledExtensions() const
+		{
+			return m_extensions;
+		}
+
 #define CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func) PFN_##func func = nullptr;
 #define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_FUNCTION(func, ...) CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func)
 
@@ -65,6 +79,8 @@ namespace cct::gfx::vk
 		std::unique_ptr<Allocator> m_allocator;
 		std::unordered_map<Queue::Type, Queue> m_queues;
 		std::unordered_set<std::string> m_extensions;
+		bool m_videoDecodeSupported = false;
+		UInt32 m_videoDecodeQueueFamily = 0xFFFFFFFFU;
 	};
 
 } // namespace cct::gfx::vk

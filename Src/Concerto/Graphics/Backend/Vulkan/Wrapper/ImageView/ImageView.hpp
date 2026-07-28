@@ -17,7 +17,7 @@ namespace cct::gfx::vk
 	{
 	public:
 		ImageView();
-		ImageView(Device& device, Image& image, VkImageAspectFlags aspectFlags);
+		ImageView(Device& device, Image& image, VkImageAspectFlags aspectFlags, VkImageUsageFlags viewUsage = 0);
 		~ImageView() override;
 
 		ImageView(const ImageView&) = delete;
@@ -26,7 +26,7 @@ namespace cct::gfx::vk
 		ImageView& operator=(const ImageView&) = delete;
 		ImageView& operator=(ImageView&&) noexcept = default;
 
-		VkResult Create(Device& device, Image& image, VkImageAspectFlags aspectFlags);
+		VkResult Create(Device& device, Image& image, VkImageAspectFlags aspectFlags, VkImageUsageFlags viewUsage = 0);
 
 		Image& GetImage() const;
 

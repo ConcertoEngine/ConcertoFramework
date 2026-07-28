@@ -26,7 +26,7 @@ namespace cct::gfx::rhi
 	{
 	public:
 		VkRHITexture(vk::Device& device, PixelFormat format, Int32 width, Int32 height, VkImageAspectFlags aspectFlags);
-		VkRHITexture(vk::Device& device, vk::Image image, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
+		VkRHITexture(vk::Device& device, vk::Image image, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT, VkImageUsageFlags viewUsage = 0);
 
 		std::unique_ptr<rhi::TextureView> CreateView() const override;
 		const vk::Image& GetImage() const;

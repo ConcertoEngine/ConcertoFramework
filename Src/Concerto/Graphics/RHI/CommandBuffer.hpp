@@ -40,7 +40,9 @@ namespace cct::gfx::rhi
 		virtual void BindVertexBuffer(const rhi::Buffer& buffer) = 0;
 		virtual void Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance) = 0;
 		virtual void Copy(const Buffer& src, const Texture& dst) = 0;
-		virtual void Copy(const Texture& src, const Buffer& dst) = 0;
+		// dstOffset: byte offset into dst — lets several textures (e.g. NV12 Y and UV
+		// planes) be packed into a single staging buffer.
+		virtual void Copy(const Texture& src, const Buffer& dst, UInt64 dstOffset = 0) = 0;
 		virtual void TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout) = 0;
 
 		virtual void BindPipeline(const Pipeline& pipeline)
@@ -89,6 +91,10 @@ namespace cct::gfx::rhi
 		}
 		virtual void EndDebugLabel()
 		{
+		}
+		virtual void* GetNativeHandle() const
+		{
+			return nullptr;
 		}
 	};
 } // namespace cct::gfx::rhi

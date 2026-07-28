@@ -239,6 +239,67 @@ namespace cct::gfx::rhi
 		return vk::Device::GetInstance();
 	}
 
+	void* VkRHIDevice::GetNativeInstance() const
+	{
+		VkInstance* handle = GetVkInstance().Get();
+		return handle != nullptr ? static_cast<void*>(*handle) : nullptr;
+	}
+
+	void* VkRHIDevice::GetNativePhysicalDevice() const
+	{
+		// PhysicalDevice::Get() (non-const) renvoie un VkPhysicalDevice* — déréférencer pour
+		// obtenir le handle lui-même (sinon on passe &handle → "Invalid physicalDevice" côté Qt).
+		return static_cast<void*>(*vk::Device::GetPhysicalDevice().Get());
+	}
+
+	void* VkRHIDevice::GetNativeDevice() const
+	{
+		VkDevice* handle = vk::Device::Get();
+		return handle != nullptr ? static_cast<void*>(*handle) : nullptr;
+	}
+
+	UInt32 VkRHIDevice::GetNativeGraphicsQueueFamily() const
+	{
+		return vk::Device::GetQueueFamilyIndex(vk::Queue::Type::Graphics);
+	}
+
+	void* VkRHIDevice::GetNativeGetInstanceProcAddr() const
+	{
+		return reinterpret_cast<void*>(vk::Instance::vkGetInstanceProcAddr);
+	}
+
+	bool VkRHIDevice::IsVideoDecodeSupported() const
+	{
+		return vk::Device::IsVideoDecodeSupported();
+	}
+
+	UInt32 VkRHIDevice::GetNativeVideoDecodeQueueFamily() const
+	{
+		return vk::Device::GetVideoDecodeQueueFamilyIndex();
+	}
+
+	std::vector<std::string> VkRHIDevice::GetEnabledInstanceExtensions() const
+	{
+		const auto& exts = GetVkInstance().GetLoadedExtensions();
+		return {exts.begin(), exts.end()};
+	}
+
+	std::vector<std::string> VkRHIDevice::GetEnabledDeviceExtensions() const
+	{
+		const auto& exts = vk::Device::GetEnabledExtensions();
+		return {exts.begin(), exts.end()};
+	}
+
+	std::vector<rhi::NativeQueueFamilyInfo> VkRHIDevice::GetNativeQueueFamilies() const
+	{
+		std::span<VkQueueFamilyProperties> props = vk::Device::GetPhysicalDevice().GetQueueFamilyProperties();
+		std::vector<rhi::NativeQueueFamilyInfo> out;
+		out.reserve(props.size());
+		for (UInt32 i = 0; i < static_cast<UInt32>(props.size()); ++i)
+			out.push_back({i, 1U, static_cast<UInt32>(props[i].queueFlags)});
+		return out;
+	}
+
 	std::shared_ptr<rhi::DescriptorSetLayout> VkRHIDevice::CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings)
 	{
 		// Convert abstract bindings to Vulkan bindings
@@ -483,6 +544,20 @@ namespace cct::gfx::rhi
 								 static_cast<UInt32>(info.handleType));
 				return nullptr;
 		}
+	}
+
+	std::shared_ptr<Texture> VkRHIDevice::AdoptExternalImage(void* nativeImage, PixelFormat format, Int32 width, Int32 height, Int32 planeIndex)
+	{
+		if (!nativeImage)
+			return nullptr;
+		const VkExtent2D extent{static_cast<UInt32>(width), static_cast<UInt32>(height)};
+		vk::Image image(vk::Device::GetAllocator(), extent, static_cast<VkImage>(nativeImage), Converters::ToVulkan(format));
+		VkImageAspectFlags aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+		if (planeIndex == 0)
+			aspect = VK_IMAGE_ASPECT_PLANE_0_BIT;
+		else if (planeIndex == 1)
+			aspect = VK_IMAGE_ASPECT_PLANE_1_BIT;
+		return std::make_shared<VkRHITexture>(*this, std::move(image), aspect, VK_IMAGE_USAGE_SAMPLED_BIT);
 	}
 
 	std::shared_ptr<Texture> VkRHIDevice::CreateStorageTexture(PixelFormat format, Int32 width, Int32 height)

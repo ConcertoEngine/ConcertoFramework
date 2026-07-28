@@ -23,9 +23,9 @@ namespace cct::gfx::rhi
 		m_height = static_cast<UInt32>(height);
 	}
 
-	VkRHITexture::VkRHITexture(vk::Device& device, vk::Image image, VkImageAspectFlags aspectFlags) :
+	VkRHITexture::VkRHITexture(vk::Device& device, vk::Image image, VkImageAspectFlags aspectFlags, VkImageUsageFlags viewUsage) :
 		m_image(std::move(image)),
-		m_imageView(device, m_image, aspectFlags)
+		m_imageView(device, m_image, aspectFlags, viewUsage)
 	{
 		const VkExtent2D ext = m_image.GetExtent();
 		m_width = ext.width;

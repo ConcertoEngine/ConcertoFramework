@@ -58,6 +58,13 @@ namespace cct::gfx::rhi
 	class Pipeline;
 	class DescriptorSet;
 
+	struct NativeQueueFamilyInfo
+	{
+		UInt32 index;
+		UInt32 count;
+		UInt32 flags;
+	};
+
 	class CONCERTO_GRAPHICS_RHI_BASE_API Device
 	{
 	public:
@@ -109,12 +116,73 @@ namespace cct::gfx::rhi
 		{
 			return nullptr;
 		}
+		// Wraps an already-existing native image (Vulkan: a VkImage passed as void*) as a
+		// non-owning sampleable Texture. The caller keeps ownership of the underlying image
+		// and must outlive the returned Texture. Used to hand an externally-produced GPU
+		// image (e.g. a decoder/converter output) to the viewport without copying.
+		virtual std::shared_ptr<Texture> AdoptExternalImage(void* /*nativeImage*/, PixelFormat /*format*/, Int32 /*width*/, Int32 /*height*/, Int32 /*planeIndex*/ = -1)
+		{
+			return nullptr;
+		}
 		virtual std::shared_ptr<Texture> CreateStorageTexture(PixelFormat /*format*/, Int32 /*width*/, Int32 /*height*/)
 		{
 			return nullptr;
 		}
 		virtual void SetShaderModuleSearchPath(const std::filesystem::path& /*path*/)
 		{
+		}
+
+		// Native backend handles for external interop (e.g. sharing the device with Qt via
+		// QQuickGraphicsDevice::fromDeviceObjects). Returned as opaque pointers so consumers
+		// need no backend headers. Non-Vulkan backends return null / 0.
+		virtual void* GetNativeInstance() const
+		{
+			return nullptr;
+		}
+		virtual void* GetNativePhysicalDevice() const
+		{
+			return nullptr;
+		}
+		virtual void* GetNativeDevice() const
+		{
+			return nullptr;
+		}
+		virtual UInt32 GetNativeGraphicsQueueFamily() const
+		{
+			return 0;
+		}
+
+		// Extra native interop for hardware video decode (FFmpeg AVVulkanDeviceContext).
+		// All opaque / backend-neutral; non-Vulkan backends return empty / false.
+		// PFN_vkGetInstanceProcAddr as void* — the loader entry FFmpeg uses to resolve
+		// every Vulkan function against our instance.
+		virtual void* GetNativeGetInstanceProcAddr() const
+		{
+			return nullptr;
+		}
+		// True when the device was created with the KHR H.264 video decode stack enabled.
+		virtual bool IsVideoDecodeSupported() const
+		{
+			return false;
+		}
+		// Queue family index carrying video-decode capability, or 0xFFFFFFFF if none.
+		virtual UInt32 GetNativeVideoDecodeQueueFamily() const
+		{
+			return 0xFFFFFFFFU;
+		}
+		// Instance/device extensions actually enabled at creation (FFmpeg validates against these).
+		virtual std::vector<std::string> GetEnabledInstanceExtensions() const
+		{
+			return {};
+		}
+		virtual std::vector<std::string> GetEnabledDeviceExtensions() const
+		{
+			return {};
+		}
+		// All queue families created on the device, with their raw flag bits.
+		virtual std::vector<NativeQueueFamilyInfo> GetNativeQueueFamilies() const
+		{
+			return {};
 		}
 	};
 } // namespace cct::gfx::rhi

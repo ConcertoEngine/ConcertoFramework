@@ -107,22 +107,12 @@ namespace cct::gfx::vk
 		}
 
 		VkPhysicalDeviceFeatures deviceFeatures{};
-		VkPhysicalDeviceShaderDrawParametersFeatures shader_draw_parameters_features = {};
-		shader_draw_parameters_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
-		shader_draw_parameters_features.pNext = nullptr;
-		shader_draw_parameters_features.shaderDrawParameters = VK_TRUE;
 
-		VkDeviceCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-		createInfo.pQueueCreateInfos = queueCreateInfos.data();
-		createInfo.queueCreateInfoCount = static_cast<UInt32>(queueCreateInfos.size());
-		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.pNext = &shader_draw_parameters_features;
 		// Only request extensions the physical device actually supports (allows headless use).
 		auto supportedNames = physicalDevice.GetExtensionPropertiesNames();
 		std::unordered_set<std::string_view> supportedSet(supportedNames.begin(), supportedNames.end());
 		std::vector<const char*> enabledExtensions;
-		enabledExtensions.reserve(deviceExtensions.size());
+		enabledExtensions.reserve(deviceExtensions.size() + 3);
 		for (const char* ext : deviceExtensions)
 		{
 			if (supportedSet.contains(ext))
@@ -131,8 +121,76 @@ namespace cct::gfx::vk
 			}
 		}
 
+		bool videoDecode = false;
+#if defined(VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME)
+		{
+			const char* videoExts[] = {
+				VK_KHR_VIDEO_QUEUE_EXTENSION_NAME,
+				VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME,
+				VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME,
+			};
+			videoDecode = physicalDevice.GetProperties().apiVersion >= VK_API_VERSION_1_3;
+			for (const char* ext : videoExts)
+				videoDecode = videoDecode && supportedSet.contains(ext);
+			if (videoDecode)
+			{
+				for (const char* ext : videoExts)
+					enabledExtensions.push_back(ext);
+			}
+		}
+#endif
+
+		// shaderDrawParameters was always required. The video path additionally needs
+		// timeline semaphores + synchronization2 + sampler ycbcr conversion (FFmpeg's
+		// Vulkan decoder + our NV12 conversion pass rely on them). We enable only the
+		// bits the device reports as available.
+		VkPhysicalDeviceShaderDrawParametersFeatures shaderDrawParams{};
+		shaderDrawParams.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
+		shaderDrawParams.shaderDrawParameters = VK_TRUE;
+
+		VkPhysicalDeviceVulkan11Features vk11{};
+		vk11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+		VkPhysicalDeviceVulkan12Features vk12{};
+		vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+		VkPhysicalDeviceVulkan13Features vk13{};
+		vk13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+
+		VkDeviceCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		createInfo.pQueueCreateInfos = queueCreateInfos.data();
+		createInfo.queueCreateInfoCount = static_cast<UInt32>(queueCreateInfos.size());
+		createInfo.pEnabledFeatures = &deviceFeatures;
 		createInfo.enabledExtensionCount = static_cast<UInt32>(enabledExtensions.size());
 		createInfo.ppEnabledExtensionNames = enabledExtensions.data();
+
+		if (videoDecode)
+		{
+			VkPhysicalDeviceVulkan13Features avail13{};
+			avail13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+			VkPhysicalDeviceVulkan12Features avail12{};
+			avail12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+			avail12.pNext = &avail13;
+			VkPhysicalDeviceVulkan11Features avail11{};
+			avail11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+			avail11.pNext = &avail12;
+			VkPhysicalDeviceFeatures2 avail2{};
+			avail2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+			avail2.pNext = &avail11;
+			physicalDevice.GetInstance().vkGetPhysicalDeviceFeatures2(*physicalDevice.Get(), &avail2);
+
+			vk11.shaderDrawParameters = VK_TRUE; // subsumes the standalone struct
+			vk11.samplerYcbcrConversion = avail11.samplerYcbcrConversion;
+			vk12.timelineSemaphore = avail12.timelineSemaphore;
+			vk13.synchronization2 = avail13.synchronization2;
+
+			vk11.pNext = &vk12;
+			vk12.pNext = &vk13;
+			createInfo.pNext = &vk11;
+		}
+		else
+		{
+			createInfo.pNext = &shaderDrawParams;
+		}
 
 		const VkResult result = physicalDevice.GetInstance().vkCreateDevice(*m_physicalDevice->Get(), &createInfo, nullptr, &m_handle);
 		CCT_ASSERT(result == VK_SUCCESS, "Error cannot create logical device: VkResult={}", static_cast<int>(result));
@@ -141,6 +199,20 @@ namespace cct::gfx::vk
 
 		for (auto& ext : enabledExtensions)
 			m_extensions.emplace(ext);
+
+		m_videoDecodeSupported = videoDecode;
+		if (videoDecode)
+		{
+			constexpr UInt32 videoDecodeBit = 0x00000020;
+			for (UInt32 i = 0; i < static_cast<UInt32>(queueFamilyProperties.size()); ++i)
+			{
+				if (queueFamilyProperties[i].queueFlags & videoDecodeBit)
+				{
+					m_videoDecodeQueueFamily = i;
+					break;
+				}
+			}
+		}
 
 		VolkDeviceTable deviceTable;
 		volkLoadDeviceTable(&deviceTable, m_handle);

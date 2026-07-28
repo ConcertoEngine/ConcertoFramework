@@ -27,7 +27,7 @@ namespace cct::gfx::rhi
 		void BindVertexBuffer(const rhi::Buffer& buffer) override;
 		void Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance) override;
 		void Copy(const Buffer& src, const Texture& dst) override;
-		void Copy(const Texture& src, const Buffer& dst) override;
+		void Copy(const Texture& src, const Buffer& dst, UInt64 dstOffset = 0) override;
 		void TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout) override;
 
 		void BindPipeline(const Pipeline& pipeline) override;
@@ -50,6 +50,7 @@ namespace cct::gfx::rhi
 
 		void BeginDebugLabel(const char* name, float r, float g, float b) override;
 		void EndDebugLabel() override;
+		void* GetNativeHandle() const override;
 
 	private:
 		VkRHIDevice* m_device = nullptr;

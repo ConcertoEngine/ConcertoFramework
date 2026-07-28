@@ -40,6 +40,10 @@ namespace cct::gfx::vk
 		[[nodiscard]] std::span<PhysicalDevice> EnumeratePhysicalDevices() const;
 
 		bool IsExtensionEnabled(const std::string& ext) const; // use string_view instead
+		[[nodiscard]] const std::unordered_set<std::string>& GetLoadedExtensions() const
+		{
+			return m_loadedExtensions;
+		}
 
 #define CONCERTO_VULKAN_BACKEND_INSTANCE_FUNCTION(func) PFN_##func func = nullptr;
 #define CONCERTO_VULKAN_BACKEND_INSTANCE_EXT_FUNCTION(func, ...) CONCERTO_VULKAN_BACKEND_INSTANCE_FUNCTION(func)

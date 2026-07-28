@@ -30,9 +30,14 @@ namespace cct::gfx::vk
 		if (m_queueFamilyProperties)
 			return m_queueFamilyProperties.value();
 		UInt32 queueFamilyCount = 0;
-		m_instance->vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, nullptr);
+		m_instance->vkGetPhysicalDeviceQueueFamilyProperties2(m_physicalDevice, &queueFamilyCount, nullptr);
+		std::vector<VkQueueFamilyProperties2> properties2(queueFamilyCount);
+		for (auto& p : properties2)
+			p.sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2;
+		m_instance->vkGetPhysicalDeviceQueueFamilyProperties2(m_physicalDevice, &queueFamilyCount, properties2.data());
 		std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount);
-		m_instance->vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+		for (UInt32 i = 0; i < queueFamilyCount; ++i)
+			queueFamilyProperties[i] = properties2[i].queueFamilyProperties;
 		m_queueFamilyProperties = std::move(queueFamilyProperties);
 		return m_queueFamilyProperties.value();
 	}

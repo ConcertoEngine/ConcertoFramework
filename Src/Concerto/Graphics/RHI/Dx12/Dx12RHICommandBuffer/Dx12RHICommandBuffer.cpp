@@ -240,7 +240,7 @@ namespace cct::gfx::rhi
 		Get()->CopyTextureRegion(&dstLoc, 0, 0, 0, &srcLoc, nullptr);
 	}
 
-	void Dx12RHICommandBuffer::Copy(const Texture& src, const Buffer& dst)
+	void Dx12RHICommandBuffer::Copy(const Texture& src, const Buffer& dst, UInt64 dstOffset)
 	{
 		if (!IsValid() || !m_device)
 			return;
@@ -260,6 +260,8 @@ namespace cct::gfx::rhi
 		srcLoc.pResource = dx12Texture.GetResource();
 		srcLoc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
 		srcLoc.SubresourceIndex = 0;
+
+		footprint.Offset = dstOffset;
 
 		D3D12_TEXTURE_COPY_LOCATION dstLoc{};
 		dstLoc.pResource = dx12Buffer.GetResource();
