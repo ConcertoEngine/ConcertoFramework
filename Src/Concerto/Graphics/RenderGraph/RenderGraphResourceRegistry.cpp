@@ -124,10 +124,23 @@ namespace cct::gfx::rhi
 		std::vector<RenderGraphResourceRegistry::TextureTransientSnapshot>& textures,
 		std::vector<RenderGraphResourceRegistry::BufferTransientSnapshot>& buffers)
 	{
+		// Bounded pool: without a cap, repeated topology rebuilds would accumulate
+		// retired resources forever (each rebuild allocates fresh transients while the
+		// previous generation is still fence-protected).
+		constexpr std::size_t kMaxPooledPerDesc = 8;
+
 		for (auto& snap : textures)
-			m_transientTexturePool[HashDesc(snap.desc)].push_back(std::move(snap.physical));
+		{
+			auto& bucket = m_transientTexturePool[HashDesc(snap.desc)];
+			if (bucket.size() < kMaxPooledPerDesc)
+				bucket.push_back(std::move(snap.physical));
+		}
 		for (auto& snap : buffers)
-			m_transientBufferPool[HashDesc(snap.desc)].push_back(std::move(snap.physical));
+		{
+			auto& bucket = m_transientBufferPool[HashDesc(snap.desc)];
+			if (bucket.size() < kMaxPooledPerDesc)
+				bucket.push_back(std::move(snap.physical));
+		}
 		textures.clear();
 		buffers.clear();
 	}
@@ -146,21 +159,13 @@ namespace cct::gfx::rhi
 
 	void RenderGraphResourceRegistry::Reset()
 	{
+		// Transient entries keep their physical resource and tracked layout across frames:
+		// the handle->physical assignment is stable until ClearEntries(), so descriptor sets
+		// bound to a transient texture stay valid between rebuilds.
 		for (auto& entry : m_textures)
 		{
 			if (entry.imported)
 				entry.currentLayout = entry.initialLayout;
-			else
-			{
-				entry.physical = nullptr;
-				entry.currentLayout = ImageLayout::Undefined;
-			}
-		}
-
-		for (auto& entry : m_buffers)
-		{
-			if (!entry.imported)
-				entry.physical = nullptr;
 		}
 	}
 

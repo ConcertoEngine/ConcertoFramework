@@ -94,16 +94,41 @@ namespace cct::gfx::rhi
 
 	void RenderGraph::Compile()
 	{
+		RetireCompiledPasses();
 		m_compiledPasses = m_compiler.Compile(m_passes, m_registry, m_device, m_finalOutput);
 		m_dirty = false;
 	}
 
-	void RenderGraph::Execute(CommandBuffer& cmd, UInt32 frameWidth, UInt32 frameHeight)
+	void RenderGraph::AllocateResources()
 	{
 		if (m_dirty)
 			Compile();
 
 		m_registry.Allocate(m_device);
+	}
+
+	Texture& RenderGraph::GetTexture(RGTextureHandle handle)
+	{
+		return m_registry.GetTexture(handle);
+	}
+
+	void RenderGraph::RetireCompiledPasses()
+	{
+		for (RGCompiledPass& cp : m_compiledPasses)
+		{
+			if (cp.frameBuffer)
+				m_retired.frameBuffers.push_back(std::move(cp.frameBuffer));
+			for (auto& view : cp.attachmentViews)
+				m_retired.attachmentViews.push_back(std::move(view));
+			cp.attachmentViews.clear();
+			if (cp.renderPass)
+				m_retired.renderPasses.push_back(std::move(cp.renderPass));
+		}
+	}
+
+	void RenderGraph::Execute(CommandBuffer& cmd, UInt32 frameWidth, UInt32 frameHeight)
+	{
+		AllocateResources();
 
 		RenderPass* activeRenderPass = nullptr;
 
@@ -127,7 +152,7 @@ namespace cct::gfx::rhi
 
 		for (std::size_t i = 0; i < m_compiledPasses.size(); ++i)
 		{
-			const RGCompiledPass& compiled = m_compiledPasses[i];
+			RGCompiledPass& compiled = m_compiledPasses[i];
 			const RGPass& pass = m_passes[compiled.passIndex];
 
 			const bool isMergedGraphics = (pass.type == RGPassType::Graphics && !compiled.renderPass && activeRenderPass != nullptr);
@@ -147,33 +172,36 @@ namespace cct::gfx::rhi
 					emitBarriersForPass(mp);
 				}
 
-				std::vector<std::unique_ptr<TextureView>> views;
-				views.reserve(pass.colorAttachments.size() + (pass.depthAttachment.has_value() ? 1 : 0));
-
-				for (const RGTextureHandle colorHandle : pass.colorAttachments)
-					views.push_back(m_registry.GetTexture(colorHandle).CreateView());
-
-				if (pass.depthAttachment.has_value())
-					views.push_back(m_registry.GetTexture(*pass.depthAttachment).CreateView());
-
-				UInt32 fbWidth = frameWidth, fbHeight = frameHeight;
-				if (!pass.colorAttachments.empty())
+				if (!compiled.frameBuffer)
 				{
-					const auto& desc = m_registry.GetDesc(pass.colorAttachments[0]);
-					if (desc.width > 0 && desc.height > 0)
-						fbWidth = desc.width, fbHeight = desc.height;
-				}
-				else if (pass.depthAttachment.has_value())
-				{
-					const auto& desc = m_registry.GetDesc(*pass.depthAttachment);
-					if (desc.width > 0 && desc.height > 0)
-						fbWidth = desc.width, fbHeight = desc.height;
+					std::vector<std::unique_ptr<TextureView>> views;
+					views.reserve(pass.colorAttachments.size() + (pass.depthAttachment.has_value() ? 1 : 0));
+
+					for (const RGTextureHandle colorHandle : pass.colorAttachments)
+						views.push_back(m_registry.GetTexture(colorHandle).CreateView());
+
+					if (pass.depthAttachment.has_value())
+						views.push_back(m_registry.GetTexture(*pass.depthAttachment).CreateView());
+
+					UInt32 fbWidth = frameWidth, fbHeight = frameHeight;
+					if (!pass.colorAttachments.empty())
+					{
+						const auto& desc = m_registry.GetDesc(pass.colorAttachments[0]);
+						if (desc.width > 0 && desc.height > 0)
+							fbWidth = desc.width, fbHeight = desc.height;
+					}
+					else if (pass.depthAttachment.has_value())
+					{
+						const auto& desc = m_registry.GetDesc(*pass.depthAttachment);
+						if (desc.width > 0 && desc.height > 0)
+							fbWidth = desc.width, fbHeight = desc.height;
+					}
+
+					compiled.frameBuffer = m_device.CreateFrameBuffer(fbWidth, fbHeight, *compiled.renderPass, views);
+					compiled.attachmentViews = std::move(views);
 				}
 
-				auto fb = m_device.CreateFrameBuffer(fbWidth, fbHeight, *compiled.renderPass, views);
-				m_currentFrameBuffer = fb.get();
-				m_frameFrameBuffers.push_back(std::move(fb));
-
+				m_currentFrameBuffer = compiled.frameBuffer.get();
 				activeRenderPass = compiled.renderPass.get();
 				cmd.BeginRenderPass(*compiled.renderPass, *m_currentFrameBuffer, Vector3f{0.f, 0.f, 0.f});
 			}
@@ -207,11 +235,8 @@ namespace cct::gfx::rhi
 
 	void RenderGraph::Reset()
 	{
-		PendingFrameResources pending;
-		pending.frameBuffers = std::move(m_frameFrameBuffers);
-		m_frameFrameBuffers.clear();
-		m_registry.ExtractTransients(pending.transientTextures, pending.transientBuffers);
-		m_pendingFrames.push_back(std::move(pending));
+		m_pendingFrames.push_back(std::move(m_retired));
+		m_retired = {};
 
 		while (m_pendingFrames.size() > m_maxFramesInFlight)
 		{
@@ -245,6 +270,8 @@ namespace cct::gfx::rhi
 
 	void RenderGraph::Clear()
 	{
+		m_registry.ExtractTransients(m_retired.transientTextures, m_retired.transientBuffers);
+		RetireCompiledPasses();
 		m_passes.clear();
 		m_compiledPasses.clear();
 		m_registry.ClearEntries();

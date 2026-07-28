@@ -65,8 +65,19 @@ namespace cct::gfx::rhi
 		void SetFinalOutput(RGTextureHandle handle);
 
 		void Compile();
+
+		// Compile (if dirty) and allocate physical resources for all declared transients.
+		// Idempotent; called by Execute(). Call it explicitly to access transient textures
+		// (GetTexture) before the first Execute — e.g. to bind descriptor sets once at build time.
+		void AllocateResources();
+
 		void Execute(CommandBuffer& cmd, UInt32 frameWidth, UInt32 frameHeight);
 		void Reset();
+
+		// Physical texture behind a handle. Transients require AllocateResources() first.
+		// The assignment is stable until Clear(): descriptor sets bound to this texture
+		// stay valid across frames.
+		[[nodiscard]] Texture& GetTexture(RGTextureHandle handle);
 
 		// Update the tracked layout of an imported texture after an external pipeline barrier.
 		// Call this when you manually emit a barrier on a texture that bypasses the graph's tracking.
@@ -92,19 +103,28 @@ namespace cct::gfx::rhi
 		void DumpGraph(std::ostream& out) const;
 
 	private:
+		// Members are destroyed in reverse declaration order, so this list is ordered
+		// dependencies-first: framebuffers must go before the views they reference,
+		// and views before the images and render passes they were created from.
 		struct PendingFrameResources
 		{
-			std::vector<std::unique_ptr<FrameBuffer>> frameBuffers;
-			std::vector<RenderGraphResourceRegistry::TextureTransientSnapshot> transientTextures;
 			std::vector<RenderGraphResourceRegistry::BufferTransientSnapshot> transientBuffers;
+			std::vector<RenderGraphResourceRegistry::TextureTransientSnapshot> transientTextures;
+			std::vector<std::unique_ptr<RenderPass>> renderPasses;
+			std::vector<std::unique_ptr<TextureView>> attachmentViews;
+			std::vector<std::unique_ptr<FrameBuffer>> frameBuffers;
 		};
+
+		// Move GPU objects owned by the current compiled passes into m_retired,
+		// so a recompile never destroys resources a previous frame may still use.
+		void RetireCompiledPasses();
 
 		Device& m_device;
 		std::vector<RGPass> m_passes;
 		RenderGraphResourceRegistry m_registry;
 		RenderGraphCompiler m_compiler;
 		std::vector<RGCompiledPass> m_compiledPasses;
-		std::vector<std::unique_ptr<FrameBuffer>> m_frameFrameBuffers; // current frame, moved to deque in Reset()
+		PendingFrameResources m_retired; // staged by Clear()/Compile(), drained into m_pendingFrames by Reset()
 		std::deque<PendingFrameResources> m_pendingFrames; // deferred cleanup queue
 		UInt32 m_maxFramesInFlight;
 		RGTextureHandle m_finalOutput;

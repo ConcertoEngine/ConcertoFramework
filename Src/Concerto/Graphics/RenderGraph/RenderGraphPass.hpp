@@ -12,7 +12,9 @@
 #include <vector>
 
 #include "Concerto/Graphics/RenderGraph/RenderGraphResource.hpp"
+#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
 #include "Concerto/Graphics/RHI/RenderPass.hpp"
+#include "Concerto/Graphics/RHI/Texture.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -50,6 +52,11 @@ namespace cct::gfx::rhi
 		UInt32 passIndex;
 		std::unique_ptr<RenderPass> renderPass; // non-null when this pass opens a new render pass
 		bool closesRenderPass = true; // false when the next pass continues the same render pass
+
+		// Declared so the framebuffer is destroyed before the views it references
+		// (members are destroyed in reverse declaration order).
+		std::vector<std::unique_ptr<TextureView>> attachmentViews;
+		std::unique_ptr<FrameBuffer> frameBuffer; // cached, created lazily on first Execute after Compile
 	};
 } // namespace cct::gfx::rhi
 
