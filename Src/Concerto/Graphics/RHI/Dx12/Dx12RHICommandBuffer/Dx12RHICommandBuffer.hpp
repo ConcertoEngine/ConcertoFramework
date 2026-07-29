@@ -42,6 +42,14 @@ namespace cct::gfx::rhi
 							 PipelineStageFlags dstStage,
 							 MemoryAccessFlags srcAccess,
 							 MemoryAccessFlags dstAccess) override;
+		void PipelineBarrier(const Buffer& buffer,
+							 PipelineStageFlags srcStage,
+							 PipelineStageFlags dstStage,
+							 MemoryAccessFlags srcAccess,
+							 MemoryAccessFlags dstAccess) override;
+		void BindComputePipeline(const Pipeline& pipeline) override;
+		void BindComputeDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set) override;
+		void Dispatch(UInt32 groupCountX, UInt32 groupCountY, UInt32 groupCountZ) override;
 
 	private:
 		static D3D12_RESOURCE_STATES ToD3D12ResourceState(ImageLayout layout);

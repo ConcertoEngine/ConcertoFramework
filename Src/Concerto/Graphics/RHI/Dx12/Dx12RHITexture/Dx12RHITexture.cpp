@@ -9,7 +9,7 @@
 
 namespace cct::gfx::rhi
 {
-	Dx12RHITexture::Dx12RHITexture(Dx12RHIDevice& device, PixelFormat format, Int32 width, Int32 height) :
+	Dx12RHITexture::Dx12RHITexture(Dx12RHIDevice& device, PixelFormat format, Int32 width, Int32 height, bool allowUnorderedAccess) :
 		m_device(&device),
 		m_width(static_cast<UInt32>(width)),
 		m_height(static_cast<UInt32>(height))
@@ -30,13 +30,17 @@ namespace cct::gfx::rhi
 		resourceDesc.SampleDesc.Count = 1;
 		resourceDesc.SampleDesc.Quality = 0;
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		resourceDesc.Flags = allowUnorderedAccess ? D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS : D3D12_RESOURCE_FLAG_NONE;
+
+		const D3D12_RESOURCE_STATES initialState = allowUnorderedAccess
+													   ? D3D12_RESOURCE_STATE_UNORDERED_ACCESS
+													   : D3D12_RESOURCE_STATE_COMMON;
 
 		HRESULT hr = device.Get()->CreateCommittedResource(
 			&heapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&resourceDesc,
-			D3D12_RESOURCE_STATE_COMMON,
+			initialState,
 			nullptr,
 			IID_PPV_ARGS(&m_resource));
 

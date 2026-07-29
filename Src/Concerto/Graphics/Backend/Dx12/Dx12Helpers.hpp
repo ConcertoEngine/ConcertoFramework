@@ -92,6 +92,8 @@ namespace cct::gfx::dx12
 				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 			case ShaderBindingType::Texture:
 				return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			case ShaderBindingType::StorageImage:
+				return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 			case ShaderBindingType::Sampler:
 				return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
 			default:

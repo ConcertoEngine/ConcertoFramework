@@ -141,4 +141,27 @@ namespace cct::gfx::rhi
 			m_device->Get()->CreateSampler(&samplerDesc, samplerHandle);
 		}
 	}
+
+	void Dx12RHIDescriptorSet::BindStorageImage(UInt32 binding, const Texture& texture)
+	{
+		const auto& dx12Texture = Cast<const Dx12RHITexture&>(texture);
+		const auto& bindings = m_layout->GetBindings();
+
+		UINT descriptorOffset = 0;
+		for (const auto& b : bindings)
+		{
+			if (b.binding == binding)
+				break;
+			descriptorOffset += b.descriptorCount;
+		}
+
+		auto dstHandle = m_gpuRange[descriptorOffset].cpuHandle;
+
+		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+		uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // TODO: get from texture
+		uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+		uavDesc.Texture2D.MipSlice = 0;
+		uavDesc.Texture2D.PlaneSlice = 0;
+		m_device->Get()->CreateUnorderedAccessView(dx12Texture.GetResource(), nullptr, &uavDesc, dstHandle);
+	}
 } // namespace cct::gfx::rhi

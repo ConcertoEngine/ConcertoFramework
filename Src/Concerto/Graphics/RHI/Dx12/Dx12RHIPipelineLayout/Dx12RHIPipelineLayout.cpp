@@ -9,7 +9,7 @@
 
 namespace cct::gfx::rhi
 {
-	Dx12RHIPipelineLayout::Dx12RHIPipelineLayout(Dx12RHIDevice& device, std::span<const std::shared_ptr<DescriptorSetLayout>> descriptorSetLayouts) :
+	Dx12RHIPipelineLayout::Dx12RHIPipelineLayout(Dx12RHIDevice& device, std::span<const std::shared_ptr<DescriptorSetLayout>> descriptorSetLayouts, bool computeOnly) :
 		m_descriptorSetLayouts(descriptorSetLayouts.begin(), descriptorSetLayouts.end())
 	{
 		std::vector<dx12::Dx12RootSignature::DescriptorTableInfo> tables;
@@ -47,7 +47,7 @@ namespace cct::gfx::rhi
 			}
 		}
 
-		m_rootSignature.Build(device.Get(), tables);
+		m_rootSignature.Build(device.Get(), tables, computeOnly);
 	}
 
 	const std::vector<std::shared_ptr<DescriptorSetLayout>>& Dx12RHIPipelineLayout::GetDescriptorSetLayouts() const

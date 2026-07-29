@@ -296,7 +296,7 @@ namespace cct::gfx::rhi
 			case ImageLayout::Undefined:
 				return D3D12_RESOURCE_STATE_COMMON;
 			case ImageLayout::General:
-				return D3D12_RESOURCE_STATE_COMMON;
+				return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
 			case ImageLayout::ColorAttachmentOptimal:
 				return D3D12_RESOURCE_STATE_RENDER_TARGET;
 			case ImageLayout::DepthStencilAttachmentOptimal:
@@ -332,5 +332,74 @@ namespace cct::gfx::rhi
 		// DX12 encodes all stage/access information in resource states.
 		// Delegate directly to TransitionImageLayout which handles the D3D12_RESOURCE_BARRIER.
 		TransitionImageLayout(texture, oldLayout, newLayout);
+	}
+
+	void Dx12RHICommandBuffer::PipelineBarrier(const Buffer& buffer,
+											   PipelineStageFlags /*srcStage*/,
+											   PipelineStageFlags /*dstStage*/,
+											   MemoryAccessFlags /*srcAccess*/,
+											   MemoryAccessFlags /*dstAccess*/)
+	{
+		if (!IsValid())
+			return;
+
+		const auto& dx12Buffer = Cast<const Dx12RHIBuffer&>(buffer);
+
+		D3D12_RESOURCE_BARRIER barrier{};
+		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		barrier.UAV.pResource = dx12Buffer.GetResource();
+
+		Get()->ResourceBarrier(1, &barrier);
+	}
+
+	void Dx12RHICommandBuffer::BindComputePipeline(const Pipeline& pipeline)
+	{
+		if (!IsValid() || !m_device)
+			return;
+
+		const auto& dx12Pipeline = Cast<const Dx12RHIPipeline&>(pipeline);
+		Get()->SetPipelineState(dx12Pipeline.GetPipelineState());
+		Get()->SetComputeRootSignature(dx12Pipeline.GetLayout().GetRootSignature().Get());
+
+		auto& pool = m_device->GetDescriptorPool();
+		ID3D12DescriptorHeap* heaps[] = {
+			pool.GetGpuHeap()->GetHeap(),
+			pool.GetSamplerHeap()->GetHeap()};
+		Get()->SetDescriptorHeaps(_countof(heaps), heaps);
+	}
+
+	void Dx12RHICommandBuffer::BindComputeDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set)
+	{
+		if (!IsValid())
+			return;
+
+		const auto& dx12Layout = Cast<const Dx12RHIPipelineLayout&>(layout);
+		const auto& dx12Set = Cast<const Dx12RHIDescriptorSet&>(set);
+		const auto& rootSig = dx12Layout.GetRootSignature();
+
+		const auto& gpuRange = dx12Set.GetDescriptorRange();
+		if (gpuRange.baseHandle.IsValid())
+		{
+			UINT rootParamIndex = rootSig.GetRootParameterIndex(0, false);
+			if (rootParamIndex != UINT_MAX)
+				Get()->SetComputeRootDescriptorTable(rootParamIndex, gpuRange.baseHandle.gpuHandle);
+		}
+
+		if (dx12Set.HasSamplers())
+		{
+			const auto& samplerRange = dx12Set.GetSamplerRange();
+			UINT samplerRootParam = rootSig.GetRootParameterIndex(0, true);
+			if (samplerRootParam != UINT_MAX)
+				Get()->SetComputeRootDescriptorTable(samplerRootParam, samplerRange.baseHandle.gpuHandle);
+		}
+	}
+
+	void Dx12RHICommandBuffer::Dispatch(UInt32 groupCountX, UInt32 groupCountY, UInt32 groupCountZ)
+	{
+		if (!IsValid())
+			return;
+
+		Get()->Dispatch(groupCountX, groupCountY, groupCountZ);
 	}
 } // namespace cct::gfx::rhi

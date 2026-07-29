@@ -42,9 +42,11 @@ namespace cct::gfx::rhi
 		std::shared_ptr<rhi::Pipeline> CreatePipeline(const rhi::ShaderModule& vertexShader, const rhi::ShaderModule& fragmentShader,
 													  const rhi::RenderPass& renderPass, const rhi::PipelineLayout& pipelineLayout,
 													  const Vector2u& windowExtent) override;
+		std::shared_ptr<rhi::Pipeline> CreateComputePipeline(const rhi::ShaderModule& computeShader, const rhi::PipelineLayout& pipelineLayout) override;
 		std::unique_ptr<rhi::DescriptorSet> CreateDescriptorSet(const rhi::DescriptorSetLayout& layout) override;
 		std::size_t GetMinimumUniformBufferOffsetAlignment() const override;
 		std::shared_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height) override;
+		std::shared_ptr<Texture> CreateStorageTexture(PixelFormat format, Int32 width, Int32 height) override;
 		void WaitIdle() override;
 		std::unique_ptr<GpuMesh> CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, const RenderPass& renderPass) override;
 

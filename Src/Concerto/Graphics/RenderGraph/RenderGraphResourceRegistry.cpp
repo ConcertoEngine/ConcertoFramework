@@ -68,14 +68,14 @@ namespace cct::gfx::rhi
 			else
 			{
 				entry.physical = entry.desc.storage
-					? device.CreateStorageTexture(
-						entry.desc.format,
-						static_cast<Int32>(entry.desc.width),
-						static_cast<Int32>(entry.desc.height))
-					: device.CreateTexture(
-						entry.desc.format,
-						static_cast<Int32>(entry.desc.width),
-						static_cast<Int32>(entry.desc.height));
+									 ? device.CreateStorageTexture(
+										   entry.desc.format,
+										   static_cast<Int32>(entry.desc.width),
+										   static_cast<Int32>(entry.desc.height))
+									 : device.CreateTexture(
+										   entry.desc.format,
+										   static_cast<Int32>(entry.desc.width),
+										   static_cast<Int32>(entry.desc.height));
 				CCT_ASSERT(entry.physical != nullptr,
 						   "RenderGraphResourceRegistry::Allocate: Create{}Texture failed for '{}'",
 						   entry.desc.storage ? "Storage" : "", entry.desc.name);

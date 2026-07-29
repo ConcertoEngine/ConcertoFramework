@@ -14,16 +14,18 @@
 
 namespace cct::gfx::rhi
 {
-	class Texture;
+	class CommandBuffer;
 
 	class CONCERTO_GRAPHICS_RHI_BASE_API Buffer
 	{
 	public:
 		virtual ~Buffer() = default;
 
-		virtual bool CopyTo(const Texture& texture) = 0;
 		virtual bool Map(Byte** data) = 0;
 		virtual void UnMap() = 0;
+		virtual void RecordReadback(CommandBuffer& /*cmd*/)
+		{
+		}
 
 		template<typename T>
 			requires std::is_trivially_copyable_v<T>

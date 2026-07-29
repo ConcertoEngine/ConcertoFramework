@@ -6,8 +6,8 @@
 
 #include <Concerto/Core/Cast.hpp>
 
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -21,8 +21,13 @@ namespace cct::gfx::rhi
 		UInt32 allocSize = isUniform ? (size + 255) & ~255u : size;
 		m_size = allocSize;
 
+		const bool isStorage = usage.Contains(BufferUsage::Storage);
+		const bool needsHostReadback = usage.Contains(BufferUsage::HostReadback);
+		const bool needsReadbackShadow = allowMapping && needsHostReadback;
+		const bool wantsUav = isStorage && (!allowMapping || needsHostReadback);
+
 		D3D12_HEAP_PROPERTIES heapProperties = {};
-		heapProperties.Type = allowMapping ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
+		heapProperties.Type = (allowMapping && !needsReadbackShadow) ? D3D12_HEAP_TYPE_UPLOAD : D3D12_HEAP_TYPE_DEFAULT;
 		heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
 		heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 
@@ -37,9 +42,13 @@ namespace cct::gfx::rhi
 		resourceDesc.SampleDesc.Count = 1;
 		resourceDesc.SampleDesc.Quality = 0;
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		resourceDesc.Flags = wantsUav
+								 ? D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
+								 : D3D12_RESOURCE_FLAG_NONE;
 
-		D3D12_RESOURCE_STATES initialState = allowMapping ? D3D12_RESOURCE_STATE_GENERIC_READ : D3D12_RESOURCE_STATE_COMMON;
+		const D3D12_RESOURCE_STATES initialState = (heapProperties.Type == D3D12_HEAP_TYPE_UPLOAD)
+													   ? D3D12_RESOURCE_STATE_GENERIC_READ
+													   : D3D12_RESOURCE_STATE_COMMON;
 
 		HRESULT hr = device.Get()->CreateCommittedResource(
 			&heapProperties,
@@ -53,71 +62,50 @@ namespace cct::gfx::rhi
 
 		if (SUCCEEDED(hr))
 			m_gpuAddress = m_resource->GetGPUVirtualAddress();
+
+		if (needsReadbackShadow && SUCCEEDED(hr))
+		{
+			D3D12_HEAP_PROPERTIES readbackHeapProperties = {};
+			readbackHeapProperties.Type = D3D12_HEAP_TYPE_READBACK;
+			readbackHeapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+			readbackHeapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+
+			D3D12_RESOURCE_DESC readbackDesc = resourceDesc;
+			readbackDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+			HRESULT readbackHr = device.Get()->CreateCommittedResource(
+				&readbackHeapProperties,
+				D3D12_HEAP_FLAG_NONE,
+				&readbackDesc,
+				D3D12_RESOURCE_STATE_COPY_DEST,
+				nullptr,
+				IID_PPV_ARGS(&m_readbackResource));
+
+			CCT_ASSERT(SUCCEEDED(readbackHr), "ConcertoGraphics: Failed to create DX12 buffer readback shadow HRESULT={}", readbackHr);
+		}
 	}
 
-	bool Dx12RHIBuffer::CopyTo(const Texture& texture)
+	void Dx12RHIBuffer::RecordReadback(CommandBuffer& cmd)
 	{
-		const auto& dx12Texture = Cast<const Dx12RHITexture&>(texture);
-		auto* d3dDevice = m_device->dx12::Device::Get();
+		if (!m_readbackResource)
+			return;
 
-		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> cmdAllocator;
-		HRESULT hr = d3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&cmdAllocator));
-		if (FAILED(hr))
-			return false;
+		auto* cmdList = Cast<Dx12RHICommandBuffer&>(cmd).Get();
 
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList;
-		hr = d3dDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, cmdAllocator.Get(), nullptr, IID_PPV_ARGS(&cmdList));
-		if (FAILED(hr))
-			return false;
+		D3D12_RESOURCE_BARRIER toCopySrc{};
+		toCopySrc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		toCopySrc.Transition.pResource = m_resource.Get();
+		toCopySrc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		toCopySrc.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
+		toCopySrc.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+		cmdList->ResourceBarrier(1, &toCopySrc);
 
-		// Get texture layout info for the copy
-		D3D12_RESOURCE_DESC texDesc = dx12Texture.GetResource()->GetDesc();
-		D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
-		UINT numRows = 0;
-		UINT64 rowSizeInBytes = 0;
-		UINT64 totalBytes = 0;
-		d3dDevice->GetCopyableFootprints(&texDesc, 0, 1, 0, &footprint, &numRows, &rowSizeInBytes, &totalBytes);
+		cmdList->CopyBufferRegion(m_readbackResource.Get(), 0, m_resource.Get(), 0, m_size);
 
-		// Copy buffer to texture
-		D3D12_TEXTURE_COPY_LOCATION dst{};
-		dst.pResource = dx12Texture.GetResource();
-		dst.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-		dst.SubresourceIndex = 0;
-
-		D3D12_TEXTURE_COPY_LOCATION src{};
-		src.pResource = m_resource.Get();
-		src.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-		src.PlacedFootprint = footprint;
-
-		// Transition texture from COMMON to COPY_DEST
-		D3D12_RESOURCE_BARRIER barrierToCopyDst{};
-		barrierToCopyDst.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrierToCopyDst.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrierToCopyDst.Transition.pResource = dx12Texture.GetResource();
-		barrierToCopyDst.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		barrierToCopyDst.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-		barrierToCopyDst.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
-		cmdList->ResourceBarrier(1, &barrierToCopyDst);
-
-		cmdList->CopyTextureRegion(&dst, 0, 0, 0, &src, nullptr);
-
-		// Transition texture from COPY_DEST to PIXEL_SHADER_RESOURCE
-		D3D12_RESOURCE_BARRIER barrier{};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.Transition.pResource = dx12Texture.GetResource();
-		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-		barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-		cmdList->ResourceBarrier(1, &barrier);
-
-		hr = cmdList->Close();
-		if (FAILED(hr))
-			return false;
-
-		// Execute on the device's persistent upload queue and wait for completion
-		m_device->ExecuteAndWait(cmdList.Get());
-		return true;
+		D3D12_RESOURCE_BARRIER backToCommon = toCopySrc;
+		backToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+		backToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
+		cmdList->ResourceBarrier(1, &backToCommon);
 	}
 
 	bool Dx12RHIBuffer::Map(Byte** data)
@@ -125,9 +113,9 @@ namespace cct::gfx::rhi
 		if (!m_allowMapping || !m_resource)
 			return false;
 
-		D3D12_RANGE readRange = {0, 0}; // We don't need to read
-		HRESULT hr = m_resource->Map(0, &readRange, reinterpret_cast<void**>(data));
-		return SUCCEEDED(hr);
+		auto* target = m_readbackResource ? m_readbackResource.Get() : m_resource.Get();
+		const D3D12_RANGE readRange = m_readbackResource ? D3D12_RANGE{0, m_size} : D3D12_RANGE{0, 0};
+		return SUCCEEDED(target->Map(0, &readRange, reinterpret_cast<void**>(data)));
 	}
 
 	void Dx12RHIBuffer::UnMap()
@@ -135,6 +123,7 @@ namespace cct::gfx::rhi
 		if (!m_allowMapping || !m_resource)
 			return;
 
-		m_resource->Unmap(0, nullptr);
+		auto* target = m_readbackResource ? m_readbackResource.Get() : m_resource.Get();
+		target->Unmap(0, nullptr);
 	}
 } // namespace cct::gfx::rhi

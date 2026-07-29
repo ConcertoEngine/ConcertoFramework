@@ -128,7 +128,8 @@ namespace cct::gfx::rhi
 		TransferSrc = 0x00000008,
 		TransferDst = 0x00000010,
 		Indirect = 0x00000020,
-		Index = 0x00000040
+		Index = 0x00000040,
+		HostReadback = 0x00000080
 	};
 	using BufferUsageFlags = cct::EnumFlags<BufferUsage>;
 

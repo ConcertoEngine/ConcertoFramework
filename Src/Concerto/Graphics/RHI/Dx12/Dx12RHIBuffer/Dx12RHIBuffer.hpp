@@ -19,7 +19,7 @@ namespace cct::gfx::rhi
 		Dx12RHIBuffer(Dx12RHIDevice& device, rhi::BufferUsageFlags usage, UInt32 size, bool allowMapping);
 		~Dx12RHIBuffer() override = default;
 
-		bool CopyTo(const Texture& texture) override;
+		void RecordReadback(CommandBuffer& cmd) override;
 		bool Map(Byte** data) override;
 		void UnMap() override;
 
@@ -38,6 +38,7 @@ namespace cct::gfx::rhi
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_resource;
+		Microsoft::WRL::ComPtr<ID3D12Resource> m_readbackResource;
 		Dx12RHIDevice* m_device;
 		UInt32 m_size;
 		bool m_allowMapping;

@@ -16,7 +16,6 @@ namespace cct::gfx::rhi
 	public:
 		VkRHIBuffer(VkRHIDevice& device, rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping);
 
-		bool CopyTo(const Texture& texture) override;
 		bool Map(Byte** data) override;
 		void UnMap() override;
 

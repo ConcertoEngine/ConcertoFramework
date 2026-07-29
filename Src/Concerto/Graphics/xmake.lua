@@ -4,6 +4,10 @@ add_requires("volk", {configs = {header_only = true}})
 add_requires("nzsl", {configs = {shared = false}})
 add_requires("vulkan-headers", "vulkan-memory-allocator", "stb", "vulkan-utility-libraries", "parallel-hashmap", "tinyobjloader")
 add_requires("libsdl3", {configs = {wayland = is_plat("linux", "bsd"), x11 = is_plat("linux", "bsd")}})
+if is_plat("windows") then
+    add_requires("spirv-cross")
+    add_requires("directxshadercompiler")
+end
 
 option("examples", { description = "Build examples", default = false })
 option("object_debug", { description = "Build with graphics object debugging", default = is_mode("debug") })
@@ -132,6 +136,7 @@ target("concerto-rhi-module", function()
         add_deps("concerto-dx12-backend")
         add_syslinks("d3d12")
         add_defines("NZSL_WITH_DXC")
+        add_packages("spirv-cross", "directxshadercompiler", { public = false })
     end
     add_deps("concerto-vulkan-backend")
 

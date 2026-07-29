@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
+#include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/ShaderModule.hpp"
 
@@ -24,7 +24,7 @@ namespace cct::gfx::rhi
 	{
 	public:
 		Dx12RHIShaderModule() = delete;
-		explicit Dx12RHIShaderModule(cct::gfx::ResolvedShaderModule&& resolved);
+		explicit Dx12RHIShaderModule(cct::gfx::ShaderModule&& shaderModule);
 		~Dx12RHIShaderModule();
 		Dx12RHIShaderModule(const Dx12RHIShaderModule&) = delete;
 		Dx12RHIShaderModule(Dx12RHIShaderModule&&) = default;
@@ -42,11 +42,11 @@ namespace cct::gfx::rhi
 		D3D12_SHADER_BYTECODE GetD3D12ShaderBytecode() const;
 
 	private:
-		std::unordered_map<UInt32, std::vector<cct::gfx::DescriptorSetLayoutBinding>> m_bindings;
-		std::string m_entryPointName;
-		cct::gfx::ShaderStage m_stage;
+		void CompileToDxil();
+
+		cct::gfx::ShaderModule m_abstractShaderModule;
 		std::vector<Byte> m_compiledBytecode; // DXIL bytecode
-		std::vector<UInt32> m_emptyShaderBytes; // empty, for interface compat
+		std::vector<UInt32> m_emptyShaderBytes; // empty, for interface compat (DX12 has no SPIR-V to expose)
 	};
 } // namespace cct::gfx::rhi
 

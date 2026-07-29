@@ -20,7 +20,7 @@ namespace cct::gfx::rhi
 	class CONCERTO_GRAPHICS_RHI_BASE_API Dx12RHIPipelineLayout : public rhi::PipelineLayout
 	{
 	public:
-		Dx12RHIPipelineLayout(Dx12RHIDevice& device, std::span<const std::shared_ptr<DescriptorSetLayout>> descriptorSetLayouts);
+		Dx12RHIPipelineLayout(Dx12RHIDevice& device, std::span<const std::shared_ptr<DescriptorSetLayout>> descriptorSetLayouts, bool computeOnly = false);
 
 		const std::vector<std::shared_ptr<DescriptorSetLayout>>& GetDescriptorSetLayouts() const override;
 

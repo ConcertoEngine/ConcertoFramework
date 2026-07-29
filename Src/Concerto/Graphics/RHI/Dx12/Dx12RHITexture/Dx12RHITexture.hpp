@@ -15,7 +15,7 @@ namespace cct::gfx::rhi
 	class CONCERTO_GRAPHICS_RHI_BASE_API Dx12RHITexture : public rhi::Texture
 	{
 	public:
-		Dx12RHITexture(Dx12RHIDevice& device, PixelFormat format, Int32 width, Int32 height);
+		Dx12RHITexture(Dx12RHIDevice& device, PixelFormat format, Int32 width, Int32 height, bool allowUnorderedAccess = false);
 		~Dx12RHITexture() override = default;
 
 		[[nodiscard]] ID3D12Resource* GetResource() const

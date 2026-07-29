@@ -8,8 +8,12 @@
 
 namespace cct::gfx::dx12
 {
-	void Dx12RootSignature::Build(ID3D12Device* device, const std::vector<DescriptorTableInfo>& tables)
+	void Dx12RootSignature::Build(ID3D12Device* device, const std::vector<DescriptorTableInfo>& tables, bool computeOnly)
 	{
+		const D3D12_ROOT_SIGNATURE_FLAGS flags = computeOnly
+													 ? D3D12_ROOT_SIGNATURE_FLAG_NONE
+													 : D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
 		if (tables.empty())
 		{
 			// Create an empty root signature
@@ -19,7 +23,7 @@ namespace cct::gfx::dx12
 			rootSignatureDesc.Desc_1_1.pParameters = nullptr;
 			rootSignatureDesc.Desc_1_1.NumStaticSamplers = 0;
 			rootSignatureDesc.Desc_1_1.pStaticSamplers = nullptr;
-			rootSignatureDesc.Desc_1_1.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+			rootSignatureDesc.Desc_1_1.Flags = flags;
 
 			ComPtr<ID3DBlob> signature;
 			ComPtr<ID3DBlob> error;
@@ -72,7 +76,7 @@ namespace cct::gfx::dx12
 		rootSignatureDesc.Desc_1_1.pParameters = rootParameters.data();
 		rootSignatureDesc.Desc_1_1.NumStaticSamplers = 0;
 		rootSignatureDesc.Desc_1_1.pStaticSamplers = nullptr;
-		rootSignatureDesc.Desc_1_1.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+		rootSignatureDesc.Desc_1_1.Flags = flags;
 
 		// Serialize and create
 		ComPtr<ID3DBlob> signature;

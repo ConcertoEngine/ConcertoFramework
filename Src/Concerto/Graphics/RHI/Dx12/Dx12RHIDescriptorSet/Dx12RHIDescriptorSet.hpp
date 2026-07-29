@@ -38,6 +38,7 @@ namespace cct::gfx::rhi
 		// RHI interface implementation
 		void BindBuffer(UInt32 binding, const Buffer& buffer, UInt32 offset = 0, UInt32 range = 0) override;
 		void BindTexture(UInt32 binding, const Texture& texture) override;
+		void BindStorageImage(UInt32 binding, const Texture& texture) override;
 		const std::shared_ptr<DescriptorSetLayout>& GetLayout() const override
 		{
 			return m_layout;

@@ -36,7 +36,7 @@ namespace cct::gfx::dx12
 		// Build root signature from descriptor set layouts
 		// @param device: D3D12 device
 		// @param tables: Descriptor table information
-		void Build(ID3D12Device* device, const std::vector<DescriptorTableInfo>& tables);
+		void Build(ID3D12Device* device, const std::vector<DescriptorTableInfo>& tables, bool computeOnly = false);
 
 		// Get the root signature
 		ID3D12RootSignature* Get() const noexcept

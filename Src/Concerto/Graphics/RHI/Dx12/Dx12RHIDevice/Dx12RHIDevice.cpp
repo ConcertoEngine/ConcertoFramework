@@ -91,6 +91,11 @@ namespace cct::gfx::rhi
 		return std::make_shared<Dx12RHITexture>(*this, format, width, height);
 	}
 
+	std::shared_ptr<Texture> Dx12RHIDevice::CreateStorageTexture(PixelFormat format, Int32 width, Int32 height)
+	{
+		return std::make_shared<Dx12RHITexture>(*this, format, width, height, /* allowUnorderedAccess */ true);
+	}
+
 	void Dx12RHIDevice::WaitIdle()
 	{
 		if (!m_renderQueue)
@@ -155,8 +160,8 @@ namespace cct::gfx::rhi
 																		 cct::gfx::ShaderStage stageFilter)
 	{
 		cct::gfx::ShaderModuleLoader loader;
-		auto resolved = loader.ResolveShaderModule(path, stageFilter);
-		return std::make_shared<Dx12RHIShaderModule>(std::move(resolved));
+		cct::gfx::ShaderModule coreShaderModule = loader.LoadShaderModule(path, stageFilter);
+		return std::make_shared<Dx12RHIShaderModule>(std::move(coreShaderModule));
 	}
 
 	std::shared_ptr<rhi::DescriptorSetLayout> Dx12RHIDevice::CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings)
@@ -249,6 +254,27 @@ namespace cct::gfx::rhi
 		if (FAILED(hr))
 		{
 			CCT_ASSERT_FALSE("ConcertoGraphics: Failed to create DX12 graphics pipeline state HRESULT={}", hr);
+			return nullptr;
+		}
+
+		return std::make_shared<Dx12RHIPipeline>(std::move(pipelineState), std::move(pipelineLayoutCopy));
+	}
+
+	std::shared_ptr<rhi::Pipeline> Dx12RHIDevice::CreateComputePipeline(const rhi::ShaderModule& computeShader, const rhi::PipelineLayout& pipelineLayout)
+	{
+		const auto& dx12ComputeShader = Cast<const Dx12RHIShaderModule&>(computeShader);
+
+		auto pipelineLayoutCopy = std::make_shared<Dx12RHIPipelineLayout>(*this, pipelineLayout.GetDescriptorSetLayouts(), /* computeOnly */ true);
+
+		D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+		psoDesc.pRootSignature = pipelineLayoutCopy->GetRootSignature().Get();
+		psoDesc.CS = dx12ComputeShader.GetD3D12ShaderBytecode();
+
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
+		HRESULT hr = dx12::Device::Get()->CreateComputePipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
+		if (FAILED(hr))
+		{
+			CCT_ASSERT_FALSE("ConcertoGraphics: Failed to create DX12 compute pipeline state HRESULT={}", hr);
 			return nullptr;
 		}
 
