@@ -40,6 +40,11 @@ namespace cct::gfx::rhi
 		PixelFormat format = PixelFormat::RGBA8_SRGB;
 		bool isDepth = false;
 		const char* name = "";
+		// Storage image (compute shader Read/Write) instead of a sampled/color-attachment texture.
+		// Allocated via Device::CreateStorageTexture and tracked in ImageLayout::General.
+		// Appended last so existing positional aggregate-init call sites (e.g. Compositor.cpp's
+		// {width, height, format, isDepth, "name"}) keep binding "name" to the name field.
+		bool storage = false;
 	};
 
 	struct RGBufferDesc

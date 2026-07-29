@@ -38,14 +38,21 @@ namespace cct::gfx::rhi
 
 			pass.colorAttachments.clear();
 			pass.depthAttachment.reset();
-			for (const auto& usage : pass.textureUsages)
+			// Compute/Transfer writes are storage images or copy destinations, never render
+			// pass attachments — classifying them here would feed BuildRenderPassObjects and
+			// the graphics-merge heuristic below with handles that were never meant to open
+			// a render pass.
+			if (pass.type == RGPassType::Graphics)
 			{
-				if (usage.access == RGResourceAccess::Write)
+				for (const auto& usage : pass.textureUsages)
 				{
-					if (usage.isDepth)
-						pass.depthAttachment = usage.handle;
-					else
-						pass.colorAttachments.push_back(usage.handle);
+					if (usage.access == RGResourceAccess::Write)
+					{
+						if (usage.isDepth)
+							pass.depthAttachment = usage.handle;
+						else
+							pass.colorAttachments.push_back(usage.handle);
+					}
 				}
 			}
 
@@ -366,8 +373,14 @@ namespace cct::gfx::rhi
 		(void)passIdx;
 	}
 
-	ImageLayout RenderGraphCompiler::RequiredLayout(const RGTextureUsage& usage)
+	ImageLayout RenderGraphCompiler::RequiredLayout(const RGTextureUsage& usage, RGPassType passType)
 	{
+		if (passType == RGPassType::Compute)
+			return ImageLayout::General;
+		if (passType == RGPassType::Transfer)
+			return usage.access == RGResourceAccess::Read
+					   ? ImageLayout::TransferSrcOptimal
+					   : ImageLayout::TransferDstOptimal;
 		if (usage.access == RGResourceAccess::Read)
 			return ImageLayout::ShaderReadOnlyOptimal;
 		return usage.isDepth
@@ -388,12 +401,14 @@ namespace cct::gfx::rhi
 		const PipelineStageFlags lftStage = PS::LateFragmentTests;
 		const PipelineStageFlags tfStage = PS::Transfer;
 		const PipelineStageFlags botStage = PS::BottomOfPipe;
+		const PipelineStageFlags csStage = PS::ComputeShader;
 
 		const MemoryAccessFlags caWrite = MA::ColorAttachmentWrite;
 		const MemoryAccessFlags caRead = MA::ColorAttachmentRead;
 		const MemoryAccessFlags dsWrite = MA::DepthStencilAttachmentWrite;
 		const MemoryAccessFlags dsRead = MA::DepthStencilAttachmentRead;
 		const MemoryAccessFlags shRead = MA::ShaderRead;
+		const MemoryAccessFlags shReadWrite = MA::ShaderRead | MA::ShaderWrite;
 		const MemoryAccessFlags tfWrite = MA::TransferWrite;
 		const MemoryAccessFlags tfRead = MA::TransferRead;
 		const MemoryAccessFlags memWrite = MA::MemoryWrite;
@@ -414,8 +429,23 @@ namespace cct::gfx::rhi
 		if (oldLayout == ImageLayout::Undefined && newLayout == ImageLayout::TransferDstOptimal)
 			return {pipe, tfStage, {}, tfWrite};
 
+		if (oldLayout == ImageLayout::Undefined && newLayout == ImageLayout::General)
+			return {pipe, csStage, {}, shReadWrite};
+
+		if (oldLayout == ImageLayout::General && newLayout == ImageLayout::ShaderReadOnlyOptimal)
+			return {csStage, fsStage, shReadWrite, shRead};
+
+		if (oldLayout == ImageLayout::ShaderReadOnlyOptimal && newLayout == ImageLayout::General)
+			return {fsStage, csStage, shRead, shReadWrite};
+
 		if (oldLayout == ImageLayout::ColorAttachmentOptimal && newLayout == ImageLayout::ShaderReadOnlyOptimal)
 			return {caoStage, fsStage, caWrite, shRead};
+
+		if (oldLayout == ImageLayout::ColorAttachmentOptimal && newLayout == ImageLayout::TransferSrcOptimal)
+			return {caoStage, tfStage, caWrite, tfRead};
+
+		if (oldLayout == ImageLayout::TransferSrcOptimal && newLayout == ImageLayout::ColorAttachmentOptimal)
+			return {tfStage, caoStage, tfRead, caWrite};
 
 		if (oldLayout == ImageLayout::DepthStencilAttachmentOptimal && newLayout == ImageLayout::ShaderReadOnlyOptimal)
 			return {lftStage, fsStage, dsWrite, shRead};

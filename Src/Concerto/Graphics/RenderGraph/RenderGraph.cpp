@@ -146,7 +146,7 @@ namespace cct::gfx::rhi
 		{
 			for (const RGTextureUsage& usage : p.textureUsages)
 			{
-				const ImageLayout required = RenderGraphCompiler::RequiredLayout(usage);
+				const ImageLayout required = RenderGraphCompiler::RequiredLayout(usage, p.type);
 				const ImageLayout current = m_registry.GetCurrentLayout(usage.handle);
 				if (current == required)
 					continue;

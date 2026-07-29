@@ -67,12 +67,18 @@ namespace cct::gfx::rhi
 			}
 			else
 			{
-				entry.physical = device.CreateTexture(
-					entry.desc.format,
-					static_cast<Int32>(entry.desc.width),
-					static_cast<Int32>(entry.desc.height));
+				entry.physical = entry.desc.storage
+					? device.CreateStorageTexture(
+						entry.desc.format,
+						static_cast<Int32>(entry.desc.width),
+						static_cast<Int32>(entry.desc.height))
+					: device.CreateTexture(
+						entry.desc.format,
+						static_cast<Int32>(entry.desc.width),
+						static_cast<Int32>(entry.desc.height));
 				CCT_ASSERT(entry.physical != nullptr,
-						   "RenderGraphResourceRegistry::Allocate: CreateTexture failed for '{}'", entry.desc.name);
+						   "RenderGraphResourceRegistry::Allocate: Create{}Texture failed for '{}'",
+						   entry.desc.storage ? "Storage" : "", entry.desc.name);
 			}
 		}
 
@@ -224,6 +230,7 @@ namespace cct::gfx::rhi
 		h ^= std::hash<UInt32>{}(desc.height) + 0x9e3779b9u + (h << 6) + (h >> 2);
 		h ^= std::hash<UInt8>{}(static_cast<UInt8>(desc.format)) + 0x9e3779b9u + (h << 6) + (h >> 2);
 		h ^= std::hash<bool>{}(desc.isDepth) + 0x9e3779b9u + (h << 6) + (h >> 2);
+		h ^= std::hash<bool>{}(desc.storage) + 0x9e3779b9u + (h << 6) + (h >> 2);
 		return h;
 	}
 

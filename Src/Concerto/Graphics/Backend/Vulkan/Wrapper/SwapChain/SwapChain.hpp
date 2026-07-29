@@ -13,7 +13,6 @@
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Image/Image.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/ImageView/ImageView.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
-
 #include "Concerto/Graphics/Core/Window/NativeWindow.hpp"
 
 namespace cct::gfx

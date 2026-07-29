@@ -29,8 +29,10 @@ namespace cct::gfx::rhi
 			Device& device,
 			RGTextureHandle finalOutput);
 
-		// Returns the required ImageLayout for a given texture usage
-		static ImageLayout RequiredLayout(const RGTextureUsage& usage);
+		// Returns the required ImageLayout for a given texture usage. A Compute pass always
+		// accesses its textures as storage images (NZSL compute has no sampling, only
+		// Read/Write), which Vulkan requires to be in ImageLayout::General in both directions.
+		static ImageLayout RequiredLayout(const RGTextureUsage& usage, RGPassType passType);
 
 		// Returns (srcStage, dstStage, srcAccess, dstAccess) for a layout transition
 		static std::tuple<PipelineStageFlags, PipelineStageFlags, MemoryAccessFlags, MemoryAccessFlags>
