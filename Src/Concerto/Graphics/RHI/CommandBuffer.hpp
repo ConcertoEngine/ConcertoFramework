@@ -86,6 +86,14 @@ namespace cct::gfx::rhi
 		{
 		}
 
+		virtual void PipelineBarrier(const Buffer& /*buffer*/,
+									 PipelineStageFlags /*srcStage*/,
+									 PipelineStageFlags /*dstStage*/,
+									 MemoryAccessFlags /*srcAccess*/,
+									 MemoryAccessFlags /*dstAccess*/)
+		{
+		}
+
 		virtual void BeginDebugLabel(const char* name, float r = 1.F, float g = 1.F, float b = 1.F)
 		{
 		}

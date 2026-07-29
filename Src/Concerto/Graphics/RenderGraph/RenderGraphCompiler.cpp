@@ -131,6 +131,7 @@ namespace cct::gfx::rhi
 		m_deps.assign(passCount, {});
 		m_adjOut.assign(passCount, {});
 		m_textureLastWriter.clear();
+		m_bufferLastWriter.clear();
 
 		auto addEdge = [&](UInt32 a, UInt32 b)
 		{
@@ -165,8 +166,19 @@ namespace cct::gfx::rhi
 			}
 			for (const auto& usage : passes[passIdx].bufferUsages)
 			{
-				// TODO: Buffer dependency tracking (simplified: only RAW)
-				(void)usage;
+				if (usage.access == RGResourceAccess::Read)
+				{
+					auto it = m_bufferLastWriter.find(usage.handle.index);
+					if (it != m_bufferLastWriter.end() && it->second != passIdx)
+						addEdge(it->second, passIdx);
+				}
+				else
+				{
+					auto prevIt = m_bufferLastWriter.find(usage.handle.index);
+					if (prevIt != m_bufferLastWriter.end() && prevIt->second != passIdx)
+						addEdge(prevIt->second, passIdx);
+					m_bufferLastWriter[usage.handle.index] = passIdx;
+				}
 			}
 		}
 	}
@@ -431,5 +443,37 @@ namespace cct::gfx::rhi
 
 		// Fallback: conservative all-commands barrier
 		return {allCmds, allCmds, memWrite, memRead};
+	}
+
+	std::pair<PipelineStageFlags, MemoryAccessFlags>
+	RenderGraphCompiler::BufferAccessParams(RGPassType type, RGResourceAccess access)
+	{
+		const bool isWrite = (access == RGResourceAccess::Write);
+
+		switch (type)
+		{
+			case RGPassType::Compute:
+				return {PipelineStageFlags{PipelineStage::ComputeShader},
+						MemoryAccessFlags{isWrite ? MemoryAccess::ShaderWrite : MemoryAccess::ShaderRead}};
+
+			case RGPassType::Transfer:
+				return {PipelineStageFlags{PipelineStage::Transfer},
+						MemoryAccessFlags{isWrite ? MemoryAccess::TransferWrite : MemoryAccess::TransferRead}};
+
+			case RGPassType::Graphics:
+				break;
+		}
+
+		const PipelineStageFlags stages = PipelineStageFlags{PipelineStage::VertexInput} |
+										  PipelineStage::VertexShader |
+										  PipelineStage::FragmentShader;
+
+		if (isWrite)
+			return {stages, MemoryAccessFlags{MemoryAccess::ShaderWrite}};
+
+		return {stages, MemoryAccessFlags{MemoryAccess::ShaderRead} |
+							MemoryAccess::UniformRead |
+							MemoryAccess::VertexAttributeRead |
+							MemoryAccess::IndexRead};
 	}
 } // namespace cct::gfx::rhi

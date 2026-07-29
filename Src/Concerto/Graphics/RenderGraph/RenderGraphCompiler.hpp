@@ -36,6 +36,9 @@ namespace cct::gfx::rhi
 		static std::tuple<PipelineStageFlags, PipelineStageFlags, MemoryAccessFlags, MemoryAccessFlags>
 		InferBarrierParams(ImageLayout oldLayout, ImageLayout newLayout);
 
+		static std::pair<PipelineStageFlags, MemoryAccessFlags>
+		BufferAccessParams(RGPassType type, RGResourceAccess access);
+
 	private:
 		struct PassDep
 		{
@@ -50,6 +53,7 @@ namespace cct::gfx::rhi
 									const RenderGraphResourceRegistry& registry, Device& device);
 
 		std::unordered_map<UInt16, UInt32> m_textureLastWriter; // texIdx → last writer passIdx
+		std::unordered_map<UInt16, UInt32> m_bufferLastWriter;
 		std::vector<PassDep> m_deps;
 		std::vector<std::vector<UInt32>> m_adjOut; // outgoing edges: adjOut[A] = {B,...} A→B
 	};

@@ -132,6 +132,14 @@ namespace cct::gfx::rhi
 
 		RenderPass* activeRenderPass = nullptr;
 
+		struct BufferAccessState
+		{
+			PipelineStageFlags stage;
+			MemoryAccessFlags access;
+			bool isWrite;
+		};
+		std::unordered_map<UInt16, BufferAccessState> bufferStates;
+
 		// Emit layout-transition barriers for all texture usages in a pass.
 		// Must only be called when no render pass is active.
 		const auto emitBarriersForPass = [&](const RGPass& p)
@@ -147,6 +155,32 @@ namespace cct::gfx::rhi
 				Texture& tex = m_registry.GetTexture(usage.handle);
 				cmd.PipelineBarrier(tex, current, required, srcStage, dstStage, srcAccess, dstAccess);
 				m_registry.SetCurrentLayout(usage.handle, required);
+			}
+
+			for (const RGBufferUsage& usage : p.bufferUsages)
+			{
+				auto [stage, access] = RenderGraphCompiler::BufferAccessParams(p.type, usage.access);
+				const bool isWrite = (usage.access == RGResourceAccess::Write);
+
+				const auto it = bufferStates.find(usage.handle.index);
+				if (it == bufferStates.end())
+				{
+					bufferStates.emplace(usage.handle.index, BufferAccessState{stage, access, isWrite});
+					continue;
+				}
+
+				BufferAccessState& prev = it->second;
+
+				if (!prev.isWrite && !isWrite)
+				{
+					prev.stage |= stage;
+					prev.access |= access;
+					continue;
+				}
+
+				cmd.PipelineBarrier(m_registry.GetBuffer(usage.handle),
+									prev.stage, stage, prev.access, access);
+				prev = BufferAccessState{stage, access, isWrite};
 			}
 		};
 

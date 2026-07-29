@@ -387,6 +387,34 @@ namespace cct::gfx::rhi
 			1, &barrier);
 	}
 
+	void VkRHICommandBuffer::PipelineBarrier(const Buffer& buffer,
+											 PipelineStageFlags srcStage,
+											 PipelineStageFlags dstStage,
+											 MemoryAccessFlags srcAccess,
+											 MemoryAccessFlags dstAccess)
+	{
+		const auto& vkBuffer = Cast<const VkRHIBuffer&>(buffer);
+
+		VkBufferMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.buffer = *static_cast<const vk::Buffer&>(vkBuffer).Get();
+		barrier.offset = 0;
+		barrier.size = VK_WHOLE_SIZE;
+		barrier.srcAccessMask = Converters::ToVulkan(srcAccess);
+		barrier.dstAccessMask = Converters::ToVulkan(dstAccess);
+
+		m_device->vkCmdPipelineBarrier(
+			*vk::CommandBuffer::Get(),
+			Converters::ToVulkan(srcStage),
+			Converters::ToVulkan(dstStage),
+			0,
+			0, nullptr,
+			1, &barrier,
+			0, nullptr);
+	}
+
 	void VkRHICommandBuffer::BeginDebugLabel(const char* name, float r, float g, float b)
 	{
 		if (m_device->vkCmdDebugMarkerBeginEXT == nullptr || !m_device->IsExtensionEnabled(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))
