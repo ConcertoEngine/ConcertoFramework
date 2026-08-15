@@ -35,13 +35,13 @@ namespace cct::refl
 {
 	namespace
 	{
-		nlohmann::json SerializeObject(const Object& obj);
+		nlohmann::ordered_json SerializeObject(const Object& obj);
 
 		struct JsonSerializer : FieldVisitor
 		{
-			nlohmann::json& out;
+			nlohmann::ordered_json& out;
 
-			explicit JsonSerializer(nlohmann::json& o) :
+			explicit JsonSerializer(nlohmann::ordered_json& o) :
 				out(o)
 			{
 			}
@@ -122,10 +122,10 @@ namespace cct::refl
 			void Visit(std::string_view name, Enumeration& v) override
 			{
 				const auto* enumClass = dynamic_cast<const EnumerationClass*>(v.GetDynamicClass());
-				nlohmann::json enumJson;
+				nlohmann::ordered_json enumJson;
 				enumJson["$enum"] = enumClass ? enumClass->GetName() : "";
 				enumJson["value"] = v.ToString();
-				auto opts = nlohmann::json::array();
+				auto opts = nlohmann::ordered_json::array();
 				if (enumClass)
 					for (const auto& ev : enumClass->GetEnumValues())
 						if (ev)
@@ -135,7 +135,7 @@ namespace cct::refl
 			}
 			void Visit(std::string_view name, Vector& v) override
 			{
-				auto arr = nlohmann::json::array();
+				auto arr = nlohmann::ordered_json::array();
 				for (std::size_t i = 0; i < v.GetCount(); ++i)
 				{
 					if (Object* elem = v.Get(i))
@@ -151,9 +151,9 @@ namespace cct::refl
 			}
 		};
 
-		nlohmann::json BuildMeta(const std::vector<const Class*>& chain)
+		nlohmann::ordered_json BuildMeta(const std::vector<const Class*>& chain)
 		{
-			nlohmann::json meta = nlohmann::json::object();
+			nlohmann::ordered_json meta = nlohmann::ordered_json::object();
 
 			auto processVar = [&](std::string_view fieldName, const auto* mv)
 			{
@@ -172,7 +172,7 @@ namespace cct::refl
 						maxMap[key.substr(4)] = val;
 				}
 
-				nlohmann::json entry = nlohmann::json::object();
+				nlohmann::ordered_json entry = nlohmann::ordered_json::object();
 
 				auto addScalarOrMap = [&](const char* key,
 										  const std::string& scalar,
@@ -182,16 +182,16 @@ namespace cct::refl
 						return;
 					if (!scalar.empty())
 					{
-						nlohmann::json val = nlohmann::json::parse(scalar, nullptr, false);
+						nlohmann::ordered_json val = nlohmann::ordered_json::parse(scalar, nullptr, false);
 						if (!val.is_discarded())
 							entry[key] = std::move(val);
 					}
 					else
 					{
-						nlohmann::json mapJson = nlohmann::json::object();
+						nlohmann::ordered_json mapJson = nlohmann::ordered_json::object();
 						for (const auto& [k, v] : map)
 						{
-							nlohmann::json val = nlohmann::json::parse(v, nullptr, false);
+							nlohmann::ordered_json val = nlohmann::ordered_json::parse(v, nullptr, false);
 							if (!val.is_discarded())
 								mapJson[k] = std::move(val);
 						}
@@ -245,17 +245,17 @@ namespace cct::refl
 			return meta;
 		}
 
-		nlohmann::json SerializeObject(const Object& obj)
+		nlohmann::ordered_json SerializeObject(const Object& obj)
 		{
 			const Class* klass = obj.GetDynamicClass();
 			if (klass == nullptr)
-				return nlohmann::json::object();
+				return nlohmann::ordered_json::object();
 
 			std::vector<const Class*> chain;
 			for (const Class* c = klass; c != nullptr && c->GetName() != "Object"; c = c->GetBaseClass())
 				chain.push_back(c);
 
-			nlohmann::json j = nlohmann::json::object();
+			nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
 			if (klass->GetName() != "Object")
 				j["class"] = klass->GetFullyQualifiedName();
@@ -263,7 +263,7 @@ namespace cct::refl
 			JsonSerializer serializer{j};
 			obj.Accept(serializer);
 
-			nlohmann::json meta = BuildMeta(chain);
+			nlohmann::ordered_json meta = BuildMeta(chain);
 			if (!meta.empty())
 				j["__meta__"] = std::move(meta);
 
@@ -272,9 +272,9 @@ namespace cct::refl
 
 		struct JsonDeserializer : FieldVisitor
 		{
-			const nlohmann::json& obj;
+			const nlohmann::ordered_json& obj;
 
-			explicit JsonDeserializer(const nlohmann::json& o) :
+			explicit JsonDeserializer(const nlohmann::ordered_json& o) :
 				obj(o)
 			{
 			}
@@ -488,7 +488,7 @@ namespace cct::refl
 
 	bool Json::FromJson(Object& target, std::string_view json)
 	{
-		const nlohmann::json j = nlohmann::json::parse(json, nullptr, false);
+		const nlohmann::ordered_json j = nlohmann::ordered_json::parse(json, nullptr, false);
 		if (j.is_discarded() || !j.is_object())
 			return false;
 		JsonDeserializer deser{j};
@@ -510,7 +510,7 @@ namespace cct::refl
 		std::ifstream file(path);
 		if (!file.is_open())
 			return false;
-		const nlohmann::json j = nlohmann::json::parse(file, nullptr, false);
+		const nlohmann::ordered_json j = nlohmann::ordered_json::parse(file, nullptr, false);
 		if (j.is_discarded() || !j.is_object())
 			return false;
 		JsonDeserializer deser{j};
