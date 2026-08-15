@@ -122,6 +122,7 @@ for targetName, targetConfig in pairs(concerto_core) do
             "Network/IpAddress",
             "Network/Packet",
             "Network/Socket",
+            "Paths",
             "Result",
             "Serializer",
             "Signal",
@@ -142,7 +143,7 @@ for targetName, targetConfig in pairs(concerto_core) do
         add_cxxflags("cl::/wd4251")
 
         if is_plat("windows", "mingw") then
-            add_syslinks("ws2_32", "Kernel32", "Ole32")
+            add_syslinks("ws2_32", "Kernel32", "Ole32", "Shell32")
         end
 
         if is_plat("linux") then
