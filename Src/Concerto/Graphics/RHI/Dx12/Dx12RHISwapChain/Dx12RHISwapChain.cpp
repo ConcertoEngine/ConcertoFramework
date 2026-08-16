@@ -122,7 +122,8 @@ namespace cct::gfx::rhi
 			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>{owner.GetRenderTargetViewHandles()[imageIndex]},
 			std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>{owner.GetRenderTargets()[imageIndex]},
 			owner.m_dsvHandle,
-			owner.m_depthBuffer)
+			owner.m_depthBuffer,
+			/* isSwapchainTarget */ true)
 	{
 	}
 
@@ -152,7 +153,7 @@ namespace cct::gfx::rhi
 
 	void Dx12RHISwapChain::SwapChainFrame::Wait() const
 	{
-		m_owner->GetCommandQueue()->Signal(m_renderFence.Get(), m_renderFence.GetCompletedValue());
+		m_renderFence.Signal(*m_owner->GetCommandQueue().Get());
 		m_renderFence.Wait();
 	}
 

@@ -10,10 +10,17 @@
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandList/CommandList.hpp"
 #include "Concerto/Graphics/RHI/CommandBuffer.hpp"
 
+namespace cct::gfx::dx12
+{
+	class Dx12RootSignature;
+}
+
 namespace cct::gfx::rhi
 {
 	class Dx12RHIFrameBuffer;
 	class Dx12RHIDevice;
+	class Dx12RHIPipeline;
+	class Dx12RHIDescriptorSet;
 
 	class CONCERTO_GRAPHICS_RHI_BASE_API Dx12RHICommandBuffer : public rhi::CommandBuffer, public dx12::CommandList
 	{
@@ -29,6 +36,13 @@ namespace cct::gfx::rhi
 		void BeginRenderPass(const rhi::RenderPass& renderPass, const rhi::FrameBuffer& frameBuffer, const Vector3f& clearColor) override;
 		void EndRenderPass() override;
 		void BindMaterial(const Material& material) override;
+		void BindPipeline(const Pipeline& pipeline) override;
+		void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set) override;
+		void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set, UInt32 dynamicOffset) override;
+		void BindIndexBuffer(const Buffer& buffer, bool use32bitIndices) override;
+		void DrawIndexed(UInt32 indexCount, UInt32 instanceCount, UInt32 firstIndex, Int32 vertexOffset,
+						 UInt32 firstInstance) override;
+		void ClearTexture(const Texture& texture, const Vector4f& clearColor) override;
 		void BindVertexBuffer(const rhi::Buffer& buffer) override;
 		void Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance) override;
 		void Copy(const Buffer& src, const Texture& dst) override;
@@ -50,11 +64,17 @@ namespace cct::gfx::rhi
 		void BindComputePipeline(const Pipeline& pipeline) override;
 		void BindComputeDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set) override;
 		void Dispatch(UInt32 groupCountX, UInt32 groupCountY, UInt32 groupCountZ) override;
+		void BeginDebugLabel(const char* name, float r, float g, float b) override;
+		void EndDebugLabel() override;
+		void* GetNativeHandle() const override;
 
 	private:
 		static D3D12_RESOURCE_STATES ToD3D12ResourceState(ImageLayout layout);
+		void SetHeapsAndRootSignature(const Dx12RHIPipeline& pipeline, bool isCompute);
+		void BindDescriptorSetImpl(const dx12::Dx12RootSignature& rootSig, const Dx12RHIDescriptorSet& set, UINT setIndex, bool isCompute);
 		Dx12RHIDevice* m_device = nullptr;
 		const Dx12RHIFrameBuffer* m_currentFrameBuffer = nullptr;
+		UInt32 m_currentVertexStride = 0;
 	};
 } // namespace cct::gfx::rhi
 

@@ -10,13 +10,17 @@ namespace cct::gfx::rhi
 										   std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles,
 										   std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetResources,
 										   std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandle,
-										   Microsoft::WRL::ComPtr<ID3D12Resource> depthResource) :
+										   Microsoft::WRL::ComPtr<ID3D12Resource> depthResource,
+										   bool isSwapchainTarget,
+										   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap) :
 		m_width(width),
 		m_height(height),
 		m_rtvHandles(std::move(rtvHandles)),
 		m_dsvHandle(dsvHandle),
 		m_renderTargetResources(std::move(renderTargetResources)),
-		m_depthResource(std::move(depthResource))
+		m_depthResource(std::move(depthResource)),
+		m_isSwapchainTarget(isSwapchainTarget),
+		m_rtvHeap(std::move(rtvHeap))
 	{
 	}
 } // namespace cct::gfx::rhi

@@ -34,6 +34,6 @@ namespace cct::gfx::rhi
 			if (attachment.finalLayout == ImageLayout::DepthStencilAttachmentOptimal)
 				return dx12::Factory::PixelFormatToDXGI(attachment.pixelFormat);
 		}
-		return DXGI_FORMAT_D32_FLOAT;
+		return DXGI_FORMAT_UNKNOWN;
 	}
 } // namespace cct::gfx::rhi

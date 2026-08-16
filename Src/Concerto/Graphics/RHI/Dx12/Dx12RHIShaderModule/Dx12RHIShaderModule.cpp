@@ -89,6 +89,10 @@ namespace cct::gfx::rhi
 			hlslOptions.shader_model = 60;
 			compiler.set_hlsl_options(hlslOptions);
 
+			auto common = compiler.get_common_options();
+			common.vertex.flip_vert_y = true;
+			compiler.set_common_options(common);
+
 			hlslSource = compiler.compile();
 			hlslEntryPoint = compiler.get_cleansed_entry_point_name(entryPointName, executionModel);
 		}

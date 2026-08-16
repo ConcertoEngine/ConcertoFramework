@@ -4,9 +4,11 @@
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
 
+#include <Concerto/Core/Assert.hpp>
 #include <Concerto/Core/Cast.hpp>
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 #include "Concerto/Graphics/Core/ShaderModuleLoader/ShaderModuleLoader.hpp"
 #include "Concerto/Graphics/Core/Vertex.hpp"
 #include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
@@ -54,31 +56,68 @@ namespace cct::gfx::rhi
 		return std::make_unique<Dx12RHIRenderPass>(attachments, subPassDescriptions, subPassDependencies);
 	}
 
-	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBuffer(UInt32 width, UInt32 height,
-																  const RenderPass& renderPass, const std::vector<std::unique_ptr<Texture>>& attachments)
+	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBufferFromResources(UInt32 width, UInt32 height,
+																			  const std::vector<ID3D12Resource*>& colorResources)
 	{
-		// Extract render target resources from DX12 textures
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> rtResources;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
 
-		for (const auto& attachment : attachments)
+		if (!colorResources.empty())
 		{
-			if (auto* dx12Texture = dynamic_cast<const Dx12RHITexture*>(attachment.get()))
+			auto* d3dDevice = dx12::Device::Get();
+
+			D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
+			heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+			heapDesc.NumDescriptors = static_cast<UINT>(colorResources.size());
+			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+			HRESULT hr = d3dDevice->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeap));
+			CCT_ASSERT(SUCCEEDED(hr), "ConcertoGraphics: Failed to create DX12 RTV descriptor heap HRESULT={}", hr);
+
+			const UINT rtvSize = d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+			D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+
+			rtvHandles.reserve(colorResources.size());
+			rtResources.reserve(colorResources.size());
+			for (ID3D12Resource* resource : colorResources)
 			{
-				rtResources.push_back(Microsoft::WRL::ComPtr<ID3D12Resource>(dx12Texture->GetResource()));
+				d3dDevice->CreateRenderTargetView(resource, nullptr, handle);
+				rtvHandles.push_back(handle);
+				rtResources.emplace_back(resource);
+				handle.ptr += rtvSize;
 			}
 		}
 
-		return std::make_unique<Dx12RHIFrameBuffer>(width, height, std::move(rtvHandles), std::move(rtResources));
+		return std::make_unique<Dx12RHIFrameBuffer>(width, height, std::move(rtvHandles), std::move(rtResources),
+													std::nullopt, nullptr, /* isSwapchainTarget */ false, std::move(rtvHeap));
 	}
 
 	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBuffer(UInt32 width, UInt32 height,
-																  const RenderPass& renderPass, const std::vector<std::unique_ptr<TextureView>>& attachments)
+																  const RenderPass& /*renderPass*/, const std::vector<std::unique_ptr<Texture>>& attachments)
 	{
-		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> rtResources;
+		std::vector<ID3D12Resource*> colorResources;
+		colorResources.reserve(attachments.size());
+		for (const auto& attachment : attachments)
+		{
+			if (auto* dx12Texture = dynamic_cast<const Dx12RHITexture*>(attachment.get()))
+				colorResources.push_back(dx12Texture->GetResource());
+		}
 
-		return std::make_unique<Dx12RHIFrameBuffer>(width, height, std::move(rtvHandles), std::move(rtResources));
+		return CreateFrameBufferFromResources(width, height, colorResources);
+	}
+
+	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBuffer(UInt32 width, UInt32 height,
+																  const RenderPass& /*renderPass*/, const std::vector<std::unique_ptr<TextureView>>& attachments)
+	{
+		std::vector<ID3D12Resource*> colorResources;
+		colorResources.reserve(attachments.size());
+		for (const auto& attachment : attachments)
+		{
+			if (auto* dx12View = dynamic_cast<const Dx12RHITextureView*>(attachment.get()))
+				colorResources.push_back(dx12View->GetResource());
+		}
+
+		return CreateFrameBufferFromResources(width, height, colorResources);
 	}
 
 	std::unique_ptr<MaterialBuilder> Dx12RHIDevice::CreateMaterialBuilder(const Vector2u& windowExtent)
@@ -94,6 +133,56 @@ namespace cct::gfx::rhi
 	std::shared_ptr<Texture> Dx12RHIDevice::CreateStorageTexture(PixelFormat format, Int32 width, Int32 height)
 	{
 		return std::make_shared<Dx12RHITexture>(*this, format, width, height, /* allowUnorderedAccess */ true);
+	}
+
+	std::shared_ptr<Texture> Dx12RHIDevice::ImportTexture(const rhi::TextureImportInfo& info)
+	{
+		if (info.handleType != ExternalHandleType::D3D11NtHandle || info.handle == nullptr)
+		{
+			CCT_ASSERT_FALSE("Dx12RHIDevice::ImportTexture: unsupported handle type {}",
+							 static_cast<UInt32>(info.handleType));
+			return nullptr;
+		}
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+		const HRESULT hr = dx12::Device::Get()->OpenSharedHandle(static_cast<HANDLE>(info.handle),
+																 IID_PPV_ARGS(&resource));
+		if (FAILED(hr) || !resource)
+		{
+			CCT_ASSERT_FALSE("Dx12RHIDevice::ImportTexture: OpenSharedHandle failed HRESULT={}", hr);
+			return nullptr;
+		}
+
+		return std::make_shared<Dx12RHITexture>(*this, std::move(resource),
+											   dx12::Factory::PixelFormatToDXGI(info.format),
+											   static_cast<UInt32>(info.width), static_cast<UInt32>(info.height));
+	}
+
+	std::shared_ptr<Texture> Dx12RHIDevice::AdoptExternalImage(void* nativeImage, PixelFormat format, Int32 width,
+															  Int32 height, Int32 /*planeIndex*/)
+	{
+		if (nativeImage == nullptr || width <= 0 || height <= 0)
+			return nullptr;
+
+		Microsoft::WRL::ComPtr<ID3D12Resource> resource(static_cast<ID3D12Resource*>(nativeImage));
+		return std::make_shared<Dx12RHITexture>(*this, std::move(resource),
+											   dx12::Factory::PixelFormatToDXGI(format),
+											   static_cast<UInt32>(width), static_cast<UInt32>(height));
+	}
+
+	void* Dx12RHIDevice::GetNativeDevice() const
+	{
+		return static_cast<void*>(dx12::Device::Get());
+	}
+
+	void* Dx12RHIDevice::GetNativePhysicalDevice() const
+	{
+		return static_cast<void*>(dx12::Device::GetPhysicalDevice().Get());
+	}
+
+	void* Dx12RHIDevice::GetNativeInstance() const
+	{
+		return static_cast<void*>(dx12::Device::GetPhysicalDevice().GetFactory().Get());
 	}
 
 	void Dx12RHIDevice::WaitIdle()
@@ -160,7 +249,20 @@ namespace cct::gfx::rhi
 																		 cct::gfx::ShaderStage stageFilter)
 	{
 		cct::gfx::ShaderModuleLoader loader;
+		if (!m_shaderModulePath.empty())
+			loader.SetModuleSearchPath(m_shaderModulePath);
 		cct::gfx::ShaderModule coreShaderModule = loader.LoadShaderModule(path, stageFilter);
+		return std::make_shared<Dx12RHIShaderModule>(std::move(coreShaderModule));
+	}
+
+	std::shared_ptr<rhi::ShaderModule> Dx12RHIDevice::CreateShaderModuleFromSource(std::string_view source,
+																				   std::string_view label,
+																				   cct::gfx::ShaderStage stageFilter)
+	{
+		cct::gfx::ShaderModuleLoader loader;
+		if (!m_shaderModulePath.empty())
+			loader.SetModuleSearchPath(m_shaderModulePath);
+		cct::gfx::ShaderModule coreShaderModule = loader.LoadShaderModuleFromSource(source, label, stageFilter);
 		return std::make_shared<Dx12RHIShaderModule>(std::move(coreShaderModule));
 	}
 
@@ -257,7 +359,157 @@ namespace cct::gfx::rhi
 			return nullptr;
 		}
 
-		return std::make_shared<Dx12RHIPipeline>(std::move(pipelineState), std::move(pipelineLayoutCopy));
+		return std::make_shared<Dx12RHIPipeline>(std::move(pipelineState), std::move(pipelineLayoutCopy), static_cast<UInt32>(sizeof(cct::gfx::Vertex)));
+	}
+
+	namespace
+	{
+		DXGI_FORMAT VertexAttributeFormatToDXGI(rhi::VertexAttributeFormat format)
+		{
+			switch (format)
+			{
+				case rhi::VertexAttributeFormat::Vec2f:
+					return DXGI_FORMAT_R32G32_FLOAT;
+				case rhi::VertexAttributeFormat::Vec4f:
+					return DXGI_FORMAT_R32G32B32A32_FLOAT;
+				case rhi::VertexAttributeFormat::RGBA8Unorm:
+					return DXGI_FORMAT_R8G8B8A8_UNORM;
+			}
+			CCT_ASSERT_FALSE("ConcertoGraphics: Unexpected VertexAttributeFormat");
+			return DXGI_FORMAT_R32G32_FLOAT;
+		}
+	} // namespace
+
+	std::shared_ptr<rhi::Pipeline> Dx12RHIDevice::CreatePipeline(const rhi::ShaderModule& vertexShader, const rhi::ShaderModule& fragmentShader,
+																 const rhi::RenderPass& renderPass, const rhi::PipelineLayout& pipelineLayout,
+																 const Vector2u& windowExtent, const rhi::PipelineConfig& config)
+	{
+		const auto& dx12VertexShader = Cast<const Dx12RHIShaderModule&>(vertexShader);
+		const auto& dx12FragmentShader = Cast<const Dx12RHIShaderModule&>(fragmentShader);
+
+		auto pipelineLayoutCopy = std::make_shared<Dx12RHIPipelineLayout>(*this, pipelineLayout.GetDescriptorSetLayouts());
+
+		std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout;
+		inputLayout.reserve(config.vertexAttributes.size());
+		for (const auto& attr : config.vertexAttributes)
+		{
+			D3D12_INPUT_ELEMENT_DESC element{};
+			element.SemanticName = "TEXCOORD";
+			element.SemanticIndex = attr.location;
+			element.Format = VertexAttributeFormatToDXGI(attr.format);
+			element.InputSlot = 0;
+			element.AlignedByteOffset = attr.offset;
+			element.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+			element.InstanceDataStepRate = 0;
+			inputLayout.push_back(element);
+		}
+
+		DXGI_FORMAT rtvFormat = DXGI_FORMAT_B8G8R8A8_UNORM;
+		DXGI_FORMAT dsvFormat = DXGI_FORMAT_UNKNOWN;
+		if (auto* dx12RenderPass = dynamic_cast<const Dx12RHIRenderPass*>(&renderPass))
+		{
+			rtvFormat = dx12RenderPass->GetColorAttachmentFormat();
+			dsvFormat = dx12RenderPass->GetDepthAttachmentFormat();
+		}
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
+		psoDesc.InputLayout = {inputLayout.empty() ? nullptr : inputLayout.data(), static_cast<UINT>(inputLayout.size())};
+		psoDesc.pRootSignature = pipelineLayoutCopy->GetRootSignature().Get();
+		psoDesc.VS = dx12VertexShader.GetD3D12ShaderBytecode();
+		psoDesc.PS = dx12FragmentShader.GetD3D12ShaderBytecode();
+
+		psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+		psoDesc.RasterizerState.FrontCounterClockwise = FALSE;
+		psoDesc.RasterizerState.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+		psoDesc.RasterizerState.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+		psoDesc.RasterizerState.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+		psoDesc.RasterizerState.DepthClipEnable = TRUE;
+		psoDesc.RasterizerState.MultisampleEnable = FALSE;
+		psoDesc.RasterizerState.AntialiasedLineEnable = FALSE;
+		psoDesc.RasterizerState.ForcedSampleCount = 0;
+		psoDesc.RasterizerState.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+		D3D12_RENDER_TARGET_BLEND_DESC& rt = psoDesc.BlendState.RenderTarget[0];
+		rt.BlendEnable = FALSE;
+		rt.SrcBlend = D3D12_BLEND_ONE;
+		rt.DestBlend = D3D12_BLEND_ZERO;
+		rt.BlendOp = D3D12_BLEND_OP_ADD;
+		rt.SrcBlendAlpha = D3D12_BLEND_ONE;
+		rt.DestBlendAlpha = D3D12_BLEND_ZERO;
+		rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+		rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+		if (config.blendPreset == rhi::BlendPreset::Add)
+		{
+			// result = src + dst (additive). Works with premultiplied src out of the box.
+			rt.BlendEnable = TRUE;
+			rt.SrcBlend = D3D12_BLEND_ONE;
+			rt.DestBlend = D3D12_BLEND_ONE;
+			rt.SrcBlendAlpha = D3D12_BLEND_ONE;
+			rt.DestBlendAlpha = D3D12_BLEND_ONE;
+		}
+		else if (config.blendPreset == rhi::BlendPreset::Multiply)
+		{
+			// result.rgb = src.rgb * dst.rgb.
+			rt.BlendEnable = TRUE;
+			rt.SrcBlend = D3D12_BLEND_DEST_COLOR;
+			rt.DestBlend = D3D12_BLEND_ZERO;
+			rt.SrcBlendAlpha = D3D12_BLEND_ONE;
+			rt.DestBlendAlpha = D3D12_BLEND_ZERO;
+		}
+		else if (config.blendPreset == rhi::BlendPreset::Screen)
+		{
+			// result.rgb = src + dst - src*dst.
+			rt.BlendEnable = TRUE;
+			rt.SrcBlend = D3D12_BLEND_ONE;
+			rt.DestBlend = D3D12_BLEND_INV_SRC_COLOR;
+			rt.SrcBlendAlpha = D3D12_BLEND_ONE;
+			rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+		}
+		else if (config.blendEnable && config.premultipliedAlpha)
+		{
+			rt.BlendEnable = TRUE;
+			rt.SrcBlend = D3D12_BLEND_ONE;
+			rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+			rt.SrcBlendAlpha = D3D12_BLEND_ONE;
+			rt.DestBlendAlpha = D3D12_BLEND_INV_SRC_ALPHA;
+		}
+		else if (config.blendEnable)
+		{
+			rt.BlendEnable = TRUE;
+			rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+			rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+			rt.SrcBlendAlpha = D3D12_BLEND_ONE;
+			rt.DestBlendAlpha = D3D12_BLEND_ZERO;
+		}
+
+		psoDesc.BlendState.AlphaToCoverageEnable = FALSE;
+		psoDesc.BlendState.IndependentBlendEnable = FALSE;
+
+		// Depth stencil state - from PipelineConfig; func matches Vulkan's fixed LESS_OR_EQUAL.
+		psoDesc.DepthStencilState.DepthEnable = config.depthTestEnable ? TRUE : FALSE;
+		psoDesc.DepthStencilState.DepthWriteMask = config.depthWriteEnable ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+		psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		psoDesc.DepthStencilState.StencilEnable = FALSE;
+
+		psoDesc.SampleMask = UINT_MAX;
+		psoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		psoDesc.NumRenderTargets = 1;
+		psoDesc.RTVFormats[0] = rtvFormat;
+		psoDesc.DSVFormat = dsvFormat;
+		psoDesc.SampleDesc.Count = 1;
+		psoDesc.SampleDesc.Quality = 0;
+
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;
+		HRESULT hr = dx12::Device::Get()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineState));
+		if (FAILED(hr))
+		{
+			CCT_ASSERT_FALSE("ConcertoGraphics: Failed to create DX12 graphics pipeline state HRESULT={}", hr);
+			return nullptr;
+		}
+
+		return std::make_shared<Dx12RHIPipeline>(std::move(pipelineState), std::move(pipelineLayoutCopy), config.vertexStride);
 	}
 
 	std::shared_ptr<rhi::Pipeline> Dx12RHIDevice::CreateComputePipeline(const rhi::ShaderModule& computeShader, const rhi::PipelineLayout& pipelineLayout)
@@ -306,6 +558,17 @@ namespace cct::gfx::rhi
 	void Dx12RHIDevice::RegisterRenderQueue(ID3D12CommandQueue* queue)
 	{
 		m_renderQueue = queue;
+	}
+
+	void Dx12RHIDevice::EnsureRenderQueue()
+	{
+		if (m_renderQueue)
+			return;
+
+		HRESULT hr = m_headlessQueue.Create(*this, D3D12_COMMAND_LIST_TYPE_DIRECT, D3D12_COMMAND_QUEUE_FLAG_NONE);
+		CCT_ASSERT(SUCCEEDED(hr), "ConcertoGraphics: Failed to create headless DX12 render queue HRESULT={}", hr);
+		if (SUCCEEDED(hr))
+			RegisterRenderQueue(m_headlessQueue.Get());
 	}
 
 	void Dx12RHIDevice::ExecuteAndWait(ID3D12GraphicsCommandList* cmdList)

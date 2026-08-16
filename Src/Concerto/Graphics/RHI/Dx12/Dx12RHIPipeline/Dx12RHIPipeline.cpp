@@ -8,9 +8,10 @@
 
 namespace cct::gfx::rhi
 {
-	Dx12RHIPipeline::Dx12RHIPipeline(Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState, std::shared_ptr<Dx12RHIPipelineLayout> pipelineLayout) :
+	Dx12RHIPipeline::Dx12RHIPipeline(Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState, std::shared_ptr<Dx12RHIPipelineLayout> pipelineLayout, UInt32 vertexStride) :
 		m_pipelineState(std::move(pipelineState)),
-		m_pipelineLayout(std::move(pipelineLayout))
+		m_pipelineLayout(std::move(pipelineLayout)),
+		m_vertexStride(vertexStride)
 	{
 		CCT_ASSERT(m_pipelineState, "ConcertoGraphics: Invalid DX12 pipeline state");
 		CCT_ASSERT(m_pipelineLayout, "ConcertoGraphics: Invalid DX12 pipeline layout");

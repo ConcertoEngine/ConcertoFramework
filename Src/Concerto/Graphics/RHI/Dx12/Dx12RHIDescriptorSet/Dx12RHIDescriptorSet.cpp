@@ -58,30 +58,35 @@ namespace cct::gfx::rhi
 			cbvDesc.SizeInBytes = (bufSize + 255) & ~255;
 			m_device->Get()->CreateConstantBufferView(&cbvDesc, dstHandle);
 		}
-		else if (bindingType == cct::gfx::ShaderBindingType::ReadOnlyStorageBuffer)
+		else if (bindingType == cct::gfx::ShaderBindingType::ReadOnlyStorageBuffer ||
+				 bindingType == cct::gfx::ShaderBindingType::StorageBuffer)
 		{
-			// StructuredBuffer → SRV
-			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-			srvDesc.Format = DXGI_FORMAT_UNKNOWN;
-			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-			srvDesc.Buffer.FirstElement = 0;
-			srvDesc.Buffer.NumElements = 1;
-			srvDesc.Buffer.StructureByteStride = (range > 0) ? range : dx12Buffer.GetSize();
-			srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-			m_device->Get()->CreateShaderResourceView(dx12Buffer.GetResource(), &srvDesc, dstHandle);
-		}
-		else if (bindingType == cct::gfx::ShaderBindingType::StorageBuffer)
-		{
-			// RWStructuredBuffer → UAV
-			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
-			uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-			uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-			uavDesc.Buffer.FirstElement = 0;
-			uavDesc.Buffer.NumElements = 1;
-			uavDesc.Buffer.StructureByteStride = (range > 0) ? range : dx12Buffer.GetSize();
-			uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
-			m_device->Get()->CreateUnorderedAccessView(dx12Buffer.GetResource(), nullptr, &uavDesc, dstHandle);
+			const UINT byteSize = (range > 0) ? range : dx12Buffer.GetSize();
+			const UINT firstElement = offset / 4;
+			const UINT numElements = byteSize / 4;
+			if (bindingType == cct::gfx::ShaderBindingType::ReadOnlyStorageBuffer)
+			{
+				D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+				srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+				srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+				srvDesc.Buffer.FirstElement = firstElement;
+				srvDesc.Buffer.NumElements = numElements;
+				srvDesc.Buffer.StructureByteStride = 0;
+				srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+				m_device->Get()->CreateShaderResourceView(dx12Buffer.GetResource(), &srvDesc, dstHandle);
+			}
+			else
+			{
+				D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+				uavDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+				uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+				uavDesc.Buffer.FirstElement = firstElement;
+				uavDesc.Buffer.NumElements = numElements;
+				uavDesc.Buffer.StructureByteStride = 0;
+				uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+				m_device->Get()->CreateUnorderedAccessView(dx12Buffer.GetResource(), nullptr, &uavDesc, dstHandle);
+			}
 		}
 	}
 
@@ -97,13 +102,15 @@ namespace cct::gfx::rhi
 		bool isSampler = false;
 		for (const auto& b : bindings)
 		{
+			const bool bIsSampler = (b.descriptorType == cct::gfx::ShaderBindingType::Sampler ||
+									 b.descriptorType == cct::gfx::ShaderBindingType::CombinedImageSampler);
 			if (b.binding == binding)
 			{
-				isSampler = (b.descriptorType == cct::gfx::ShaderBindingType::Sampler);
+				isSampler = bIsSampler;
 				break;
 			}
 			// Sampler bindings contribute one SRV to gpuRange and one to samplerRange
-			if (b.descriptorType == cct::gfx::ShaderBindingType::Sampler)
+			if (bIsSampler)
 			{
 				srvOffset += b.descriptorCount;
 				samplerOffset += b.descriptorCount;
@@ -117,7 +124,7 @@ namespace cct::gfx::rhi
 		// Write SRV to CBV/SRV/UAV heap
 		auto srvHandle = m_gpuRange[srvOffset].cpuHandle;
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-		srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // TODO: get from texture
+		srvDesc.Format = dx12Texture.GetFormat();
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 		srvDesc.Texture2D.MipLevels = 1;
@@ -130,9 +137,9 @@ namespace cct::gfx::rhi
 			auto samplerHandle = m_samplerRange[samplerOffset].cpuHandle;
 			D3D12_SAMPLER_DESC samplerDesc{};
 			samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-			samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
 			samplerDesc.MipLODBias = 0.0f;
 			samplerDesc.MaxAnisotropy = 1;
 			samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
@@ -158,7 +165,7 @@ namespace cct::gfx::rhi
 		auto dstHandle = m_gpuRange[descriptorOffset].cpuHandle;
 
 		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
-		uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // TODO: get from texture
+		uavDesc.Format = dx12Texture.GetFormat();
 		uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 		uavDesc.Texture2D.MipSlice = 0;
 		uavDesc.Texture2D.PlaneSlice = 0;

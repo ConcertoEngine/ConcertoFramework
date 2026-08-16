@@ -36,6 +36,15 @@ namespace cct::gfx::rhi
 			return m_size;
 		}
 
+		[[nodiscard]] D3D12_RESOURCE_STATES GetState() const
+		{
+			return m_currentState;
+		}
+		void SetState(D3D12_RESOURCE_STATES state) const
+		{
+			m_currentState = state;
+		}
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_resource;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_readbackResource;
@@ -43,6 +52,7 @@ namespace cct::gfx::rhi
 		UInt32 m_size;
 		bool m_allowMapping;
 		D3D12_GPU_VIRTUAL_ADDRESS m_gpuAddress = 0;
+		mutable D3D12_RESOURCE_STATES m_currentState = D3D12_RESOURCE_STATE_COMMON;
 	};
 } // namespace cct::gfx::rhi
 

@@ -18,7 +18,7 @@ namespace cct::gfx::rhi
 	class CONCERTO_GRAPHICS_RHI_BASE_API Dx12RHIPipeline : public rhi::Pipeline
 	{
 	public:
-		Dx12RHIPipeline(Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState, std::shared_ptr<Dx12RHIPipelineLayout> pipelineLayout);
+		Dx12RHIPipeline(Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState, std::shared_ptr<Dx12RHIPipelineLayout> pipelineLayout, UInt32 vertexStride = 0);
 
 		[[nodiscard]] ID3D12PipelineState* GetPipelineState() const
 		{
@@ -33,9 +33,15 @@ namespace cct::gfx::rhi
 			return m_pipelineLayout;
 		}
 
+		[[nodiscard]] UInt32 GetVertexStride() const
+		{
+			return m_vertexStride;
+		}
+
 	private:
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> m_pipelineState;
 		std::shared_ptr<Dx12RHIPipelineLayout> m_pipelineLayout;
+		UInt32 m_vertexStride;
 	};
 } // namespace cct::gfx::rhi
 

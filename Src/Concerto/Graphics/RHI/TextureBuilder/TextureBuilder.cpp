@@ -6,6 +6,7 @@
 #include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
 
 #include <stb_image.h>
+#include <cstring>
 
 #include <Concerto/Core/DeferredExit/DeferredExit.hpp>
 
@@ -63,7 +64,10 @@ namespace cct::gfx::rhi
 			// format = PixelFormat::RGB8uNorm;
 		}
 
-		UInt32 allocationSize = width * height * channels;
+		const UInt32 bpp = 4;
+		const UInt32 srcPitch = static_cast<UInt32>(width) * bpp;
+		const UInt32 dstPitch = m_device.GetTextureCopyRowPitch(static_cast<UInt32>(width), bpp);
+		const UInt32 allocationSize = dstPitch * static_cast<UInt32>(height);
 		auto buffer = m_device.CreateBuffer(static_cast<rhi::BufferUsageFlags>(BufferUsage::TransferSrc), allocationSize, true);
 		if (buffer == nullptr)
 			return nullptr;
@@ -77,7 +81,14 @@ namespace cct::gfx::rhi
 				return nullptr;
 			}
 
-			std::memcpy(data, pixels, allocationSize);
+			if (dstPitch == srcPitch)
+				std::memcpy(data, pixels, allocationSize);
+			else
+			{
+				for (Int32 y = 0; y < height; ++y)
+					std::memcpy(data + static_cast<std::size_t>(y) * dstPitch,
+								pixels + static_cast<std::size_t>(y) * srcPitch, srcPitch);
+			}
 			buffer->UnMap();
 		}
 
@@ -94,7 +105,10 @@ namespace cct::gfx::rhi
 	std::shared_ptr<Texture> TextureBuilder::BuildTextureFromMemory(
 		const std::byte* pixels, UInt32 width, UInt32 height, PixelFormat format)
 	{
-		const UInt32 allocationSize = width * height * 4;
+		const UInt32 bpp = 4;
+		const UInt32 srcPitch = width * bpp;
+		const UInt32 dstPitch = m_device.GetTextureCopyRowPitch(width, bpp);
+		const UInt32 allocationSize = dstPitch * height;
 		auto buffer = m_device.CreateBuffer(
 			static_cast<rhi::BufferUsageFlags>(BufferUsage::TransferSrc), allocationSize, true);
 		if (!buffer)
@@ -103,7 +117,14 @@ namespace cct::gfx::rhi
 		Byte* data = nullptr;
 		if (!buffer->Map(&data))
 			return nullptr;
-		std::memcpy(data, pixels, allocationSize);
+		if (dstPitch == srcPitch)
+			std::memcpy(data, pixels, allocationSize);
+		else
+		{
+			for (UInt32 y = 0; y < height; ++y)
+				std::memcpy(data + static_cast<std::size_t>(y) * dstPitch,
+							pixels + static_cast<std::size_t>(y) * srcPitch, srcPitch);
+		}
 		buffer->UnMap();
 
 		auto texture = m_device.CreateTexture(format, static_cast<Int32>(width), static_cast<Int32>(height));

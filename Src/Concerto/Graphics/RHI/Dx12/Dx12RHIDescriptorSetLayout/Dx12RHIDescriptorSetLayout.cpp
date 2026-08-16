@@ -31,7 +31,8 @@ namespace cct::gfx::rhi
 		{
 			combinedStageFlags |= binding.stageFlags;
 
-			if (binding.descriptorType == cct::gfx::ShaderBindingType::Sampler)
+			if (binding.descriptorType == cct::gfx::ShaderBindingType::Sampler ||
+				binding.descriptorType == cct::gfx::ShaderBindingType::CombinedImageSampler)
 			{
 				// nzsl sampler2D generates both a Texture2D (SRV) and a SamplerState in HLSL.
 				// DX12 requires these in separate descriptor tables (different heap types).

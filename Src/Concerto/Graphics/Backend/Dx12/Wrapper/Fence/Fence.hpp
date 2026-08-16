@@ -24,12 +24,14 @@ namespace cct::gfx::dx12
 
 		HRESULT Create(Device& device, D3D12_FENCE_FLAGS flags = D3D12_FENCE_FLAG_NONE);
 
+		void Signal(ID3D12CommandQueue& queue) const;
 		void Wait() const;
 		UInt64 GetCompletedValue() const;
 
 	private:
-		HANDLE m_completionEvent;
-		mutable UInt64 m_lastCompletedValue = 1;
+		HANDLE m_completionEvent = nullptr;
+		mutable UInt64 m_nextSignalValue = 1;
+		mutable UInt64 m_lastSignaledValue = 0;
 	};
 } // namespace cct::gfx::dx12
 

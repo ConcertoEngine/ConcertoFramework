@@ -4,6 +4,11 @@
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
 
+#include <algorithm>
+#include <cstdint>
+#include <vector>
+
+#include <Concerto/Core/Assert.hpp>
 #include <Concerto/Core/Cast.hpp>
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandAllocator/CommandAllocator.hpp"
@@ -14,6 +19,7 @@
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIFrameBuffer/Dx12RHIFrameBuffer.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipeline/Dx12RHIPipeline.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHIRenderPass/Dx12RHIRenderPass.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
 #include "Concerto/Graphics/RHI/Material.hpp"
 
@@ -79,20 +85,21 @@ namespace cct::gfx::rhi
 		const auto& dx12FrameBuffer = Cast<const Dx12RHIFrameBuffer&>(frameBuffer);
 		m_currentFrameBuffer = &dx12FrameBuffer;
 
-		// Transition render targets from PRESENT to RENDER_TARGET
-		for (const auto& rtResource : dx12FrameBuffer.GetRenderTargetResources())
+		if (dx12FrameBuffer.IsSwapchainTarget())
 		{
-			D3D12_RESOURCE_BARRIER barrier = {};
-			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-			barrier.Transition.pResource = rtResource.Get();
-			barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-			Get()->ResourceBarrier(1, &barrier);
+			for (const auto& rtResource : dx12FrameBuffer.GetRenderTargetResources())
+			{
+				D3D12_RESOURCE_BARRIER barrier = {};
+				barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+				barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+				barrier.Transition.pResource = rtResource.Get();
+				barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+				Get()->ResourceBarrier(1, &barrier);
+			}
 		}
 
-		// Set render targets
 		const auto& rtvHandles = dx12FrameBuffer.GetRTVHandles();
 		const auto& dsvHandle = dx12FrameBuffer.GetDSVHandle();
 
@@ -105,18 +112,32 @@ namespace cct::gfx::rhi
 				dsvHandle.has_value() ? &dsvHandle.value() : nullptr);
 		}
 
-		// Clear render targets
-		float clearColorArray[4] = {clearColor.X(), clearColor.Y(), clearColor.Z(), 1.0f};
-		for (const auto& rtvHandle : rtvHandles)
+		// Mirror Vulkan: vkCmdBeginRenderPass only clears attachments whose loadOp
+		// is Clear. Always-clearing here wiped Load/DontCare targets (ping-pong).
+		std::vector<AttachmentLoadOp> colorLoadOps;
+		AttachmentLoadOp depthLoadOp = AttachmentLoadOp::Clear;
+		if (const auto* dx12Pass = dynamic_cast<const Dx12RHIRenderPass*>(&renderPass))
 		{
-			Get()->ClearRenderTargetView(rtvHandle, clearColorArray, 0, nullptr);
+			depthLoadOp = AttachmentLoadOp::DontCare;
+			for (const auto& attachment : dx12Pass->GetAttachments())
+			{
+				if (attachment.finalLayout == ImageLayout::DepthStencilAttachmentOptimal)
+					depthLoadOp = attachment.loadOp;
+				else
+					colorLoadOps.push_back(attachment.loadOp);
+			}
 		}
 
-		// Clear depth stencil
-		if (dsvHandle.has_value())
+		const float clearColorArray[4] = {clearColor.X(), clearColor.Y(), clearColor.Z(), 0.f};
+		for (std::size_t i = 0; i < rtvHandles.size(); ++i)
 		{
-			Get()->ClearDepthStencilView(dsvHandle.value(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+			const bool shouldClear = i >= colorLoadOps.size() || colorLoadOps[i] == AttachmentLoadOp::Clear;
+			if (shouldClear)
+				Get()->ClearRenderTargetView(rtvHandles[i], clearColorArray, 0, nullptr);
 		}
+
+		if (dsvHandle.has_value() && depthLoadOp == AttachmentLoadOp::Clear)
+			Get()->ClearDepthStencilView(dsvHandle.value(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	}
 
 	void Dx12RHICommandBuffer::EndRenderPass()
@@ -124,20 +145,70 @@ namespace cct::gfx::rhi
 		if (!IsValid() || !m_currentFrameBuffer)
 			return;
 
-		// Transition render targets from RENDER_TARGET to PRESENT
-		for (const auto& rtResource : m_currentFrameBuffer->GetRenderTargetResources())
+		// See the matching comment in BeginRenderPass.
+		if (m_currentFrameBuffer->IsSwapchainTarget())
 		{
-			D3D12_RESOURCE_BARRIER barrier = {};
-			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-			barrier.Transition.pResource = rtResource.Get();
-			barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-			Get()->ResourceBarrier(1, &barrier);
+			for (const auto& rtResource : m_currentFrameBuffer->GetRenderTargetResources())
+			{
+				D3D12_RESOURCE_BARRIER barrier = {};
+				barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+				barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+				barrier.Transition.pResource = rtResource.Get();
+				barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+				Get()->ResourceBarrier(1, &barrier);
+			}
 		}
 
 		m_currentFrameBuffer = nullptr;
+	}
+
+	void Dx12RHICommandBuffer::SetHeapsAndRootSignature(const Dx12RHIPipeline& pipeline, bool isCompute)
+	{
+		Get()->SetPipelineState(pipeline.GetPipelineState());
+		if (isCompute)
+			Get()->SetComputeRootSignature(pipeline.GetLayout().GetRootSignature().Get());
+		else
+		{
+			Get()->SetGraphicsRootSignature(pipeline.GetLayout().GetRootSignature().Get());
+			m_currentVertexStride = pipeline.GetVertexStride();
+		}
+
+		auto& pool = m_device->GetDescriptorPool();
+		ID3D12DescriptorHeap* heaps[] = {
+			pool.GetGpuHeap()->GetHeap(),
+			pool.GetSamplerHeap()->GetHeap()};
+		Get()->SetDescriptorHeaps(_countof(heaps), heaps);
+	}
+
+	void Dx12RHICommandBuffer::BindDescriptorSetImpl(const dx12::Dx12RootSignature& rootSig, const Dx12RHIDescriptorSet& set, UINT setIndex, bool isCompute)
+	{
+		const auto& gpuRange = set.GetDescriptorRange();
+		if (gpuRange.baseHandle.IsValid())
+		{
+			UINT rootParamIndex = rootSig.GetRootParameterIndex(setIndex, false);
+			if (rootParamIndex != UINT_MAX)
+			{
+				if (isCompute)
+					Get()->SetComputeRootDescriptorTable(rootParamIndex, gpuRange.baseHandle.gpuHandle);
+				else
+					Get()->SetGraphicsRootDescriptorTable(rootParamIndex, gpuRange.baseHandle.gpuHandle);
+			}
+		}
+
+		if (set.HasSamplers())
+		{
+			const auto& samplerRange = set.GetSamplerRange();
+			UINT samplerRootParam = rootSig.GetRootParameterIndex(setIndex, true);
+			if (samplerRootParam != UINT_MAX)
+			{
+				if (isCompute)
+					Get()->SetComputeRootDescriptorTable(samplerRootParam, samplerRange.baseHandle.gpuHandle);
+				else
+					Get()->SetGraphicsRootDescriptorTable(samplerRootParam, samplerRange.baseHandle.gpuHandle);
+			}
+		}
 	}
 
 	void Dx12RHICommandBuffer::BindMaterial(const Material& material)
@@ -145,46 +216,78 @@ namespace cct::gfx::rhi
 		if (!IsValid() || !m_device)
 			return;
 
-		// Set pipeline state
-		if (auto* dx12Pipeline = dynamic_cast<const Dx12RHIPipeline*>(material.pipeline.get()))
+		auto* dx12Pipeline = dynamic_cast<const Dx12RHIPipeline*>(material.pipeline.get());
+		if (!dx12Pipeline)
+			return;
+
+		SetHeapsAndRootSignature(*dx12Pipeline, /* isCompute */ false);
+
+		const auto& rootSig = dx12Pipeline->GetLayout().GetRootSignature();
+		for (std::size_t i = 0; i < material.descriptorSets.size(); ++i)
 		{
-			Get()->SetPipelineState(dx12Pipeline->GetPipelineState());
-			Get()->SetGraphicsRootSignature(dx12Pipeline->GetLayout().GetRootSignature().Get());
-
-			// Set descriptor heaps before binding descriptor tables
-			auto& pool = m_device->GetDescriptorPool();
-			ID3D12DescriptorHeap* heaps[] = {
-				pool.GetGpuHeap()->GetHeap(),
-				pool.GetSamplerHeap()->GetHeap()};
-			Get()->SetDescriptorHeaps(_countof(heaps), heaps);
-
-			// Bind descriptor sets
-			for (std::size_t i = 0; i < material.descriptorSets.size(); ++i)
-			{
-				if (auto* dx12DescSet = dynamic_cast<const Dx12RHIDescriptorSet*>(material.descriptorSets[i].get()))
-				{
-					const auto& rootSig = dx12Pipeline->GetLayout().GetRootSignature();
-
-					// Bind CBV/SRV/UAV table
-					const auto& gpuRange = dx12DescSet->GetDescriptorRange();
-					if (gpuRange.baseHandle.IsValid())
-					{
-						UINT rootParamIndex = rootSig.GetRootParameterIndex(static_cast<UINT>(i), false);
-						if (rootParamIndex != UINT_MAX)
-							Get()->SetGraphicsRootDescriptorTable(rootParamIndex, gpuRange.baseHandle.gpuHandle);
-					}
-
-					// Bind sampler table
-					if (dx12DescSet->HasSamplers())
-					{
-						const auto& samplerRange = dx12DescSet->GetSamplerRange();
-						UINT samplerRootParam = rootSig.GetRootParameterIndex(static_cast<UINT>(i), true);
-						if (samplerRootParam != UINT_MAX)
-							Get()->SetGraphicsRootDescriptorTable(samplerRootParam, samplerRange.baseHandle.gpuHandle);
-					}
-				}
-			}
+			if (auto* dx12DescSet = dynamic_cast<const Dx12RHIDescriptorSet*>(material.descriptorSets[i].get()))
+				BindDescriptorSetImpl(rootSig, *dx12DescSet, static_cast<UINT>(i), /* isCompute */ false);
 		}
+	}
+
+	void Dx12RHICommandBuffer::BindPipeline(const Pipeline& pipeline)
+	{
+		if (!IsValid() || !m_device)
+			return;
+
+		SetHeapsAndRootSignature(Cast<const Dx12RHIPipeline&>(pipeline), /* isCompute */ false);
+	}
+
+	void Dx12RHICommandBuffer::BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set)
+	{
+		if (!IsValid())
+			return;
+
+		const auto& dx12Layout = Cast<const Dx12RHIPipelineLayout&>(layout);
+		const auto& dx12Set = Cast<const Dx12RHIDescriptorSet&>(set);
+		BindDescriptorSetImpl(dx12Layout.GetRootSignature(), dx12Set, 0, /* isCompute */ false);
+	}
+
+	void Dx12RHICommandBuffer::BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set,
+												 UInt32 /*dynamicOffset*/)
+	{
+		BindDescriptorSet(layout, set);
+	}
+
+	void Dx12RHICommandBuffer::BindIndexBuffer(const Buffer& buffer, bool use32bitIndices)
+	{
+		if (!IsValid())
+			return;
+
+		const auto& dx12Buffer = Cast<const Dx12RHIBuffer&>(buffer);
+		D3D12_INDEX_BUFFER_VIEW view{};
+		view.BufferLocation = dx12Buffer.GetGPUVirtualAddress();
+		view.SizeInBytes = dx12Buffer.GetSize();
+		view.Format = use32bitIndices ? DXGI_FORMAT_R32_UINT : DXGI_FORMAT_R16_UINT;
+		Get()->IASetIndexBuffer(&view);
+	}
+
+	void Dx12RHICommandBuffer::DrawIndexed(UInt32 indexCount, UInt32 instanceCount, UInt32 firstIndex,
+										   Int32 vertexOffset, UInt32 firstInstance)
+	{
+		if (!IsValid())
+			return;
+		Get()->DrawIndexedInstanced(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+	}
+
+	void Dx12RHICommandBuffer::ClearTexture(const Texture& texture, const Vector4f& clearColor)
+	{
+		if (!IsValid())
+			return;
+
+		const auto& dx12Texture = Cast<const Dx12RHITexture&>(texture);
+		const D3D12_CPU_DESCRIPTOR_HANDLE rtv = dx12Texture.GetRTVHandle();
+		if (rtv.ptr == 0)
+			return;
+
+		TransitionImageLayout(texture, ImageLayout::Undefined, ImageLayout::ColorAttachmentOptimal);
+		const float color[4] = {clearColor.X(), clearColor.Y(), clearColor.Z(), clearColor[3]};
+		Get()->ClearRenderTargetView(rtv, color, 0, nullptr);
 	}
 
 	void Dx12RHICommandBuffer::BindVertexBuffer(const rhi::Buffer& buffer)
@@ -197,7 +300,8 @@ namespace cct::gfx::rhi
 		D3D12_VERTEX_BUFFER_VIEW view = {};
 		view.BufferLocation = dx12Buffer.GetGPUVirtualAddress();
 		view.SizeInBytes = dx12Buffer.GetSize();
-		view.StrideInBytes = sizeof(cct::gfx::Vertex);
+		// Falls back to cct::gfx::Vertex's stride if nothing has bound a pipeline yet.
+		view.StrideInBytes = m_currentVertexStride != 0 ? m_currentVertexStride : static_cast<UInt32>(sizeof(cct::gfx::Vertex));
 
 		Get()->IASetVertexBuffers(0, 1, &view);
 		Get()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -226,6 +330,20 @@ namespace cct::gfx::rhi
 		UINT64 rowSizeInBytes = 0;
 		UINT64 totalBytes = 0;
 		d3dDevice->GetCopyableFootprints(&texDesc, 0, 1, 0, &footprint, &numRows, &rowSizeInBytes, &totalBytes);
+
+		const D3D12_RESOURCE_STATES bufState = dx12Buffer.GetState();
+		if (bufState != D3D12_RESOURCE_STATE_COPY_SOURCE &&
+			bufState != D3D12_RESOURCE_STATE_GENERIC_READ)
+		{
+			D3D12_RESOURCE_BARRIER barrier{};
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Transition.pResource = dx12Buffer.GetResource();
+			barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+			barrier.Transition.StateBefore = bufState;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+			Get()->ResourceBarrier(1, &barrier);
+			dx12Buffer.SetState(D3D12_RESOURCE_STATE_COPY_SOURCE);
+		}
 
 		D3D12_TEXTURE_COPY_LOCATION dstLoc{};
 		dstLoc.pResource = dx12Texture.GetResource();
@@ -256,6 +374,31 @@ namespace cct::gfx::rhi
 		UINT64 totalBytes = 0;
 		d3dDevice->GetCopyableFootprints(&texDesc, 0, 1, 0, &footprint, &numRows, &rowSizeInBytes, &totalBytes);
 
+		if (dstOffset + totalBytes > dx12Buffer.GetSize())
+		{
+			CCT_ASSERT_FALSE("ConcertoGraphics: Texture→buffer copy overflows dest (offset={} bytes={} dest={})",
+							 dstOffset, totalBytes, dx12Buffer.GetSize());
+			return;
+		}
+
+		const D3D12_RESOURCE_STATES bufState = dx12Buffer.GetState();
+		if (bufState == D3D12_RESOURCE_STATE_GENERIC_READ)
+		{
+			CCT_ASSERT_FALSE("ConcertoGraphics: Texture→buffer copy dest is an UPLOAD heap; create with HostReadback");
+			return;
+		}
+		if (bufState != D3D12_RESOURCE_STATE_COPY_DEST)
+		{
+			D3D12_RESOURCE_BARRIER barrier{};
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Transition.pResource = dx12Buffer.GetResource();
+			barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+			barrier.Transition.StateBefore = bufState;
+			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_DEST;
+			Get()->ResourceBarrier(1, &barrier);
+			dx12Buffer.SetState(D3D12_RESOURCE_STATE_COPY_DEST);
+		}
+
 		D3D12_TEXTURE_COPY_LOCATION srcLoc{};
 		srcLoc.pResource = dx12Texture.GetResource();
 		srcLoc.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
@@ -271,22 +414,28 @@ namespace cct::gfx::rhi
 		Get()->CopyTextureRegion(&dstLoc, 0, 0, 0, &srcLoc, nullptr);
 	}
 
-	void Dx12RHICommandBuffer::TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout)
+	void Dx12RHICommandBuffer::TransitionImageLayout(const Texture& texture, ImageLayout /*oldLayout*/, ImageLayout newLayout)
 	{
 		if (!IsValid())
 			return;
 
 		const auto& dx12Texture = Cast<const Dx12RHITexture&>(texture);
 
+		const D3D12_RESOURCE_STATES afterState = ToD3D12ResourceState(newLayout);
+		const D3D12_RESOURCE_STATES beforeState = dx12Texture.GetState();
+		if (beforeState == afterState)
+			return;
+
 		D3D12_RESOURCE_BARRIER barrier{};
 		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 		barrier.Transition.pResource = dx12Texture.GetResource();
 		barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		barrier.Transition.StateBefore = ToD3D12ResourceState(oldLayout);
-		barrier.Transition.StateAfter = ToD3D12ResourceState(newLayout);
+		barrier.Transition.StateBefore = beforeState;
+		barrier.Transition.StateAfter = afterState;
 
 		Get()->ResourceBarrier(1, &barrier);
+		dx12Texture.SetState(afterState);
 	}
 
 	D3D12_RESOURCE_STATES Dx12RHICommandBuffer::ToD3D12ResourceState(ImageLayout layout)
@@ -334,23 +483,73 @@ namespace cct::gfx::rhi
 		TransitionImageLayout(texture, oldLayout, newLayout);
 	}
 
+	namespace
+	{
+		// Unlike Vulkan buffer barriers (memory-access-only, no resource "layout"), D3D12
+		// buffers have real resource states that must be transitioned explicitly
+		D3D12_RESOURCE_STATES BufferAccessToD3D12State(MemoryAccessFlags access, PipelineStageFlags stage)
+		{
+			D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON;
+
+			if (access.Contains(MemoryAccess::TransferWrite))
+				state |= D3D12_RESOURCE_STATE_COPY_DEST;
+			if (access.Contains(MemoryAccess::TransferRead))
+				state |= D3D12_RESOURCE_STATE_COPY_SOURCE;
+			if (access.Contains(MemoryAccess::ShaderWrite))
+				state |= D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
+			if (access.Contains(MemoryAccess::UniformRead) || access.Contains(MemoryAccess::VertexAttributeRead))
+				state |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+			if (access.Contains(MemoryAccess::IndexRead))
+				state |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
+			if (access.Contains(MemoryAccess::ShaderRead))
+			{
+				if (stage.Contains(PipelineStage::FragmentShader))
+					state |= D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+				if (stage.Contains(PipelineStage::VertexShader) ||
+					stage.Contains(PipelineStage::ComputeShader) ||
+					stage.Contains(PipelineStage::GeometryShader) ||
+					stage.Contains(PipelineStage::TessellationControlShader) ||
+					stage.Contains(PipelineStage::TessellationEvaluationShader))
+					state |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
+			}
+
+			return state;
+		}
+	} // namespace
+
 	void Dx12RHICommandBuffer::PipelineBarrier(const Buffer& buffer,
 											   PipelineStageFlags /*srcStage*/,
-											   PipelineStageFlags /*dstStage*/,
+											   PipelineStageFlags dstStage,
 											   MemoryAccessFlags /*srcAccess*/,
-											   MemoryAccessFlags /*dstAccess*/)
+											   MemoryAccessFlags dstAccess)
 	{
 		if (!IsValid())
 			return;
 
 		const auto& dx12Buffer = Cast<const Dx12RHIBuffer&>(buffer);
+		const D3D12_RESOURCE_STATES beforeState = dx12Buffer.GetState();
+		const D3D12_RESOURCE_STATES afterState = BufferAccessToD3D12State(dstAccess, dstStage);
 
 		D3D12_RESOURCE_BARRIER barrier{};
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-		barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		barrier.UAV.pResource = dx12Buffer.GetResource();
+		if (beforeState == afterState)
+		{
+			if (beforeState != D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+				return;
+
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+			barrier.UAV.pResource = dx12Buffer.GetResource();
+		}
+		else
+		{
+			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			barrier.Transition.pResource = dx12Buffer.GetResource();
+			barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+			barrier.Transition.StateBefore = beforeState;
+			barrier.Transition.StateAfter = afterState;
+		}
 
 		Get()->ResourceBarrier(1, &barrier);
+		dx12Buffer.SetState(afterState);
 	}
 
 	void Dx12RHICommandBuffer::BindComputePipeline(const Pipeline& pipeline)
@@ -358,15 +557,7 @@ namespace cct::gfx::rhi
 		if (!IsValid() || !m_device)
 			return;
 
-		const auto& dx12Pipeline = Cast<const Dx12RHIPipeline&>(pipeline);
-		Get()->SetPipelineState(dx12Pipeline.GetPipelineState());
-		Get()->SetComputeRootSignature(dx12Pipeline.GetLayout().GetRootSignature().Get());
-
-		auto& pool = m_device->GetDescriptorPool();
-		ID3D12DescriptorHeap* heaps[] = {
-			pool.GetGpuHeap()->GetHeap(),
-			pool.GetSamplerHeap()->GetHeap()};
-		Get()->SetDescriptorHeaps(_countof(heaps), heaps);
+		SetHeapsAndRootSignature(Cast<const Dx12RHIPipeline&>(pipeline), /* isCompute */ true);
 	}
 
 	void Dx12RHICommandBuffer::BindComputeDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set)
@@ -376,23 +567,7 @@ namespace cct::gfx::rhi
 
 		const auto& dx12Layout = Cast<const Dx12RHIPipelineLayout&>(layout);
 		const auto& dx12Set = Cast<const Dx12RHIDescriptorSet&>(set);
-		const auto& rootSig = dx12Layout.GetRootSignature();
-
-		const auto& gpuRange = dx12Set.GetDescriptorRange();
-		if (gpuRange.baseHandle.IsValid())
-		{
-			UINT rootParamIndex = rootSig.GetRootParameterIndex(0, false);
-			if (rootParamIndex != UINT_MAX)
-				Get()->SetComputeRootDescriptorTable(rootParamIndex, gpuRange.baseHandle.gpuHandle);
-		}
-
-		if (dx12Set.HasSamplers())
-		{
-			const auto& samplerRange = dx12Set.GetSamplerRange();
-			UINT samplerRootParam = rootSig.GetRootParameterIndex(0, true);
-			if (samplerRootParam != UINT_MAX)
-				Get()->SetComputeRootDescriptorTable(samplerRootParam, samplerRange.baseHandle.gpuHandle);
-		}
+		BindDescriptorSetImpl(dx12Layout.GetRootSignature(), dx12Set, 0, /* isCompute */ true);
 	}
 
 	void Dx12RHICommandBuffer::Dispatch(UInt32 groupCountX, UInt32 groupCountY, UInt32 groupCountZ)
@@ -401,5 +576,89 @@ namespace cct::gfx::rhi
 			return;
 
 		Get()->Dispatch(groupCountX, groupCountY, groupCountZ);
+	}
+
+	namespace
+	{
+#ifndef D3D12_EVENT_METADATA
+		constexpr UINT kD3d12EventMetadata = 0x2;
+#else
+		constexpr UINT kD3d12EventMetadata = D3D12_EVENT_METADATA;
+#endif
+		constexpr UINT64 kPixTypeBitShift = 10;
+		constexpr UINT64 kPixBeginEventNoArgs = 0x002;
+		constexpr std::size_t kPixRecordQwords = 64;
+
+		UINT64 EncodePixEventInfo(UINT64 eventType)
+		{
+			return (eventType & 0x3FFull) << kPixTypeBitShift;
+		}
+
+		UINT64 EncodePixAnsiStringInfo()
+		{
+			// alignment=0, copyChunkSize=8, isANSI=TRUE, isShortcut=FALSE
+			return (8ull << 55) | (1ull << 54);
+		}
+
+		void CopyPixAnsiString(UINT64*& dest, const UINT64* limit, const char* text)
+		{
+			*dest++ = EncodePixAnsiStringInfo();
+			while (dest < limit)
+			{
+				UINT64 packed = 0;
+				for (int i = 0; i < 8; ++i)
+				{
+					const auto c = static_cast<unsigned char>(*text++);
+					if (c == 0)
+					{
+						*dest++ = packed;
+						return;
+					}
+					packed |= static_cast<UINT64>(c) << (i * 8);
+				}
+				*dest++ = packed;
+			}
+		}
+
+		UINT64 PackPixColor(float r, float g, float b)
+		{
+			const auto toU8 = [](float v) -> UINT64
+			{
+				return static_cast<UINT64>(std::clamp(v, 0.f, 1.f) * 255.f + 0.5f);
+			};
+			return 0xFF000000ull | (toU8(r) << 16) | (toU8(g) << 8) | toU8(b);
+		}
+	} // namespace
+
+	void Dx12RHICommandBuffer::BeginDebugLabel(const char* name, float r, float g, float b)
+	{
+		if (!IsValid())
+			return;
+
+		UINT64 buffer[kPixRecordQwords]{};
+		UINT64* dest = buffer;
+		const UINT64* limit = buffer + kPixRecordQwords - 2;
+		*dest++ = EncodePixEventInfo(kPixBeginEventNoArgs);
+		*dest++ = PackPixColor(r, g, b);
+		if (name != nullptr && name[0] != '\0')
+			CopyPixAnsiString(dest, limit, name);
+		else
+			*dest++ = 0;
+		*dest = 0;
+
+		const UINT size = static_cast<UINT>(reinterpret_cast<std::uint8_t*>(dest) - reinterpret_cast<std::uint8_t*>(buffer));
+		Get()->BeginEvent(kD3d12EventMetadata, buffer, size);
+	}
+
+	void Dx12RHICommandBuffer::EndDebugLabel()
+	{
+		if (!IsValid())
+			return;
+		Get()->EndEvent();
+	}
+
+	void* Dx12RHICommandBuffer::GetNativeHandle() const
+	{
+		return static_cast<void*>(Get());
 	}
 } // namespace cct::gfx::rhi

@@ -49,6 +49,7 @@ namespace cct::gfx::rhi
 		const D3D12_RESOURCE_STATES initialState = (heapProperties.Type == D3D12_HEAP_TYPE_UPLOAD)
 													   ? D3D12_RESOURCE_STATE_GENERIC_READ
 													   : D3D12_RESOURCE_STATE_COMMON;
+		m_currentState = initialState;
 
 		HRESULT hr = device.Get()->CreateCommittedResource(
 			&heapProperties,
@@ -92,20 +93,32 @@ namespace cct::gfx::rhi
 
 		auto* cmdList = Cast<Dx12RHICommandBuffer&>(cmd).Get();
 
-		D3D12_RESOURCE_BARRIER toCopySrc{};
-		toCopySrc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		toCopySrc.Transition.pResource = m_resource.Get();
-		toCopySrc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-		toCopySrc.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON;
-		toCopySrc.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
-		cmdList->ResourceBarrier(1, &toCopySrc);
+		const D3D12_RESOURCE_STATES priorState = m_currentState;
+
+		if (priorState != D3D12_RESOURCE_STATE_COPY_SOURCE)
+		{
+			D3D12_RESOURCE_BARRIER toCopySrc{};
+			toCopySrc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			toCopySrc.Transition.pResource = m_resource.Get();
+			toCopySrc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+			toCopySrc.Transition.StateBefore = priorState;
+			toCopySrc.Transition.StateAfter = D3D12_RESOURCE_STATE_COPY_SOURCE;
+			cmdList->ResourceBarrier(1, &toCopySrc);
+		}
 
 		cmdList->CopyBufferRegion(m_readbackResource.Get(), 0, m_resource.Get(), 0, m_size);
 
-		D3D12_RESOURCE_BARRIER backToCommon = toCopySrc;
-		backToCommon.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
-		backToCommon.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON;
-		cmdList->ResourceBarrier(1, &backToCommon);
+		if (priorState != D3D12_RESOURCE_STATE_COPY_SOURCE)
+		{
+			D3D12_RESOURCE_BARRIER backToPrior{};
+			backToPrior.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			backToPrior.Transition.pResource = m_resource.Get();
+			backToPrior.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+			backToPrior.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
+			backToPrior.Transition.StateAfter = priorState;
+			cmdList->ResourceBarrier(1, &backToPrior);
+		}
+		m_currentState = priorState;
 	}
 
 	bool Dx12RHIBuffer::Map(Byte** data)
