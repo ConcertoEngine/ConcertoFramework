@@ -169,7 +169,7 @@ namespace cct::gfx::vk
 		VkExtent3D extent3D = {extent.width, extent.height, 1};
 		VkImageCreateInfo imgInfo = VulkanInitializer::ImageCreateInfo(
 			format,
-			VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+			VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
 			extent3D);
 		imgInfo.pNext = &extInfo;
 
