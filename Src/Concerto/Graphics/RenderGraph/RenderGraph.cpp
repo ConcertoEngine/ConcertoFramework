@@ -42,10 +42,12 @@ namespace cct::gfx::rhi
 	}
 
 	RGBufferHandle RenderGraph::ImportBuffer(const char* name,
-											 std::shared_ptr<Buffer> buffer)
+											 std::shared_ptr<Buffer> buffer,
+											 PipelineStageFlags initialStage,
+											 MemoryAccessFlags initialAccess)
 	{
 		MarkDirty();
-		return m_registry.ImportBuffer(name, std::move(buffer));
+		return m_registry.ImportBuffer(name, std::move(buffer), initialStage, initialAccess);
 	}
 
 	void RenderGraph::AddPass(const char* name, RGPassType type,
@@ -139,6 +141,10 @@ namespace cct::gfx::rhi
 			bool isWrite;
 		};
 		std::unordered_map<UInt16, BufferAccessState> bufferStates;
+		const auto bufferAccessWasWrite = [](MemoryAccessFlags access)
+		{
+			return access.Contains(MemoryAccess::ShaderWrite) || access.Contains(MemoryAccess::TransferWrite);
+		};
 
 		// Emit layout-transition barriers for all texture usages in a pass.
 		// Must only be called when no render pass is active.
@@ -162,11 +168,14 @@ namespace cct::gfx::rhi
 				auto [stage, access] = RenderGraphCompiler::BufferAccessParams(p.type, usage.access);
 				const bool isWrite = (usage.access == RGResourceAccess::Write);
 
-				const auto it = bufferStates.find(usage.handle.index);
+				auto it = bufferStates.find(usage.handle.index);
 				if (it == bufferStates.end())
 				{
-					bufferStates.emplace(usage.handle.index, BufferAccessState{stage, access, isWrite});
-					continue;
+					const PipelineStageFlags prevStage = m_registry.GetCurrentBufferStage(usage.handle);
+					const MemoryAccessFlags prevAccess = m_registry.GetCurrentBufferAccess(usage.handle);
+					it = bufferStates.emplace(usage.handle.index,
+											  BufferAccessState{prevStage, prevAccess, bufferAccessWasWrite(prevAccess)})
+							.first;
 				}
 
 				BufferAccessState& prev = it->second;
@@ -175,11 +184,13 @@ namespace cct::gfx::rhi
 				{
 					prev.stage |= stage;
 					prev.access |= access;
+					m_registry.SetCurrentBufferState(usage.handle, prev.stage, prev.access);
 					continue;
 				}
 
 				cmd.PipelineBarrier(m_registry.GetBuffer(usage.handle),
 									prev.stage, stage, prev.access, access);
+				m_registry.SetCurrentBufferState(usage.handle, stage, access);
 				prev = BufferAccessState{stage, access, isWrite};
 			}
 		};

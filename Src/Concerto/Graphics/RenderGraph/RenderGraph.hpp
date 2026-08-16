@@ -45,7 +45,9 @@ namespace cct::gfx::rhi
 									  UInt32 width = 0,
 									  UInt32 height = 0);
 		RGBufferHandle ImportBuffer(const char* name,
-									std::shared_ptr<Buffer> buffer);
+									std::shared_ptr<Buffer> buffer,
+									PipelineStageFlags initialStage = {},
+									MemoryAccessFlags initialAccess = {});
 
 		// Pass declaration
 		void AddPass(const char* name, RGPassType type,

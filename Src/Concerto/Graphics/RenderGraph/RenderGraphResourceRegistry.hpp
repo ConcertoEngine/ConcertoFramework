@@ -12,6 +12,7 @@
 #include "Concerto/Graphics/RenderGraph/RenderGraphResource.hpp"
 #include "Concerto/Graphics/RHI/Buffer.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/RHI/Texture.hpp"
 
 namespace cct::gfx::rhi
@@ -25,12 +26,15 @@ namespace cct::gfx::rhi
 		{
 			RGTextureDesc desc;
 			std::shared_ptr<Texture> physical;
+			ImageLayout lastLayout = ImageLayout::Undefined;
 		};
 
 		struct BufferTransientSnapshot
 		{
 			RGBufferDesc desc;
 			std::shared_ptr<Buffer> physical;
+			PipelineStageFlags lastStage;
+			MemoryAccessFlags lastAccess;
 		};
 
 		RGTextureHandle RegisterTexture(const RGTextureDesc& desc);
@@ -43,7 +47,9 @@ namespace cct::gfx::rhi
 									  UInt32 width = 0,
 									  UInt32 height = 0);
 		RGBufferHandle ImportBuffer(const char* name,
-									std::shared_ptr<Buffer> buffer);
+									std::shared_ptr<Buffer> buffer,
+									PipelineStageFlags initialStage = {},
+									MemoryAccessFlags initialAccess = {});
 
 		void Allocate(Device& device);
 
@@ -66,6 +72,10 @@ namespace cct::gfx::rhi
 
 		[[nodiscard]] ImageLayout GetCurrentLayout(RGTextureHandle handle) const;
 		void SetCurrentLayout(RGTextureHandle handle, ImageLayout layout);
+
+		[[nodiscard]] PipelineStageFlags GetCurrentBufferStage(RGBufferHandle handle) const;
+		[[nodiscard]] MemoryAccessFlags GetCurrentBufferAccess(RGBufferHandle handle) const;
+		void SetCurrentBufferState(RGBufferHandle handle, PipelineStageFlags stage, MemoryAccessFlags access);
 
 		// Declare the layout a texture must be in after the last render graph pass that writes it.
 		// RenderGraph::Execute() emits the required barrier at the end of the frame.
@@ -105,6 +115,8 @@ namespace cct::gfx::rhi
 		{
 			RGBufferDesc desc;
 			std::shared_ptr<Buffer> physical;
+			PipelineStageFlags currentStage;
+			MemoryAccessFlags currentAccess;
 			bool imported = false;
 			UInt16 version = 0;
 		};
@@ -114,8 +126,14 @@ namespace cct::gfx::rhi
 
 		std::vector<TextureEntry> m_textures;
 		std::vector<BufferEntry> m_buffers;
-		std::unordered_map<size_t, std::vector<std::shared_ptr<Texture>>> m_transientTexturePool;
-		std::unordered_map<size_t, std::vector<std::shared_ptr<Buffer>>> m_transientBufferPool;
+		std::unordered_map<size_t, std::vector<std::pair<std::shared_ptr<Texture>, ImageLayout>>> m_transientTexturePool;
+		struct PooledBuffer
+		{
+			std::shared_ptr<Buffer> physical;
+			PipelineStageFlags lastStage;
+			MemoryAccessFlags lastAccess;
+		};
+		std::unordered_map<size_t, std::vector<PooledBuffer>> m_transientBufferPool;
 		std::unordered_map<UInt16, std::pair<RGTextureHandle, ImageLayout>> m_exportLayouts;
 	};
 } // namespace cct::gfx::rhi

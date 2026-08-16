@@ -20,7 +20,7 @@ namespace cct::gfx::rhi
 	RGBufferHandle RenderGraphResourceRegistry::RegisterBuffer(const RGBufferDesc& desc)
 	{
 		const UInt16 idx = static_cast<UInt16>(m_buffers.size());
-		m_buffers.push_back({desc, nullptr, false, 0});
+		m_buffers.push_back({desc, nullptr, {}, {}, false, 0});
 		return {idx, 0};
 	}
 
@@ -42,12 +42,14 @@ namespace cct::gfx::rhi
 	}
 
 	RGBufferHandle RenderGraphResourceRegistry::ImportBuffer(const char* name,
-															 std::shared_ptr<Buffer> buffer)
+															 std::shared_ptr<Buffer> buffer,
+															 PipelineStageFlags initialStage,
+															 MemoryAccessFlags initialAccess)
 	{
 		const UInt16 idx = static_cast<UInt16>(m_buffers.size());
 		RGBufferDesc desc;
 		desc.name = name;
-		m_buffers.push_back({desc, std::move(buffer), true, 0});
+		m_buffers.push_back({desc, std::move(buffer), initialStage, initialAccess, true, 0});
 		return {idx, 0};
 	}
 
@@ -62,7 +64,8 @@ namespace cct::gfx::rhi
 			auto& pool = m_transientTexturePool[hash];
 			if (!pool.empty())
 			{
-				entry.physical = pool.back();
+				entry.physical = pool.back().first;
+				entry.currentLayout = pool.back().second;
 				pool.pop_back();
 			}
 			else
@@ -91,7 +94,9 @@ namespace cct::gfx::rhi
 			auto& pool = m_transientBufferPool[hash];
 			if (!pool.empty())
 			{
-				entry.physical = pool.back();
+				entry.physical = std::move(pool.back().physical);
+				entry.currentStage = pool.back().lastStage;
+				entry.currentAccess = pool.back().lastAccess;
 				pool.pop_back();
 			}
 			else
@@ -112,7 +117,7 @@ namespace cct::gfx::rhi
 		{
 			if (!entry.imported && entry.physical)
 			{
-				outTextures.push_back({entry.desc, std::move(entry.physical)});
+				outTextures.push_back({entry.desc, std::move(entry.physical), entry.currentLayout});
 				entry.currentLayout = ImageLayout::Undefined;
 			}
 		}
@@ -121,7 +126,9 @@ namespace cct::gfx::rhi
 		{
 			if (!entry.imported && entry.physical)
 			{
-				outBuffers.push_back({entry.desc, std::move(entry.physical)});
+				outBuffers.push_back({entry.desc, std::move(entry.physical), entry.currentStage, entry.currentAccess});
+				entry.currentStage = {};
+				entry.currentAccess = {};
 			}
 		}
 	}
@@ -139,13 +146,13 @@ namespace cct::gfx::rhi
 		{
 			auto& bucket = m_transientTexturePool[HashDesc(snap.desc)];
 			if (bucket.size() < kMaxPooledPerDesc)
-				bucket.push_back(std::move(snap.physical));
+				bucket.emplace_back(std::move(snap.physical), snap.lastLayout);
 		}
 		for (auto& snap : buffers)
 		{
 			auto& bucket = m_transientBufferPool[HashDesc(snap.desc)];
 			if (bucket.size() < kMaxPooledPerDesc)
-				bucket.push_back(std::move(snap.physical));
+				bucket.push_back({std::move(snap.physical), snap.lastStage, snap.lastAccess});
 		}
 		textures.clear();
 		buffers.clear();
@@ -187,6 +194,28 @@ namespace cct::gfx::rhi
 		CCT_ASSERT(handle.index < m_textures.size(),
 				   "RenderGraphResourceRegistry::SetCurrentLayout: invalid handle index {}", handle.index);
 		m_textures[handle.index].currentLayout = layout;
+	}
+
+	PipelineStageFlags RenderGraphResourceRegistry::GetCurrentBufferStage(RGBufferHandle handle) const
+	{
+		CCT_ASSERT(handle.index < m_buffers.size(),
+				   "RenderGraphResourceRegistry::GetCurrentBufferStage: invalid handle index {}", handle.index);
+		return m_buffers[handle.index].currentStage;
+	}
+
+	MemoryAccessFlags RenderGraphResourceRegistry::GetCurrentBufferAccess(RGBufferHandle handle) const
+	{
+		CCT_ASSERT(handle.index < m_buffers.size(),
+				   "RenderGraphResourceRegistry::GetCurrentBufferAccess: invalid handle index {}", handle.index);
+		return m_buffers[handle.index].currentAccess;
+	}
+
+	void RenderGraphResourceRegistry::SetCurrentBufferState(RGBufferHandle handle, PipelineStageFlags stage, MemoryAccessFlags access)
+	{
+		CCT_ASSERT(handle.index < m_buffers.size(),
+				   "RenderGraphResourceRegistry::SetCurrentBufferState: invalid handle index {}", handle.index);
+		m_buffers[handle.index].currentStage = stage;
+		m_buffers[handle.index].currentAccess = access;
 	}
 
 	Texture& RenderGraphResourceRegistry::GetTexture(RGTextureHandle handle)
