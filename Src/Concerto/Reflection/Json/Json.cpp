@@ -7,6 +7,8 @@
 #include <type_traits>
 #include <vector>
 
+#include <Concerto/Core/Uuid/Uuid.hpp>
+
 #include "Concerto/Reflection/Boolean/Boolean.refl.hpp"
 #include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/Enumeration/Enumeration.refl.hpp"
@@ -23,6 +25,7 @@
 #include "Concerto/Reflection/Int8/Int8.refl.hpp"
 #include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Object/Object.refl.hpp"
+#include "Concerto/Reflection/Registry/Registry.hpp"
 #include "Concerto/Reflection/String/String.refl.hpp"
 #include "Concerto/Reflection/UInt16/UInt16.refl.hpp"
 #include "Concerto/Reflection/UInt32/UInt32.refl.hpp"
@@ -35,14 +38,16 @@ namespace cct::refl
 {
 	namespace
 	{
-		nlohmann::ordered_json SerializeObject(const Object& obj);
+		nlohmann::ordered_json SerializeObject(const Object& obj, bool emitClass = true);
 
 		struct JsonSerializer : FieldVisitor
 		{
 			nlohmann::ordered_json& out;
+			bool emitClass;
 
-			explicit JsonSerializer(nlohmann::ordered_json& o) :
-				out(o)
+			explicit JsonSerializer(nlohmann::ordered_json& o, bool emitClass_ = true) :
+				out(o),
+				emitClass(emitClass_)
 			{
 			}
 
@@ -139,7 +144,7 @@ namespace cct::refl
 				for (std::size_t i = 0; i < v.GetCount(); ++i)
 				{
 					if (Object* elem = v.Get(i))
-						arr.push_back(SerializeObject(*elem));
+						arr.push_back(SerializeObject(*elem, emitClass));
 					else
 						arr.push_back(nullptr);
 				}
@@ -147,7 +152,7 @@ namespace cct::refl
 			}
 			void Visit(std::string_view name, Object& v) override
 			{
-				out[std::string(name)] = SerializeObject(v);
+				out[std::string(name)] = SerializeObject(v, emitClass);
 			}
 		};
 
@@ -245,7 +250,7 @@ namespace cct::refl
 			return meta;
 		}
 
-		nlohmann::ordered_json SerializeObject(const Object& obj)
+		nlohmann::ordered_json SerializeObject(const Object& obj, bool emitClass)
 		{
 			const Class* klass = obj.GetDynamicClass();
 			if (klass == nullptr)
@@ -257,10 +262,11 @@ namespace cct::refl
 
 			nlohmann::ordered_json j = nlohmann::ordered_json::object();
 
-			if (klass->GetName() != "Object")
+			if (emitClass && klass->GetName() != "Object")
 				j["class"] = klass->GetFullyQualifiedName();
+			j["$uuid"] = obj.GetUuid().ToString();
 
-			JsonSerializer serializer{j};
+			JsonSerializer serializer{j, emitClass};
 			obj.Accept(serializer);
 
 			nlohmann::ordered_json meta = BuildMeta(chain);
@@ -270,12 +276,24 @@ namespace cct::refl
 			return j;
 		}
 
+		void ApplyJsonUuid(Object& target, const nlohmann::ordered_json& src)
+		{
+			const auto it = src.find("$uuid");
+			if (it == src.end() || !it->is_string())
+				return;
+			const std::string text = it->get<std::string>();
+			if (!text.empty())
+				target.SetUuid(cct::Uuid::FromString(text));
+		}
+
 		struct JsonDeserializer : FieldVisitor
 		{
 			const nlohmann::ordered_json& obj;
+			Registry* registry;
 
-			explicit JsonDeserializer(const nlohmann::ordered_json& o) :
-				obj(o)
+			explicit JsonDeserializer(const nlohmann::ordered_json& o, Registry* r = nullptr) :
+				obj(o),
+				registry(r)
 			{
 			}
 
@@ -442,31 +460,27 @@ namespace cct::refl
 					if (!elemJson.is_object())
 						continue;
 
-					if (v.GetElementType() == nullptr)
+					const Class* cls = v.GetElementType();
+					const auto cit = elemJson.find("class");
+					if (cit != elemJson.end() && cit->is_string())
 					{
-						const auto cit = elemJson.find("class");
-						if (cit == elemJson.end() || !cit->is_string())
-							continue;
-						const Class* cls = GetClassByName(cit->get<std::string>());
-						if (!cls)
-							continue;
-						auto newObj = cls->CreateDefaultObject();
-						if (!newObj)
-							continue;
-						Object* elem = newObj.get();
-						v.Add(std::move(newObj));
-						JsonDeserializer elemDeser{elemJson};
-						elem->Accept(elemDeser);
+						if (const Class* named = GetClassByName(cit->get<std::string>()))
+							cls = named;
 					}
-					else
-					{
-						Object* elem = v.Add();
-						if (elem)
-						{
-							JsonDeserializer elemDeser{elemJson};
-							elem->Accept(elemDeser);
-						}
-					}
+					if (cls == nullptr)
+						continue;
+
+					// registry is null unless the caller threaded one through Json::FromJson, in
+					// which case every element created here ends up tracked in it (see
+					// Registry::Allocate) instead of being an untracked CreateDefaultObject().
+					auto newObj = registry != nullptr ? registry->Allocate(cls) : cls->CreateDefaultObject();
+					if (!newObj)
+						continue;
+					Object* elem = newObj.get();
+					ApplyJsonUuid(*elem, elemJson);
+					v.Add(std::move(newObj));
+					JsonDeserializer elemDeser{elemJson, registry};
+					elem->Accept(elemDeser);
 				}
 			}
 			void Visit(std::string_view name, Object& v) override
@@ -474,24 +488,26 @@ namespace cct::refl
 				const auto it = obj.find(std::string(name));
 				if (it == obj.end() || !it->is_object())
 					return;
-				JsonDeserializer nestedDeser{*it};
+				ApplyJsonUuid(v, *it);
+				JsonDeserializer nestedDeser{*it, registry};
 				v.Accept(nestedDeser);
 			}
 		};
 
 	} // namespace
 
-	std::string Json::ToJson(const Object& obj)
+	std::string Json::ToJson(const Object& obj, bool emitClass)
 	{
-		return SerializeObject(obj).dump();
+		return SerializeObject(obj, emitClass).dump();
 	}
 
-	bool Json::FromJson(Object& target, std::string_view json)
+	bool Json::FromJson(Object& target, std::string_view json, Registry* registry)
 	{
 		const nlohmann::ordered_json j = nlohmann::ordered_json::parse(json, nullptr, false);
 		if (j.is_discarded() || !j.is_object())
 			return false;
-		JsonDeserializer deser{j};
+		ApplyJsonUuid(target, j);
+		JsonDeserializer deser{j, registry};
 		target.Accept(deser);
 		return true;
 	}
@@ -505,7 +521,7 @@ namespace cct::refl
 		return file.good();
 	}
 
-	bool Json::FromJsonFile(Object& target, const std::string& path)
+	bool Json::FromJsonFile(Object& target, const std::string& path, Registry* registry)
 	{
 		std::ifstream file(path);
 		if (!file.is_open())
@@ -513,7 +529,8 @@ namespace cct::refl
 		const nlohmann::ordered_json j = nlohmann::ordered_json::parse(file, nullptr, false);
 		if (j.is_discarded() || !j.is_object())
 			return false;
-		JsonDeserializer deser{j};
+		ApplyJsonUuid(target, j);
+		JsonDeserializer deser{j, registry};
 		target.Accept(deser);
 		return true;
 	}
