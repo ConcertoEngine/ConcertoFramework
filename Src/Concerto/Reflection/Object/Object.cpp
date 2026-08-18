@@ -21,6 +21,7 @@
 #include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Method/Method.hpp"
 #include "Concerto/Reflection/Object/Object.refl.hpp"
+#include "Concerto/Reflection/Registry/Registry.hpp"
 #include "Concerto/Reflection/String/String.refl.hpp"
 #include "Concerto/Reflection/UInt16/UInt16.refl.hpp"
 #include "Concerto/Reflection/UInt32/UInt32.refl.hpp"
@@ -37,18 +38,30 @@ namespace cct::refl
 	{
 	}
 
+	Object::~Object()
+	{
+		// Registry tracking is identity-bound: only the object that was actually handed to
+		// Registry::Track() (this exact address) may be present in its catalog.
+		if (m_registry != nullptr)
+			m_registry->Untrack(*this);
+	}
+
 	Object::Object(const Object& other)
 	{
 		m_dynamicClass = other.m_dynamicClass;
-		m_registry = other.m_registry;
+		m_registry = nullptr; // copy → new identity, not auto-tracked
+		m_handle = {};
 		m_uuid = cct::Uuid::Generate(); // copy → new identity
 	}
 
 	Object::Object(Object&& other) noexcept
 	{
 		m_dynamicClass = std::exchange(other.m_dynamicClass, nullptr);
-		m_registry = std::exchange(other.m_registry, nullptr);
-		m_uuid = std::exchange(other.m_uuid, {});
+		// `other` keeps its own registry entry (still keyed on &other) until it is destroyed;
+		// `this` is a different address that was never tracked, so it starts untracked.
+		m_registry = nullptr;
+		m_handle = {};
+		m_uuid = cct::Uuid::Generate(); // move → new address, new identity; `other` keeps its catalog key
 	}
 
 	Object& Object::operator=(const Object& other)
@@ -57,7 +70,7 @@ namespace cct::refl
 			return *this;
 
 		m_dynamicClass = other.m_dynamicClass;
-		m_registry = other.m_registry;
+		// Registry tracking is tied to construction/destruction, not to value assignment.
 		m_uuid = cct::Uuid::Generate();
 
 		return *this;
@@ -66,8 +79,8 @@ namespace cct::refl
 	Object& Object::operator=(Object&& other) noexcept
 	{
 		std::swap(m_dynamicClass, other.m_dynamicClass);
-		std::swap(m_registry, other.m_registry);
-		std::swap(m_uuid, other.m_uuid);
+		// Deliberately not swapping m_registry nor m_uuid: both objects keep the catalog
+		// entry that matches their own (unchanged) address, and its uuid key with it.
 
 		return *this;
 	}
@@ -84,12 +97,19 @@ namespace cct::refl
 
 	void Object::SetUuid(const cct::Uuid& uuid)
 	{
+		if (m_uuid == uuid)
+			return;
+		const std::string previousKey = m_uuid.ToString();
 		m_uuid = uuid;
+		if (m_registry != nullptr)
+		{
+			m_registry->RekeyUuid(*this, previousKey);
+		}
 	}
 
 	void Object::RegenerateUuid()
 	{
-		m_uuid = cct::Uuid::Generate();
+		SetUuid(cct::Uuid::Generate());
 	}
 
 	void Object::Accept(FieldVisitor& visitor)

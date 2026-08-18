@@ -70,6 +70,21 @@ namespace cct::refl
 		return m_registry;
 	}
 
+	inline void Object::SetRegistry(Registry* registry)
+	{
+		m_registry = registry;
+	}
+
+	inline Handle Object::GetHandle() const
+	{
+		return m_handle;
+	}
+
+	inline void Object::SetHandle(Handle handle)
+	{
+		m_handle = handle;
+	}
+
 	inline void Object::InitializeMemberVariables()
 	{
 		for (const auto& m : GetDynamicClass()->GetMemberVariables())

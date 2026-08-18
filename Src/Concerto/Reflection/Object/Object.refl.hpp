@@ -15,6 +15,7 @@
 
 #include "Concerto/Core/Signal/Signal.hpp"
 #include "Concerto/Reflection/Defines.hpp"
+#include "Concerto/Reflection/Registry/Handle.hpp"
 
 #define CCT_OBJECT(className)                              \
 public:                                                    \
@@ -49,6 +50,7 @@ namespace cct::refl
 	{
 		None = 0,
 		Constructing = 1 << 0, // suppresses all OnXXX signal emissions
+		Dirty = 1 << 1, // value changed since the last ChangeSet collection
 	};
 } // namespace cct::refl
 
@@ -65,7 +67,7 @@ namespace cct::refl
 	{
 	public:
 		Object();
-		virtual ~Object() = default;
+		virtual ~Object();
 
 		/// Emitted whenever the value of this object changes.
 		/// Connect with a lambda or a member function pointer:
@@ -133,6 +135,7 @@ namespace cct::refl
 		[[nodiscard]] bool HasRegistry() const;
 		[[nodiscard]] Registry* GetRegistry();
 		[[nodiscard]] const Registry* GetRegistry() const;
+		[[nodiscard]] inline Handle GetHandle() const;
 
 		inline void InitializeMemberVariables();
 
@@ -160,6 +163,14 @@ namespace cct::refl
 		 * call wins and m_dynamicClass ends up set to the concrete type.
 		 */
 		inline void InitReflection(const Class* cls) noexcept;
+
+	private:
+		friend class Registry;
+		/// Sets/clears the tracking back-reference. Only Registry::Track()/Untrack() call this.
+		inline void SetRegistry(Registry* registry);
+		inline void SetHandle(Handle handle);
+
+		Handle m_handle;
 	};
 	/// RAII guard that sets an ObjectFlag on construction and clears it on destruction.
 	/// An optional callback is invoked just after the flag is cleared, allowing callers
