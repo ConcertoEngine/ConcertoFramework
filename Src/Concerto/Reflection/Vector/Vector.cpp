@@ -3,9 +3,11 @@
 //
 
 #include <Concerto/Core/Assert.hpp>
+#include <Concerto/Core/ThreadAffinity/ThreadAffinity.hpp>
 
 #include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/FieldVisitor/FieldVisitor.hpp"
+#include "Concerto/Reflection/Registry/Registry.hpp"
 #include "Concerto/Reflection/Vector/Vector.refl.hpp"
 
 namespace cct::refl
@@ -13,6 +15,85 @@ namespace cct::refl
 	Vector::Vector() :
 		m_elementType(nullptr)
 	{
+	}
+
+	Vector::~Vector()
+	{
+		ReleaseAll();
+	}
+
+	Vector::Vector(Vector&& other) noexcept :
+		Object(std::move(other)),
+		m_elementType(other.m_elementType),
+		m_handles(std::move(other.m_handles)),
+		m_elementRegistry(other.m_elementRegistry),
+		m_ownRegistry(std::move(other.m_ownRegistry))
+	{
+		other.m_handles.clear();
+		other.m_elementRegistry = nullptr;
+	}
+
+	Vector& Vector::operator=(Vector&& other) noexcept
+	{
+		if (this == &other)
+			return *this;
+
+		ReleaseAll();
+
+		Object::operator=(std::move(other));
+		m_elementType = other.m_elementType;
+		m_handles = std::move(other.m_handles);
+		m_elementRegistry = other.m_elementRegistry;
+		m_ownRegistry = std::move(other.m_ownRegistry);
+
+		other.m_handles.clear();
+		other.m_elementRegistry = nullptr;
+		return *this;
+	}
+
+	Registry& Vector::ElementRegistry(const Object* incoming)
+	{
+		if (m_elementRegistry != nullptr)
+			return *m_elementRegistry;
+
+		if (incoming != nullptr && incoming->GetRegistry() != nullptr)
+		{
+			m_elementRegistry = const_cast<Registry*>(incoming->GetRegistry());
+			return *m_elementRegistry;
+		}
+
+		if (Registry* own = GetRegistry())
+		{
+			m_elementRegistry = own;
+			return *m_elementRegistry;
+		}
+
+		m_ownRegistry = std::make_unique<Registry>();
+		m_elementRegistry = m_ownRegistry.get();
+		return *m_elementRegistry;
+	}
+
+	Registry* Vector::GetElementRegistry() const
+	{
+		return m_elementRegistry;
+	}
+
+	void Vector::ReleaseAll()
+	{
+		if (m_elementRegistry == nullptr)
+		{
+			m_handles.clear();
+			return;
+		}
+
+		for (Handle handle : m_handles)
+		{
+			std::unique_ptr<Object> owned = m_elementRegistry->Release(handle);
+		}
+		m_handles.clear();
+
+		if (m_elementRegistry != m_ownRegistry.get())
+			m_elementRegistry = nullptr;
 	}
 
 	void Vector::Add(std::unique_ptr<Object> element)
@@ -31,13 +112,26 @@ namespace cct::refl
 			return;
 		}
 
-		const std::size_t index = m_elements.size();
-		m_elements.push_back(std::move(element));
+		Registry& registry = ElementRegistry(element.get());
+		const std::size_t index = m_handles.size();
+		const Handle handle = registry.Adopt(std::move(element));
+		if (handle.IsNull())
+		{
+			CCT_ASSERT_FALSE("Vector::Add failed to adopt element");
+			return;
+		}
+		m_handles.push_back(handle);
+		CCT_ASSERT_DOMAIN_THREAD();
+		SetFlag(ObjectFlags::Dirty);
 
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
-			OnInserted.Emit(index, *m_elements.back());
-			OnValueChanged.Emit();
+			Object* stored = registry.Resolve(handle);
+			if (stored != nullptr)
+			{
+				OnInserted.Emit(index, *stored);
+				OnValueChanged.Emit();
+			}
 		}
 	}
 
@@ -57,10 +151,17 @@ namespace cct::refl
 			return nullptr;
 		}
 
-		const std::size_t index = m_elements.size();
-		Object* ptr = m_elements.emplace_back(std::move(element)).get();
+		Registry& registry = ElementRegistry(element.get());
+		const std::size_t index = m_handles.size();
+		const Handle handle = registry.Adopt(std::move(element));
+		if (handle.IsNull())
+			return nullptr;
+		m_handles.push_back(handle);
+		CCT_ASSERT_DOMAIN_THREAD();
+		SetFlag(ObjectFlags::Dirty);
 
-		if (!HasFlag(ObjectFlags::Constructing))
+		Object* ptr = registry.Resolve(handle);
+		if (ptr != nullptr && !HasFlag(ObjectFlags::Constructing))
 		{
 			OnInserted.Emit(index, *ptr);
 			OnValueChanged.Emit();
@@ -71,19 +172,25 @@ namespace cct::refl
 
 	void Vector::Remove(std::size_t index)
 	{
-		if (index >= m_elements.size())
+		if (index >= m_handles.size())
 		{
-			CCT_ASSERT_FALSE("Vector::Remove index {} out of range (size = {})", index, m_elements.size());
+			CCT_ASSERT_FALSE("Vector::Remove index {} out of range (size = {})", index, m_handles.size());
 			return;
 		}
 
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
 			// Emit before removal so listeners can still access the element
-			OnRemoved.Emit(index, *m_elements[index]);
+			if (Object* elem = Get(index))
+			{
+				OnRemoved.Emit(index, *elem);
+			}
 		}
 
-		m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(index));
+		std::unique_ptr<Object> owned = m_elementRegistry->Release(m_handles[index]);
+		m_handles.erase(m_handles.begin() + static_cast<std::ptrdiff_t>(index));
+		CCT_ASSERT_DOMAIN_THREAD();
+		SetFlag(ObjectFlags::Dirty);
 
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
@@ -93,13 +200,15 @@ namespace cct::refl
 
 	void Vector::Clear()
 	{
-		if (m_elements.empty())
+		if (m_handles.empty())
 			return;
 
 		// OnCleared always emits (cleanup handlers must run even during construction)
 		OnCleared.Emit();
 
-		m_elements.clear();
+		ReleaseAll();
+		CCT_ASSERT_DOMAIN_THREAD();
+		SetFlag(ObjectFlags::Dirty);
 
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
@@ -109,13 +218,15 @@ namespace cct::refl
 
 	void Vector::Move(std::size_t from, std::size_t to)
 	{
-		const std::size_t count = m_elements.size();
+		const std::size_t count = m_handles.size();
 		if (from == to || from >= count || to >= count)
 			return;
 
-		auto elem = std::move(m_elements[from]);
-		m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(from));
-		m_elements.insert(m_elements.begin() + static_cast<std::ptrdiff_t>(to), std::move(elem));
+		const Handle handle = m_handles[from];
+		m_handles.erase(m_handles.begin() + static_cast<std::ptrdiff_t>(from));
+		m_handles.insert(m_handles.begin() + static_cast<std::ptrdiff_t>(to), handle);
+		CCT_ASSERT_DOMAIN_THREAD();
+		SetFlag(ObjectFlags::Dirty);
 
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
@@ -125,23 +236,28 @@ namespace cct::refl
 
 	std::unique_ptr<Object> Vector::Extract(std::size_t index)
 	{
-		if (index >= m_elements.size())
+		if (index >= m_handles.size())
 			return nullptr;
 
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
-			OnRemoved.Emit(index, *m_elements[index]);
+			if (Object* elem = Get(index))
+			{
+				OnRemoved.Emit(index, *elem);
+			}
 		}
 
-		auto elem = std::move(m_elements[index]);
-		m_elements.erase(m_elements.begin() + static_cast<std::ptrdiff_t>(index));
+		std::unique_ptr<Object> owned = m_elementRegistry->Release(m_handles[index]);
+		m_handles.erase(m_handles.begin() + static_cast<std::ptrdiff_t>(index));
+		CCT_ASSERT_DOMAIN_THREAD();
+		SetFlag(ObjectFlags::Dirty);
 
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
 			OnValueChanged.Emit();
 		}
 
-		return elem;
+		return owned;
 	}
 
 	void Vector::Insert(std::size_t index, std::unique_ptr<Object> element)
@@ -157,46 +273,60 @@ namespace cct::refl
 			return;
 		}
 
-		if (index > m_elements.size())
-			index = m_elements.size();
+		if (index > m_handles.size())
+			index = m_handles.size();
 
-		m_elements.insert(m_elements.begin() + static_cast<std::ptrdiff_t>(index), std::move(element));
+		Registry& registry = ElementRegistry(element.get());
+		const Handle handle = registry.Adopt(std::move(element));
+		if (handle.IsNull())
+			return;
+		m_handles.insert(m_handles.begin() + static_cast<std::ptrdiff_t>(index), handle);
+		CCT_ASSERT_DOMAIN_THREAD();
+		SetFlag(ObjectFlags::Dirty);
 
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
-			OnInserted.Emit(index, *m_elements[index]);
-			OnValueChanged.Emit();
+			Object* stored = registry.Resolve(handle);
+			if (stored != nullptr)
+			{
+				OnInserted.Emit(index, *stored);
+				OnValueChanged.Emit();
+			}
 		}
 	}
 
 	Object* Vector::Get(std::size_t index)
 	{
-		if (index >= m_elements.size())
+		if (index >= m_handles.size())
 		{
-			CCT_ASSERT_FALSE("Vector::Get index {} out of range (size = {})", index, m_elements.size());
+			CCT_ASSERT_FALSE("Vector::Get index {} out of range (size = {})", index, m_handles.size());
 			return nullptr;
 		}
-		return m_elements[index].get();
+		if (m_elementRegistry == nullptr)
+			return nullptr;
+		return m_elementRegistry->Resolve(m_handles[index]);
 	}
 
 	const Object* Vector::Get(std::size_t index) const
 	{
-		if (index >= m_elements.size())
+		if (index >= m_handles.size())
 		{
-			CCT_ASSERT_FALSE("Vector::Get index {} out of range (size = {})", index, m_elements.size());
+			CCT_ASSERT_FALSE("Vector::Get index {} out of range (size = {})", index, m_handles.size());
 			return nullptr;
 		}
-		return m_elements[index].get();
+		if (m_elementRegistry == nullptr)
+			return nullptr;
+		return m_elementRegistry->Resolve(m_handles[index]);
 	}
 
 	std::size_t Vector::GetCount() const
 	{
-		return m_elements.size();
+		return m_handles.size();
 	}
 
 	bool Vector::IsEmpty() const
 	{
-		return m_elements.empty();
+		return m_handles.empty();
 	}
 
 	const Class* Vector::GetElementType() const
@@ -206,9 +336,11 @@ namespace cct::refl
 
 	void Vector::Accept(FieldVisitor& visitor)
 	{
-		for (const auto& elem : m_elements)
+		for (Handle handle : m_handles)
 		{
-			if (elem != nullptr)
+			if (m_elementRegistry == nullptr)
+				break;
+			if (Object* elem = m_elementRegistry->Resolve(handle))
 			{
 				elem->Accept(visitor);
 			}

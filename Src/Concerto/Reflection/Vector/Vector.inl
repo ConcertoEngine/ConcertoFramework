@@ -23,22 +23,22 @@ namespace cct::refl
 
 	inline auto Vector::begin() noexcept
 	{
-		return m_elements.begin();
+		return m_handles.begin();
 	}
 
 	inline auto Vector::end() noexcept
 	{
-		return m_elements.end();
+		return m_handles.end();
 	}
 
 	inline auto Vector::begin() const noexcept
 	{
-		return m_elements.begin();
+		return m_handles.begin();
 	}
 
 	inline auto Vector::end() const noexcept
 	{
-		return m_elements.end();
+		return m_handles.end();
 	}
 } // namespace cct::refl
 

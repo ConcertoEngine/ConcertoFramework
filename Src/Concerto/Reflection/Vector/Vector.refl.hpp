@@ -11,6 +11,7 @@
 
 #include "Concerto/Reflection/Defines.hpp"
 #include "Concerto/Reflection/Object/Object.refl.hpp"
+#include "Concerto/Reflection/Registry/Handle.hpp"
 
 namespace cct::refl
 {
@@ -34,12 +35,12 @@ namespace cct::refl
 	{
 	public:
 		Vector();
-		~Vector() override = default;
+		~Vector() override;
 
 		Vector(const Vector&) = delete;
-		Vector(Vector&&) = default;
+		Vector(Vector&&) noexcept;
 		Vector& operator=(const Vector&) = delete;
-		Vector& operator=(Vector&&) = default;
+		Vector& operator=(Vector&&) noexcept;
 
 		// ── Type parameter ────────────────────────────────────────────────
 		/// The element type of this vector. Set by the code-generated
@@ -117,10 +118,17 @@ namespace cct::refl
 		auto begin() const noexcept;
 		auto end() const noexcept;
 
+		[[nodiscard]] Registry* GetElementRegistry() const;
+
 		CCT_OBJECT(Vector);
 
 	private:
-		std::vector<std::unique_ptr<Object>> m_elements; // NOT reflected
+		Registry& ElementRegistry(const Object* incoming);
+		void ReleaseAll();
+
+		std::vector<Handle> m_handles; // NOT reflected
+		Registry* m_elementRegistry = nullptr;
+		std::unique_ptr<Registry> m_ownRegistry;
 	};
 } // namespace cct::refl
 
