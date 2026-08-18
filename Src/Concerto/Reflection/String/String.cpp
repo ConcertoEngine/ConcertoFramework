@@ -2,6 +2,7 @@
 // Created by arthur on 27/02/2026.
 //
 
+#include <Concerto/Core/ThreadAffinity/ThreadAffinity.hpp>
 #include "Concerto/Reflection/String/String.refl.hpp"
 
 namespace cct::refl
@@ -53,18 +54,26 @@ namespace cct::refl
 
 	void String::Set(std::string_view value)
 	{
+		if (m_value == value)
+			return;
 		m_value = value;
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
+			CCT_ASSERT_DOMAIN_THREAD();
+			SetFlag(ObjectFlags::Dirty);
 			OnValueChanged.Emit();
 		}
 	}
 
 	void String::Set(std::string value)
 	{
+		if (m_value == value)
+			return;
 		m_value = std::move(value);
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
+			CCT_ASSERT_DOMAIN_THREAD();
+			SetFlag(ObjectFlags::Dirty);
 			OnValueChanged.Emit();
 		}
 	}

@@ -2,6 +2,7 @@
 // Created by arthur on 31/12/2025
 //
 
+#include <Concerto/Core/ThreadAffinity/ThreadAffinity.hpp>
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Reflection/Enumeration/Enumeration.refl.hpp"
 #include "Concerto/Reflection/Enumeration/EnumerationClass.hpp"
@@ -82,6 +83,14 @@ namespace cct::refl
 
 	void Enumeration::SetEnumValue(cct::Int64 value)
 	{
+		if (m_value == value)
+			return;
 		m_value = value;
+		if (!Object::HasFlag(ObjectFlags::Constructing))
+		{
+			CCT_ASSERT_DOMAIN_THREAD();
+			Object::SetFlag(ObjectFlags::Dirty);
+			OnValueChanged.Emit();
+		}
 	}
 } // namespace cct::refl

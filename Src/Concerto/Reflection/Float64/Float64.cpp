@@ -1,3 +1,4 @@
+#include <Concerto/Core/ThreadAffinity/ThreadAffinity.hpp>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -49,6 +50,8 @@ namespace cct::refl
 		m_value = value;
 		if (!HasFlag(ObjectFlags::Constructing))
 		{
+			CCT_ASSERT_DOMAIN_THREAD();
+			SetFlag(ObjectFlags::Dirty);
 			OnValueChanged.Emit();
 		}
 	}

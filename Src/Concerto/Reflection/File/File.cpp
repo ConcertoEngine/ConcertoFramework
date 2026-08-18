@@ -1,3 +1,4 @@
+#include <Concerto/Core/ThreadAffinity/ThreadAffinity.hpp>
 #include "Concerto/Reflection/File/File.refl.hpp"
 
 namespace cct::refl
@@ -46,14 +47,28 @@ namespace cct::refl
 
 	void File::Set(std::string_view value)
 	{
+		if (m_value == value)
+			return;
 		m_value = value;
-		OnValueChanged.Emit();
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			CCT_ASSERT_DOMAIN_THREAD();
+			SetFlag(ObjectFlags::Dirty);
+			OnValueChanged.Emit();
+		}
 	}
 
 	void File::Set(std::string value)
 	{
+		if (m_value == value)
+			return;
 		m_value = std::move(value);
-		OnValueChanged.Emit();
+		if (!HasFlag(ObjectFlags::Constructing))
+		{
+			CCT_ASSERT_DOMAIN_THREAD();
+			SetFlag(ObjectFlags::Dirty);
+			OnValueChanged.Emit();
+		}
 	}
 
 	const std::string& File::Get() const
