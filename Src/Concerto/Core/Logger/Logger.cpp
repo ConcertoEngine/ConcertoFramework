@@ -81,6 +81,7 @@ namespace cct
 		std::unordered_map<std::string, std::shared_ptr<spdlog::logger>, StringHash, std::equal_to<>> Loggers;
 		std::unordered_map<std::string, ChannelState, StringHash, std::equal_to<>> ChannelStates;
 		std::vector<spdlog::sink_ptr> Sinks;
+		std::vector<Logger::LogListener> Listeners;
 		LogConfig Config;
 		std::atomic<LogLevel> FastPathGlobalLevel{LogLevel::Info};
 		std::atomic<bool> Initialized{false};
@@ -335,6 +336,23 @@ namespace cct
 
 		const char* chanName = (channel != nullptr) ? channel : "";
 		logger->log(ToSpdlogLevel(level), "[{}] {}", chanName, message);
+
+		std::vector<LogListener> listeners;
+		{
+			std::shared_lock lock(m_State->Mutex);
+			listeners = m_State->Listeners;
+		}
+		for (const auto& listener : listeners)
+		{
+			if (listener)
+				listener(category != nullptr ? category : "", chanName, level, message);
+		}
+	}
+
+	void Logger::AddListener(LogListener listener)
+	{
+		std::unique_lock lock(m_State->Mutex);
+		m_State->Listeners.push_back(std::move(listener));
 	}
 
 	void Logger::DebugString(const std::string& string)

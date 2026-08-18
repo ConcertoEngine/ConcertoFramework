@@ -17,7 +17,7 @@ namespace cct::net
 	class Packet;
 	class ENetHost;
 
-	class ENetPeer
+	class CCT_CORE_PUBLIC_API ENetPeer
 	{
 	public:
 		using ENetPeerHandle = void*;
@@ -37,6 +37,11 @@ namespace cct::net
 		void SetPingInterval(UInt32 pingInterval);
 		bool SendPacket(const Packet& packet, UInt8 channel = 0, ENetPacket::Flag flags = ENetPacket::Flag::Reliable);
 		bool SendPacket(const void* data, std::size_t size, UInt8 channel = 0, ENetPacket::Flag flags = ENetPacket::Flag::Reliable);
+
+		[[nodiscard]] ENetPeerHandle GetHandle() const
+		{
+			return _peer;
+		}
 
 		ENetPeer& operator=(const ENetPeer&) = delete;
 		ENetPeer& operator=(ENetPeer&&) = default;

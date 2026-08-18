@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <format>
+#include <functional>
 #include <memory>
 #include <source_location>
 #include <string>
@@ -63,6 +64,12 @@ namespace cct
 
 		bool ShouldLog(const char* category, const char* channel, LogLevel level) const noexcept;
 		void LogMessage(const char* category, const char* channel, LogLevel level, std::string_view message);
+
+		// Extra listener invoked after the spdlog write. Copied out of the logger
+		// lock before the call, so the listener may log again without deadlocking.
+		using LogListener = std::function<void(const char* category, const char* channel, LogLevel level,
+											   std::string_view message)>;
+		void AddListener(LogListener listener);
 
 		template<typename... T>
 		struct Debug

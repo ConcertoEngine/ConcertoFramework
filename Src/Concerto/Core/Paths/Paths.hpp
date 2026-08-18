@@ -5,7 +5,6 @@
 #ifndef CONCERTO_CORE_PATHS_HPP
 #define CONCERTO_CORE_PATHS_HPP
 
-#include <cstdint>
 #include <filesystem>
 
 #include "Concerto/Core/Types/Types.hpp"
