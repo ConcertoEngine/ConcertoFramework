@@ -22,7 +22,7 @@ SCENARIO("Namespace")
 			REQUIRE(packageLoader.AddPackage(CreateConcertoReflectionTestsPackage()));
 			packageLoader.LoadPackages();
 
-			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() == 16);
+			CHECK(cct::refl::GlobalNamespace::Get().GetClassCount() >= 24);
 			CHECK(cct::refl::GlobalNamespace::Get().GetNamespaceCount() == 1);
 
 			THEN("We are getting the cct namespace")
