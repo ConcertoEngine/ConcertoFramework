@@ -51,10 +51,10 @@ SCENARIO("Json::ToJson - serializes native primitive members")
 
 			THEN("Each member appears with its expected JSON form")
 			{
-				CHECK_THAT(out, ContainsSubstring("\"m_intValue\":42"));
-				CHECK_THAT(out, ContainsSubstring("\"m_floatValue\":1.5"));
-				CHECK_THAT(out, ContainsSubstring("\"m_boolValue\":true"));
-				CHECK_THAT(out, ContainsSubstring("\"m_stringValue\":\"hello\""));
+				CHECK_THAT(out, ContainsSubstring("\"intValue\":42"));
+				CHECK_THAT(out, ContainsSubstring("\"floatValue\":1.5"));
+				CHECK_THAT(out, ContainsSubstring("\"boolValue\":true"));
+				CHECK_THAT(out, ContainsSubstring("\"stringValue\":\"hello\""));
 			}
 
 			THEN("The output is a flat JSON object")
@@ -82,10 +82,10 @@ SCENARIO("Json::ToJson - default values")
 
 			THEN("Numeric defaults are emitted as 0 and bool as false")
 			{
-				CHECK_THAT(out, ContainsSubstring("\"m_intValue\":0"));
-				CHECK_THAT(out, ContainsSubstring("\"m_floatValue\":0"));
-				CHECK_THAT(out, ContainsSubstring("\"m_boolValue\":false"));
-				CHECK_THAT(out, ContainsSubstring("\"m_stringValue\":\"\""));
+				CHECK_THAT(out, ContainsSubstring("\"intValue\":0"));
+				CHECK_THAT(out, ContainsSubstring("\"floatValue\":0"));
+				CHECK_THAT(out, ContainsSubstring("\"boolValue\":false"));
+				CHECK_THAT(out, ContainsSubstring("\"stringValue\":\"\""));
 			}
 		}
 	}
@@ -108,7 +108,7 @@ SCENARIO("Json::ToJson - escapes string special characters")
 
 			THEN("Each special character is escaped according to the JSON spec")
 			{
-				CHECK_THAT(out, ContainsSubstring("\"m_stringValue\":\"a\\\"b\\\\c\\nd\\te\\u0001f\""));
+				CHECK_THAT(out, ContainsSubstring("\"stringValue\":\"a\\\"b\\\\c\\nd\\te\\u0001f\""));
 			}
 
 			THEN("Round-trip restores the original string")
@@ -133,7 +133,7 @@ SCENARIO("Json::FromJson - hydrates each native primitive type")
 		WHEN("FromJson parses a JSON object covering every member")
 		{
 			const std::string_view input =
-				R"({"m_intValue":7,"m_floatValue":2.25,"m_boolValue":true,"m_stringValue":"world"})";
+				R"({"intValue":7,"floatValue":2.25,"boolValue":true,"stringValue":"world"})";
 
 			REQUIRE(cct::refl::Json::FromJson(*sample, input));
 
@@ -161,9 +161,9 @@ SCENARIO("Json::FromJson - tolerates partial input and unknown keys")
 		sample->m_boolValue = true;
 		sample->m_stringValue = "untouched";
 
-		WHEN("FromJson parses input that only sets m_intValue and includes an unknown key")
+		WHEN("FromJson parses input that only sets intValue and includes an unknown key")
 		{
-			const std::string_view input = R"({"m_intValue":1,"unknownKey":"ignored"})";
+			const std::string_view input = R"({"intValue":1,"unknownKey":"ignored"})";
 			REQUIRE(cct::refl::Json::FromJson(*sample, input));
 
 			THEN("Only the matched member is updated; unknowns are ignored without error")
