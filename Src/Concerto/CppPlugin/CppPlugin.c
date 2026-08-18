@@ -63,6 +63,11 @@ static int IsAsciiAlphaNum(char c)
 	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
 }
 
+static const char* ReflectedMemberName(const char* name)
+{
+	return (name && strncmp(name, "m_", 2) == 0) ? name + 2 : name;
+}
+
 static void SanitizeIdentifier(const char* src, char* dest, size_t destSize)
 {
 	if (!dest || destSize == 0)
@@ -321,7 +326,10 @@ static void BeforeClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx
 
 		crpGenerationContextWrite(ctx, "~Internal%sClass() override", className);
 		crpGenerationContextEnterScope(ctx);
+		crpGenerationContextWrite(ctx, "if (%s::m_class == this)", className);
+		crpGenerationContextEnterScope(ctx);
 		crpGenerationContextWrite(ctx, "%s::m_class = nullptr;", className);
+		crpGenerationContextLeaveScope(ctx, NULL);
 		crpGenerationContextLeaveScope(ctx, NULL);
 
 		crpGenerationContextNewLine(ctx);
@@ -401,7 +409,7 @@ static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContex
 		{
 			char nativeVar[512];
 			SanitizeIdentifier(memberName, nativeVar, sizeof(nativeVar));
-			crpGenerationContextWrite(ctx, "if (auto* %s_mv = AddNativeMemberVariable(\"%s\", cct::TypeId<%s>()))", nativeVar, memberName, memberType);
+			crpGenerationContextWrite(ctx, "if (auto* %s_mv = AddNativeMemberVariable(\"%s\", cct::TypeId<%s>()))", nativeVar, ReflectedMemberName(memberName), memberType);
 			crpGenerationContextEnterScope(ctx);
 			if (hasMin)
 			{
@@ -415,7 +423,7 @@ static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContex
 		}
 		else
 		{
-			crpGenerationContextWrite(ctx, "AddNativeMemberVariable(\"%s\", cct::TypeId<%s>());", memberName, memberType);
+			crpGenerationContextWrite(ctx, "AddNativeMemberVariable(\"%s\", cct::TypeId<%s>());", ReflectedMemberName(memberName), memberType);
 		}
 	}
 	else
@@ -443,7 +451,7 @@ static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContex
 
 		if (hasMin || hasMax)
 		{
-			crpGenerationContextWrite(ctx, "if (auto* %s_mv = AddMemberVariable(\"%s\", %sClass))", classVar, memberName, classVar);
+			crpGenerationContextWrite(ctx, "if (auto* %s_mv = AddMemberVariable(\"%s\", %sClass))", classVar, ReflectedMemberName(memberName), classVar);
 			crpGenerationContextEnterScope(ctx);
 			if (hasMin)
 			{
@@ -457,7 +465,7 @@ static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContex
 		}
 		else
 		{
-			crpGenerationContextWrite(ctx, "AddMemberVariable(\"%s\", %sClass);", memberName, classVar);
+			crpGenerationContextWrite(ctx, "AddMemberVariable(\"%s\", %sClass);", ReflectedMemberName(memberName), classVar);
 		}
 	}
 }
@@ -693,6 +701,38 @@ static void AfterClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx)
 
 		crpGenerationContextWrite(ctx, "auto* %sMethod = new %s%sMethod(\"%s\"sv, cct::refl::GetClassByName(\"%s\"sv), { %s }, %zu);",
 								  methodName, className, methodName, methodName, returnType, paramsStr, i);
+		{
+			const size_t attrCount = crpClassMethodFlattenAttributes(method);
+			for (size_t a = 0; a < attrCount; ++a)
+			{
+				const char* key = crpClassMethodGetFlatAttributeKey(a);
+				const char* val = crpClassMethodGetFlatAttributeValue(a);
+				if (key && val)
+					crpGenerationContextWrite(ctx, "%sMethod->AddAttribute(\"%s\", \"%s\");", methodName, key, val);
+			}
+			if (paramCount >= 1)
+			{
+				const CrpClassMethodParam* param = crpClassMethodGetParam(method, 0);
+				const char* paramType = crpClassMethodParamGetType(param);
+				if (paramType && paramType[0] != '\0')
+				{
+					char stripped[256];
+					const char* p = paramType;
+					if (strncmp(p, "const ", 6) == 0)
+						p += 6;
+					size_t len = strlen(p);
+					while (len > 0 && (p[len - 1] == '&' || p[len - 1] == ' ' || p[len - 1] == '*'))
+						--len;
+					if (len >= sizeof(stripped))
+						len = sizeof(stripped) - 1;
+					memcpy(stripped, p, len);
+					stripped[len] = '\0';
+					if (stripped[0] != '\0')
+						crpGenerationContextWrite(ctx, "%sMethod->AddAttribute(\"Param0\", \"%s\");",
+												  methodName, stripped);
+				}
+			}
+		}
 		crpGenerationContextWrite(ctx, "AddMemberFunction(std::unique_ptr<cct::refl::Method>(%sMethod));", methodName);
 	}
 
@@ -803,7 +843,10 @@ static void BeforeGenericClassGeneration(const CrpClass* cls, CrpGenerationConte
 		crpGenerationContextWrite(ctx, "~Internal%sGenericClass() override", className);
 		crpGenerationContextEnterScope(ctx);
 		{
+			crpGenerationContextWrite(ctx, "if (%s::m_class == this)", className);
+			crpGenerationContextEnterScope(ctx);
 			crpGenerationContextWrite(ctx, "%s::m_class = nullptr;", className);
+			crpGenerationContextLeaveScope(ctx, NULL);
 		}
 		crpGenerationContextLeaveScope(ctx, NULL);
 
@@ -848,11 +891,11 @@ static void BeforeGenericClassGeneration(const CrpClass* cls, CrpGenerationConte
 
 				if (isNative)
 				{
-					crpGenerationContextWrite(ctx, "AddNativeMemberVariable(\"%s\", cct::TypeId<%s>());", memberName, memberType);
+					crpGenerationContextWrite(ctx, "AddNativeMemberVariable(\"%s\", cct::TypeId<%s>());", ReflectedMemberName(memberName), memberType);
 				}
 				else
 				{
-					crpGenerationContextWrite(ctx, "AddMemberVariable(\"%s\", cct::refl::GetClassByName(\"%s\"sv));", memberName, memberType);
+					crpGenerationContextWrite(ctx, "AddMemberVariable(\"%s\", cct::refl::GetClassByName(\"%s\"sv));", ReflectedMemberName(memberName), memberType);
 				}
 			}
 		}
