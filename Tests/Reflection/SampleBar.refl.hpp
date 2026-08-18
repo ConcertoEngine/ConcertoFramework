@@ -45,8 +45,6 @@ namespace cct::sample
 		CCT_REFL_TESTS_METHOD("Delegate = \"m_customDelegatePtr\"")
 		cct::refl::Int32 CustomDelegate();
 
-		CCT_OBJECT(SampleBar);
-
 	private:
 		CCT_REFL_TESTS_MEMBER("Test=\"test\"")
 		cct::refl::Int32 m_bar;
@@ -58,6 +56,13 @@ namespace cct::sample
 		{
 			return refl::Int32();
 		};
+
+		// CCT_OBJECT must be declared last: it's an `int` member whose default
+		// initializer calls InitReflection() -> InitializeMemberVariables(), which
+		// walks the reflected fields declared above. Members construct in
+		// declaration order, so if this came before m_bar, InitializeMemberVariables()
+		// would read m_bar before its own constructor ever ran (uninitialized memory).
+		CCT_OBJECT(SampleBar);
 	};
 
 	// Templated class with actual generic members
