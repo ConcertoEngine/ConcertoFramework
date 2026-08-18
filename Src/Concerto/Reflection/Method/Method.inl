@@ -31,28 +31,20 @@ namespace cct::refl
 
 	inline bool Method::HasAttribute(std::string_view attribute) const
 	{
-		// not using "contains", because it does not support std::string_view
-		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
-							   { return "attribute" == value.first; });
-		return it != m_attributes.end();
+		return m_attributes.find(std::string(attribute)) != m_attributes.end();
 	}
 
 	inline std::string_view Method::GetAttribute(std::string_view attribute) const
 	{
-		// not using "contains", because it does not support std::string_view
-		auto it = std::find_if(m_attributes.begin(), m_attributes.end(), [&](const std::pair<std::string, std::string>& value) -> bool
-							   { return "attribute" == value.first; });
+		const auto it = m_attributes.find(std::string(attribute));
 		if (it == m_attributes.end())
-		{
-			CCT_ASSERT_FALSE("Attribute '{}' does not exist", attribute);
 			return {};
-		}
 		return it->second;
 	}
 
 	inline void Method::AddAttribute(std::string name, std::string value)
 	{
-		CCT_ASSERT(HasAttribute(name), "Class attribute already exist");
+		CCT_ASSERT(!HasAttribute(name), "Method attribute already exists");
 		m_attributes.emplace(std::move(name), std::move(value));
 	}
 

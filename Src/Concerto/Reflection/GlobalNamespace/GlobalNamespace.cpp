@@ -40,6 +40,18 @@ namespace cct::refl
 		return count;
 	}
 
+	std::size_t GlobalNamespace::GetRootNamespaceCount() const
+	{
+		return m_namespaces.size();
+	}
+
+	Namespace* GlobalNamespace::GetRootNamespace(std::size_t index) const
+	{
+		if (index >= m_namespaces.size())
+			return nullptr;
+		return m_namespaces[index];
+	}
+
 	const Class* GlobalNamespace::GetClassByName(std::string_view name) const
 	{
 		for (const Class* klass : m_classes)

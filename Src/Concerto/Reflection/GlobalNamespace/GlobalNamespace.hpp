@@ -27,6 +27,10 @@ namespace cct::refl
 		std::size_t GetNamespaceCount() const;
 		std::size_t GetClassCount() const;
 
+		// Root namespaces in registration order (not the unique-name count).
+		[[nodiscard]] std::size_t GetRootNamespaceCount() const;
+		[[nodiscard]] Namespace* GetRootNamespace(std::size_t index) const;
+
 		const Class* GetClassByName(std::string_view name) const;
 
 		Namespace* GetNamespaceByName(std::string_view nameSpaceName) const;

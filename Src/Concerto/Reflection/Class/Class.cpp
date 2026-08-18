@@ -310,7 +310,7 @@ namespace cct::refl
 
 	void Class::AddAttribute(std::string name, std::string value)
 	{
-		CCT_ASSERT(HasAttribute(name), "Class attribute already exist");
+		CCT_ASSERT(!HasAttribute(name), "Class attribute already exist");
 		m_attributes.emplace(std::move(name), std::move(value));
 	}
 

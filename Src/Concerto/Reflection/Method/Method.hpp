@@ -9,6 +9,7 @@
 #include <memory>
 #include <span>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <Concerto/Core/Any/Any.hpp>
@@ -40,15 +41,21 @@ namespace cct::refl
 		template<typename T, typename... Args>
 		Result<T, std::string> Invoke(Object& self, Args&&... args) const;
 
+		// Result<string,string> is illegal; string returns stay erased.
+		Result<Any, std::string> InvokeErased(Object& self, std::span<cct::Any> parameters) const
+		{
+			return Invoke(self, parameters);
+		}
+
 		inline bool HasAttribute(std::string_view attribute) const;
 		inline std::string_view GetAttribute(std::string_view attribute) const;
+		void AddAttribute(std::string name, std::string value);
 
 		// Should be private
 		virtual void Initialize() = 0;
 		inline void* GetCustomDelegate() const;
 
 	protected:
-		void AddAttribute(std::string name, std::string value);
 		virtual Result<Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
 		inline void SetCustomDelegate(void* delegate);
 

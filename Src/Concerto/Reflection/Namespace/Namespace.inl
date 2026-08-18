@@ -43,7 +43,7 @@ namespace cct::refl
 
 	inline const Class* Namespace::GetClass(std::size_t index) const
 	{
-		if (index > GetClassCount())
+		if (index >= m_classes.size())
 			return nullptr;
 		return m_classes[index].get();
 	}
