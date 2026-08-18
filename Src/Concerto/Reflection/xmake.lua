@@ -18,6 +18,8 @@ target("concerto-reflection", function()
     end
     local files = {
         ".",
+        "Binary",
+        "ChangeSet",
         "Boolean",
         "Class",
         "FieldVisitor",
@@ -30,6 +32,7 @@ target("concerto-reflection", function()
         "Folder",
         "GenericClass",
         "GlobalNamespace",
+        "Http",
         "Int8",
         "Int16",
         "Int32",
