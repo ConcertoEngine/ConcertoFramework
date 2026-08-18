@@ -600,6 +600,209 @@ extern "C"
 		return it->second.is_boolean() ? 1 : 0;
 	}
 
+	static char g_methodAttrBuf[256];
+	static char g_methodAttrKeyBuf[128];
+
+	int32_t crpClassMethodHasAttribute(const CrpClassMethod* method, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!method || !attrName)
+			return 0;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (!m->tomlAttributes.is_table())
+			return 0;
+		return m->tomlAttributes.as_table().contains(attrName) ? 1 : 0;
+	}
+
+	const char* crpClassMethodGetAttribute(const CrpClassMethod* method, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!method || !attrName)
+			return nullptr;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (!m->tomlAttributes.is_table())
+			return nullptr;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end())
+			return nullptr;
+		if (it->second.is_string())
+			return it->second.as_string().c_str();
+		if (it->second.is_floating())
+		{
+			std::snprintf(g_methodAttrBuf, sizeof(g_methodAttrBuf), "%g", it->second.as_floating());
+			return g_methodAttrBuf;
+		}
+		if (it->second.is_integer())
+		{
+			std::snprintf(g_methodAttrBuf, sizeof(g_methodAttrBuf), "%lld",
+						  static_cast<long long>(it->second.as_integer()));
+			return g_methodAttrBuf;
+		}
+		if (it->second.is_boolean())
+			return it->second.as_boolean() ? "true" : "false";
+		return nullptr;
+	}
+
+	int32_t crpClassMethodAttributeIsTable(const CrpClassMethod* method, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!method || !attrName)
+			return 0;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (!m->tomlAttributes.is_table())
+			return 0;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end())
+			return 0;
+		return it->second.is_table() ? 1 : 0;
+	}
+
+	size_t crpClassMethodGetAttributeCount(const CrpClassMethod* method)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!method)
+			return 0;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (!m->tomlAttributes.is_table())
+			return 0;
+		return m->tomlAttributes.as_table().size();
+	}
+
+	const char* crpClassMethodGetAttributeKey(const CrpClassMethod* method, size_t index)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!method)
+			return nullptr;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (!m->tomlAttributes.is_table())
+			return nullptr;
+		const auto& tbl = m->tomlAttributes.as_table();
+		if (index >= tbl.size())
+			return nullptr;
+		auto it = tbl.begin();
+		std::advance(it, index);
+		std::strncpy(g_methodAttrKeyBuf, it->first.c_str(), sizeof(g_methodAttrKeyBuf) - 1);
+		g_methodAttrKeyBuf[sizeof(g_methodAttrKeyBuf) - 1] = '\0';
+		return g_methodAttrKeyBuf;
+	}
+
+	size_t crpClassMethodGetAttributeTableKeyCount(const CrpClassMethod* method, const char* attrName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!method || !attrName)
+			return 0;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (!m->tomlAttributes.is_table())
+			return 0;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end() || !it->second.is_table())
+			return 0;
+		return it->second.as_table().size();
+	}
+
+	const char* crpClassMethodGetAttributeTableKey(const CrpClassMethod* method, const char* attrName, size_t index)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!method || !attrName)
+			return nullptr;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (!m->tomlAttributes.is_table())
+			return nullptr;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end() || !it->second.is_table())
+			return nullptr;
+		const auto& tbl = it->second.as_table();
+		if (index >= tbl.size())
+			return nullptr;
+		auto keyIt = tbl.begin();
+		std::advance(keyIt, index);
+		std::strncpy(g_methodAttrKeyBuf, keyIt->first.c_str(), sizeof(g_methodAttrKeyBuf) - 1);
+		g_methodAttrKeyBuf[sizeof(g_methodAttrKeyBuf) - 1] = '\0';
+		return g_methodAttrKeyBuf;
+	}
+
+	const char* crpClassMethodGetAttributeTableValue(const CrpClassMethod* method, const char* attrName,
+													const char* keyName)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		if (!method || !attrName || !keyName)
+			return nullptr;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (!m->tomlAttributes.is_table())
+			return nullptr;
+		auto it = m->tomlAttributes.as_table().find(attrName);
+		if (it == m->tomlAttributes.as_table().end() || !it->second.is_table())
+			return nullptr;
+		auto keyIt = it->second.as_table().find(keyName);
+		if (keyIt == it->second.as_table().end())
+			return nullptr;
+		const auto& val = keyIt->second;
+		if (val.is_string())
+			return val.as_string().c_str();
+		if (val.is_floating())
+		{
+			std::snprintf(g_methodAttrBuf, sizeof(g_methodAttrBuf), "%g", val.as_floating());
+			return g_methodAttrBuf;
+		}
+		if (val.is_integer())
+		{
+			std::snprintf(g_methodAttrBuf, sizeof(g_methodAttrBuf), "%lld",
+						  static_cast<long long>(val.as_integer()));
+			return g_methodAttrBuf;
+		}
+		if (val.is_boolean())
+			return val.as_boolean() ? "true" : "false";
+		return nullptr;
+	}
+
+	static std::vector<std::pair<std::string, std::string>> g_flatMethodAttrs;
+
+	static void FlattenToml(const TomlAttributes& value, const std::string& prefix)
+	{
+		if (value.is_table())
+		{
+			for (const auto& [k, v] : value.as_table())
+				FlattenToml(v, prefix.empty() ? k : prefix + "." + k);
+			return;
+		}
+		if (prefix.empty())
+			return;
+		if (value.is_string())
+			g_flatMethodAttrs.emplace_back(prefix, value.as_string());
+		else if (value.is_floating())
+			g_flatMethodAttrs.emplace_back(prefix, std::to_string(value.as_floating()));
+		else if (value.is_integer())
+			g_flatMethodAttrs.emplace_back(prefix, std::to_string(value.as_integer()));
+		else if (value.is_boolean())
+			g_flatMethodAttrs.emplace_back(prefix, value.as_boolean() ? "true" : "false");
+	}
+
+	size_t crpClassMethodFlattenAttributes(const CrpClassMethod* method)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+		g_flatMethodAttrs.clear();
+		if (!method)
+			return 0;
+		const auto* m = reinterpret_cast<const Class::Method*>(method);
+		if (m->tomlAttributes.is_table())
+			FlattenToml(m->tomlAttributes, "");
+		return g_flatMethodAttrs.size();
+	}
+
+	const char* crpClassMethodGetFlatAttributeKey(size_t index)
+	{
+		if (index >= g_flatMethodAttrs.size())
+			return nullptr;
+		return g_flatMethodAttrs[index].first.c_str();
+	}
+
+	const char* crpClassMethodGetFlatAttributeValue(size_t index)
+	{
+		if (index >= g_flatMethodAttrs.size())
+			return nullptr;
+		return g_flatMethodAttrs[index].second.c_str();
+	}
+
 	const char* crpClassMethodGetDelegateName(const CrpClassMethod* method)
 	{
 		CCT_AUTO_PROFILER_SCOPE();

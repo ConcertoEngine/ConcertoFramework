@@ -215,6 +215,18 @@ extern "C"
 	CRP_PLUGIN_API int32_t crpClassMethodHasDelegate(const CrpClassMethod* method);
 	CRP_PLUGIN_API int32_t crpClassMethodIsBooleanDelegate(const CrpClassMethod* method);
 	CRP_PLUGIN_API const char* crpClassMethodGetDelegateName(const CrpClassMethod* method);
+	CRP_PLUGIN_API int32_t crpClassMethodHasAttribute(const CrpClassMethod* method, const char* attrName);
+	CRP_PLUGIN_API const char* crpClassMethodGetAttribute(const CrpClassMethod* method, const char* attrName);
+	CRP_PLUGIN_API int32_t crpClassMethodAttributeIsTable(const CrpClassMethod* method, const char* attrName);
+	CRP_PLUGIN_API size_t crpClassMethodGetAttributeCount(const CrpClassMethod* method);
+	CRP_PLUGIN_API const char* crpClassMethodGetAttributeKey(const CrpClassMethod* method, size_t index);
+	CRP_PLUGIN_API size_t crpClassMethodGetAttributeTableKeyCount(const CrpClassMethod* method, const char* attrName);
+	CRP_PLUGIN_API const char* crpClassMethodGetAttributeTableKey(const CrpClassMethod* method, const char* attrName, size_t index);
+	CRP_PLUGIN_API const char* crpClassMethodGetAttributeTableValue(const CrpClassMethod* method, const char* attrName, const char* keyName);
+	// Flatten TOML (including nested tables as dotted keys) into a snapshot for codegen.
+	CRP_PLUGIN_API size_t crpClassMethodFlattenAttributes(const CrpClassMethod* method);
+	CRP_PLUGIN_API const char* crpClassMethodGetFlatAttributeKey(size_t index);
+	CRP_PLUGIN_API const char* crpClassMethodGetFlatAttributeValue(size_t index);
 
 	CRP_PLUGIN_API const char* crpEnumGetName(const CrpEnum* enm);
 	CRP_PLUGIN_API const char* crpEnumGetBase(const CrpEnum* enm);
