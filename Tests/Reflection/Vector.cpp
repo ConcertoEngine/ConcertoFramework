@@ -98,6 +98,9 @@ SCENARIO("Vector - Add and OnInserted signal")
 {
 	GIVEN("A Vector<String> instance")
 	{
+		cct::refl::PackageLoader loader;
+		LoadPackages(loader);
+
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
 
@@ -168,6 +171,9 @@ SCENARIO("Vector - Remove and OnRemoved signal")
 {
 	GIVEN("A Vector<String> with two elements")
 	{
+		cct::refl::PackageLoader loader;
+		LoadPackages(loader);
+
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
 		vec.Add(std::make_unique<cct::refl::String>("first"sv));
@@ -217,6 +223,9 @@ SCENARIO("Vector - Clear and OnCleared signal")
 {
 	GIVEN("A Vector<String> with three elements")
 	{
+		cct::refl::PackageLoader loader;
+		LoadPackages(loader);
+
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
 		vec.Add(std::make_unique<cct::refl::String>("a"sv));
@@ -268,6 +277,9 @@ SCENARIO("Vector - OnValueChanged is emitted on every mutation")
 {
 	GIVEN("A Vector<String> with OnValueChanged connected")
 	{
+		cct::refl::PackageLoader loader;
+		LoadPackages(loader);
+
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
 		int changeCount = 0;
@@ -298,6 +310,9 @@ SCENARIO("Vector - ScopedConnection auto-disconnect")
 {
 	GIVEN("A Vector<String>")
 	{
+		cct::refl::PackageLoader loader;
+		LoadPackages(loader);
+
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
 		int callCount = 0;
@@ -325,6 +340,9 @@ SCENARIO("Vector - Get<T> templated access")
 {
 	GIVEN("A Vector<String> with elements")
 	{
+		cct::refl::PackageLoader loader;
+		LoadPackages(loader);
+
 		cct::refl::Vector vec;
 		vec.m_elementType = cct::refl::String::GetClass();
 		vec.Add(std::make_unique<cct::refl::String>("hello"sv));
