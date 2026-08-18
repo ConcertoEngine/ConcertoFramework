@@ -129,6 +129,7 @@ for targetName, targetConfig in pairs(concerto_core) do
             "SparseVector",
             "Stream",
             "Thread",
+            "ThreadAffinity",
             "ThreadPool",
             "ThreadQueue",
             "TypeInfo",
