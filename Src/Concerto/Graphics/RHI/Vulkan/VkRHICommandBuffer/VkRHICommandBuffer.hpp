@@ -52,6 +52,7 @@ namespace cct::gfx::rhi
 							 PipelineStageFlags dstStage,
 							 MemoryAccessFlags srcAccess,
 							 MemoryAccessFlags dstAccess) override;
+		void PipelineBarrier(std::span<const TextureBarrier> barriers) override;
 
 		void BeginDebugLabel(const char* name, float r, float g, float b) override;
 		void EndDebugLabel() override;

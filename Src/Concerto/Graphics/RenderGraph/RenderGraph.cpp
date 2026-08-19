@@ -150,6 +150,8 @@ namespace cct::gfx::rhi
 		// Must only be called when no render pass is active.
 		const auto emitBarriersForPass = [&](const RGPass& p)
 		{
+			std::vector<TextureBarrier> textureBarriers;
+			textureBarriers.reserve(p.textureUsages.size());
 			for (const RGTextureUsage& usage : p.textureUsages)
 			{
 				const ImageLayout required = RenderGraphCompiler::RequiredLayout(usage, p.type);
@@ -158,10 +160,11 @@ namespace cct::gfx::rhi
 					continue;
 				auto [srcStage, dstStage, srcAccess, dstAccess] =
 					RenderGraphCompiler::InferBarrierParams(current, required);
-				Texture& tex = m_registry.GetTexture(usage.handle);
-				cmd.PipelineBarrier(tex, current, required, srcStage, dstStage, srcAccess, dstAccess);
+				textureBarriers.push_back(TextureBarrier{
+					&m_registry.GetTexture(usage.handle), current, required, srcStage, dstStage, srcAccess, dstAccess});
 				m_registry.SetCurrentLayout(usage.handle, required);
 			}
+			cmd.PipelineBarrier(std::span<const TextureBarrier>(textureBarriers));
 
 			for (const RGBufferUsage& usage : p.bufferUsages)
 			{

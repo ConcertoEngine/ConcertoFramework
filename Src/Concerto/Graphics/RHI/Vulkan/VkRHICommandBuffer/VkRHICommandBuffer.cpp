@@ -21,6 +21,45 @@
 #include "Concerto/Graphics/RHI/Vulkan/VkRHISwapChain/VkRHISwapChain.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 
+namespace
+{
+	VkImageMemoryBarrier BuildImageMemoryBarrier(const cct::gfx::rhi::Texture& texture,
+												 cct::gfx::rhi::ImageLayout oldLayout,
+												 cct::gfx::rhi::ImageLayout newLayout,
+												 cct::gfx::rhi::MemoryAccessFlags srcAccess,
+												 cct::gfx::rhi::MemoryAccessFlags dstAccess)
+	{
+		using namespace cct::gfx::rhi;
+		const auto& vkTexture = cct::Cast<const VkRHITexture&>(texture);
+
+		const bool isDepthLayout =
+			newLayout == ImageLayout::DepthStencilAttachmentOptimal ||
+			newLayout == ImageLayout::DepthStencilReadOnlyOptimal ||
+			newLayout == ImageLayout::DepthAttachmentOptimal ||
+			newLayout == ImageLayout::DepthReadOnlyOptimal ||
+			oldLayout == ImageLayout::DepthStencilAttachmentOptimal ||
+			oldLayout == ImageLayout::DepthStencilReadOnlyOptimal ||
+			oldLayout == ImageLayout::DepthAttachmentOptimal ||
+			oldLayout == ImageLayout::DepthReadOnlyOptimal;
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = Converters::ToVulkan(oldLayout);
+		barrier.newLayout = Converters::ToVulkan(newLayout);
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = *vkTexture.GetImage().Get();
+		barrier.subresourceRange.aspectMask = isDepthLayout ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = Converters::ToVulkan(srcAccess);
+		barrier.dstAccessMask = Converters::ToVulkan(dstAccess);
+		return barrier;
+	}
+} // namespace
+
 namespace cct::gfx::rhi
 {
 	VkRHICommandBuffer::VkRHICommandBuffer(VkRHIDevice& device, vk::CommandPool& commandPool, CommandBufferUsage usage) :
@@ -367,32 +406,7 @@ namespace cct::gfx::rhi
 											 MemoryAccessFlags srcAccess,
 											 MemoryAccessFlags dstAccess)
 	{
-		const auto& vkTexture = Cast<const VkRHITexture&>(texture);
-
-		const bool isDepthLayout =
-			newLayout == ImageLayout::DepthStencilAttachmentOptimal ||
-			newLayout == ImageLayout::DepthStencilReadOnlyOptimal ||
-			newLayout == ImageLayout::DepthAttachmentOptimal ||
-			newLayout == ImageLayout::DepthReadOnlyOptimal ||
-			oldLayout == ImageLayout::DepthStencilAttachmentOptimal ||
-			oldLayout == ImageLayout::DepthStencilReadOnlyOptimal ||
-			oldLayout == ImageLayout::DepthAttachmentOptimal ||
-			oldLayout == ImageLayout::DepthReadOnlyOptimal;
-
-		VkImageMemoryBarrier barrier{};
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout = Converters::ToVulkan(oldLayout);
-		barrier.newLayout = Converters::ToVulkan(newLayout);
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = *vkTexture.GetImage().Get();
-		barrier.subresourceRange.aspectMask = isDepthLayout ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseMipLevel = 0;
-		barrier.subresourceRange.levelCount = 1;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.srcAccessMask = Converters::ToVulkan(srcAccess);
-		barrier.dstAccessMask = Converters::ToVulkan(dstAccess);
+		VkImageMemoryBarrier barrier = BuildImageMemoryBarrier(texture, oldLayout, newLayout, srcAccess, dstAccess);
 
 		m_device->vkCmdPipelineBarrier(
 			*vk::CommandBuffer::Get(),
@@ -402,6 +416,35 @@ namespace cct::gfx::rhi
 			0, nullptr,
 			0, nullptr,
 			1, &barrier);
+	}
+
+	void VkRHICommandBuffer::PipelineBarrier(std::span<const TextureBarrier> barriers)
+	{
+		if (barriers.empty())
+			return;
+
+		std::vector<VkImageMemoryBarrier> vkBarriers;
+		vkBarriers.reserve(barriers.size());
+
+		VkPipelineStageFlags combinedSrcStage = 0;
+		VkPipelineStageFlags combinedDstStage = 0;
+
+		for (const TextureBarrier& barrier : barriers)
+		{
+			vkBarriers.push_back(BuildImageMemoryBarrier(
+				*barrier.texture, barrier.oldLayout, barrier.newLayout, barrier.srcAccess, barrier.dstAccess));
+			combinedSrcStage |= Converters::ToVulkan(barrier.srcStage);
+			combinedDstStage |= Converters::ToVulkan(barrier.dstStage);
+		}
+
+		m_device->vkCmdPipelineBarrier(
+			*vk::CommandBuffer::Get(),
+			combinedSrcStage,
+			combinedDstStage,
+			0,
+			0, nullptr,
+			0, nullptr,
+			static_cast<UInt32>(vkBarriers.size()), vkBarriers.data());
 	}
 
 	void VkRHICommandBuffer::PipelineBarrier(const Buffer& buffer,

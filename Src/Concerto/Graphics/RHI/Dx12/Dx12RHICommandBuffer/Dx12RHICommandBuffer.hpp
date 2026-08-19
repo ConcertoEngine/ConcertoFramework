@@ -61,6 +61,7 @@ namespace cct::gfx::rhi
 							 PipelineStageFlags dstStage,
 							 MemoryAccessFlags srcAccess,
 							 MemoryAccessFlags dstAccess) override;
+		void PipelineBarrier(std::span<const TextureBarrier> barriers) override;
 		void BindComputePipeline(const Pipeline& pipeline) override;
 		void BindComputeDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set) override;
 		void Dispatch(UInt32 groupCountX, UInt32 groupCountY, UInt32 groupCountZ) override;

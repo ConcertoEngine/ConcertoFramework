@@ -483,6 +483,42 @@ namespace cct::gfx::rhi
 		TransitionImageLayout(texture, oldLayout, newLayout);
 	}
 
+	void Dx12RHICommandBuffer::PipelineBarrier(std::span<const TextureBarrier> barriers)
+	{
+		if (!IsValid() || barriers.empty())
+			return;
+
+		// Unlike Vulkan, D3D12 resource states are per-resource (no shared src/dst stage mask
+		// for the call), so batching is just building the array and skipping resources that
+		// are already in the target state -- same no-op guard TransitionImageLayout has.
+		std::vector<D3D12_RESOURCE_BARRIER> dxBarriers;
+		dxBarriers.reserve(barriers.size());
+
+		for (const TextureBarrier& barrier : barriers)
+		{
+			const auto& dx12Texture = Cast<const Dx12RHITexture&>(*barrier.texture);
+
+			const D3D12_RESOURCE_STATES afterState = ToD3D12ResourceState(barrier.newLayout);
+			const D3D12_RESOURCE_STATES beforeState = dx12Texture.GetState();
+			if (beforeState == afterState)
+				continue;
+
+			D3D12_RESOURCE_BARRIER dxBarrier{};
+			dxBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+			dxBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+			dxBarrier.Transition.pResource = dx12Texture.GetResource();
+			dxBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+			dxBarrier.Transition.StateBefore = beforeState;
+			dxBarrier.Transition.StateAfter = afterState;
+			dxBarriers.push_back(dxBarrier);
+
+			dx12Texture.SetState(afterState);
+		}
+
+		if (!dxBarriers.empty())
+			Get()->ResourceBarrier(static_cast<UINT>(dxBarriers.size()), dxBarriers.data());
+	}
+
 	namespace
 	{
 		// Unlike Vulkan buffer barriers (memory-access-only, no resource "layout"), D3D12

@@ -24,6 +24,17 @@ namespace cct::gfx::rhi
 	class PipelineLayout;
 	class DescriptorSet;
 
+	struct TextureBarrier
+	{
+		const Texture* texture = nullptr;
+		ImageLayout oldLayout = ImageLayout::Undefined;
+		ImageLayout newLayout = ImageLayout::Undefined;
+		PipelineStageFlags srcStage;
+		PipelineStageFlags dstStage;
+		MemoryAccessFlags srcAccess;
+		MemoryAccessFlags dstAccess;
+	};
+
 	class CONCERTO_GRAPHICS_RHI_BASE_API CommandBuffer
 	{
 	public:
@@ -90,6 +101,18 @@ namespace cct::gfx::rhi
 									 MemoryAccessFlags /*srcAccess*/,
 									 MemoryAccessFlags /*dstAccess*/)
 		{
+		}
+
+		// Batched texture transitions. Default falls back to one call per barrier so any
+		// backend that does not override this keeps working; Vulkan and D3D12 override it
+		// to submit the whole batch in a single vkCmdPipelineBarrier/ResourceBarrier call.
+		virtual void PipelineBarrier(std::span<const TextureBarrier> barriers)
+		{
+			for (const TextureBarrier& barrier : barriers)
+			{
+				PipelineBarrier(*barrier.texture, barrier.oldLayout, barrier.newLayout,
+								barrier.srcStage, barrier.dstStage, barrier.srcAccess, barrier.dstAccess);
+			}
 		}
 
 		virtual void BeginDebugLabel(const char* name, float r = 1.F, float g = 1.F, float b = 1.F)
