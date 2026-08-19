@@ -414,8 +414,7 @@ namespace cct::gfx::rhi
 		const MemoryAccessFlags memWrite = MA::MemoryWrite;
 		const MemoryAccessFlags memRead = MA::MemoryRead;
 
-		// VK_PIPELINE_STAGE_ALL_COMMANDS_BIT = 0x00010000 (outside the enum, used as fallback)
-		const PipelineStageFlags allCmds = PipelineStageFlags::FromRaw(0x00010000u);
+		const PipelineStageFlags allCmds = PS::AllCommands;
 
 		if (oldLayout == ImageLayout::Undefined && newLayout == ImageLayout::ColorAttachmentOptimal)
 			return {pipe, caoStage, {}, caWrite};
@@ -458,6 +457,9 @@ namespace cct::gfx::rhi
 
 		if (oldLayout == ImageLayout::ShaderReadOnlyOptimal && newLayout == ImageLayout::TransferSrcOptimal)
 			return {fsStage, tfStage, shRead, tfRead};
+
+		if (oldLayout == ImageLayout::TransferSrcOptimal && newLayout == ImageLayout::ShaderReadOnlyOptimal)
+			return {tfStage, fsStage, tfRead, shRead};
 
 		if (oldLayout == ImageLayout::TransferDstOptimal && newLayout == ImageLayout::ShaderReadOnlyOptimal)
 			return {tfStage, fsStage, tfWrite, shRead};

@@ -88,7 +88,8 @@ namespace cct::gfx::rhi
 		ColorAttachmentOutput = 0x00000400,
 		ComputeShader = 0x00000800,
 		Transfer = 0x00001000,
-		BottomOfPipe = 0x00002000
+		BottomOfPipe = 0x00002000,
+		AllCommands = 0x00010000
 	};
 	using PipelineStageFlags = cct::EnumFlags<PipelineStage>;
 

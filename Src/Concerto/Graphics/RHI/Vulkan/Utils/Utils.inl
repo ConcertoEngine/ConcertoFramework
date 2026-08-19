@@ -291,6 +291,8 @@ namespace cct::gfx::rhi
 			vkFlags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 		if (flags & static_cast<UInt32>(PipelineStage::BottomOfPipe))
 			vkFlags |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		if (flags & static_cast<UInt32>(PipelineStage::AllCommands))
+			vkFlags |= VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 		return vkFlags;
 	}
 
