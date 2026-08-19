@@ -32,6 +32,7 @@ namespace cct::gfx::vk
 								std::span<VkSubpassDescription> subPassDescriptions, std::span<VkSubpassDependency> subPassDependencies)
 	{
 		m_device = &device;
+		m_attachments.assign(attachmentDescriptions.begin(), attachmentDescriptions.end());
 
 		VkRenderPassCreateInfo renderPassCreateInfo = {};
 		renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;

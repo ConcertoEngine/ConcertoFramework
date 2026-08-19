@@ -4,6 +4,8 @@
 
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
 
+#include <algorithm>
+
 #include <Concerto/Core/Cast.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
@@ -80,9 +82,17 @@ namespace cct::gfx::rhi
 				.color = {
 					.float32 = {clearColor.X(), clearColor.Y(), clearColor.Z(), 0.f}}},
 			VkClearValue{.depthStencil = {1.f, 0}}};
+		const auto& attachments = vkRenderPass.GetAttachments();
+		const bool anyClear = std::any_of(attachments.begin(), attachments.end(),
+										  [](const VkAttachmentDescription& attachment)
+										  {
+											  return attachment.loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR ||
+													 attachment.stencilLoadOp == VK_ATTACHMENT_LOAD_OP_CLEAR;
+										  });
+
 		VkRenderPassBeginInfo renderPassInfo = VulkanInitializer::RenderPassBeginInfo(*vkRenderPass.Get(), extent, *vkRhiFrameBuffer.Get());
-		renderPassInfo.clearValueCount = static_cast<UInt32>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+		renderPassInfo.clearValueCount = anyClear ? static_cast<UInt32>(std::min(attachments.size(), clearValues.size())) : 0;
+		renderPassInfo.pClearValues = renderPassInfo.clearValueCount != 0 ? clearValues.data() : nullptr;
 
 		vk::CommandBuffer::BeginRenderPass(renderPassInfo);
 	}
@@ -242,6 +252,13 @@ namespace cct::gfx::rhi
 			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 			srcStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else if (oldLayout == ImageLayout::ShaderReadOnlyOptimal && newLayout == ImageLayout::ShaderReadOnlyOptimal)
+		{
+			barrier.srcAccessMask = VK_ACCESS_MEMORY_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 			dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 		else

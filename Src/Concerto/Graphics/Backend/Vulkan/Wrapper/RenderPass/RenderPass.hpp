@@ -30,6 +30,8 @@ namespace cct::gfx::vk
 
 		VkResult Create(Device& device, std::span<VkAttachmentDescription> attachmentDescriptions, std::span<VkSubpassDescription> subPassDescriptions, std::span<VkSubpassDependency> subPassDependencies);
 
+		[[nodiscard]] const std::vector<VkAttachmentDescription>& GetAttachments() const { return m_attachments; }
+
 	private:
 		std::vector<VkAttachmentDescription> m_attachments;
 		std::vector<VkSubpassDescription> m_subpasses;
