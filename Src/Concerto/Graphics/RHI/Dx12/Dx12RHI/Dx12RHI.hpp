@@ -16,7 +16,7 @@ namespace cct::gfx::rhi
 		Dx12RHI() = default;
 		~Dx12RHI() override;
 
-		bool Create(rhi::ValidationLevel validationLevel) override;
+		bool Create(EnumFlags<rhi::ValidationFlags> validationFlags) override;
 
 		[[nodiscard]] std::span<const rhi::DeviceInfo> EnumerateDevices() override;
 		std::unique_ptr<rhi::Device> CreateDevice(std::size_t index) override;

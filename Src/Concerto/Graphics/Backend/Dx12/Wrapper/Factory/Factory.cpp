@@ -17,7 +17,7 @@ namespace cct::gfx::dx12
 			throw Dx12Exception(m_lastResult);
 	}
 
-	HRESULT Factory::Create(bool enableDebugLayer)
+	HRESULT Factory::Create(bool enableDebugLayer, bool enableGpuValidation)
 	{
 		UInt32 dxgiFactoryFlags = 0;
 		if (enableDebugLayer && DynLib().Load("dxgidebug.dll")) // check if developer SDK is installed
@@ -28,6 +28,15 @@ namespace cct::gfx::dx12
 			{
 				debugController->EnableDebugLayer();
 				dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+
+				if (enableGpuValidation)
+				{
+					Microsoft::WRL::ComPtr<ID3D12Debug1> debugController1;
+					if (SUCCEEDED(debugController.As(&debugController1)))
+						debugController1->SetEnableGPUBasedValidation(TRUE);
+					else
+						CCT_ASSERT_FALSE("Could not enable GPU based validation");
+				}
 			}
 			else
 			{

@@ -23,7 +23,8 @@ namespace cct::gfx::vk
 	public:
 		Instance(const std::string& appName, const std::string& engineName, const Version& apiVersion,
 				 const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
-				 std::span<const char*> layers);
+				 std::span<const char*> layers,
+				 std::span<const VkValidationFeatureEnableEXT> validationFeatures = {});
 		~Instance() override;
 
 		Instance(const Instance&) = delete;
@@ -34,7 +35,8 @@ namespace cct::gfx::vk
 
 		VkResult Create(const std::string& appName, const std::string& engineName, const Version& apiVersion,
 						const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
-						std::span<const char*> layers);
+						std::span<const char*> layers,
+						std::span<const VkValidationFeatureEnableEXT> validationFeatures = {});
 
 		[[nodiscard]] Version GetApiVersion() const;
 		[[nodiscard]] std::span<PhysicalDevice> EnumeratePhysicalDevices() const;

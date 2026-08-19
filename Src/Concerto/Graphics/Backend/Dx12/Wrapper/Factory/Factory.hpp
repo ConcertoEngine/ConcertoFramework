@@ -26,7 +26,7 @@ namespace cct::gfx::dx12
 		Factory& operator=(const Factory&) = delete;
 		Factory& operator=(Factory&&) = default;
 
-		HRESULT Create(bool enableDebugLayer);
+		HRESULT Create(bool enableDebugLayer, bool enableGpuValidation = false);
 
 		std::span<PhysicalDevice> EnumeratePhysicalDevices();
 

@@ -18,7 +18,7 @@ namespace cct::gfx::rhi
 		APIImpl() = default;
 		virtual ~APIImpl() = default;
 
-		virtual bool Create(rhi::ValidationLevel validationLevel) = 0;
+		virtual bool Create(EnumFlags<rhi::ValidationFlags> validationFlags) = 0;
 		virtual std::span<const DeviceInfo> EnumerateDevices() = 0;
 		virtual std::unique_ptr<Device> CreateDevice(std::size_t index) = 0;
 	};

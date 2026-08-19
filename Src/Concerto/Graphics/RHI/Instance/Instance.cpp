@@ -17,7 +17,7 @@ namespace cct::gfx::rhi
 {
 	Instance::~Instance() = default;
 
-	Instance::Instance(Backend backend, ValidationLevel validationLevel) :
+	Instance::Instance(Backend backend, EnumFlags<ValidationFlags> validationFlags) :
 		m_backend(backend)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
@@ -40,7 +40,7 @@ namespace cct::gfx::rhi
 			}
 #endif
 		}
-		m_apiImpl->Create(validationLevel);
+		m_apiImpl->Create(validationFlags);
 	}
 
 	std::span<const DeviceInfo> Instance::EnumerateDevices() const

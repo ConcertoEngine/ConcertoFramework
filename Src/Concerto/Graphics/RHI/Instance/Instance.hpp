@@ -29,7 +29,7 @@ namespace cct::gfx::rhi
 #endif
 		};
 
-		Instance(Backend backend = Backend::Vulkan, ValidationLevel validationLevel = ValidationLevel::All);
+		Instance(Backend backend = Backend::Vulkan, EnumFlags<ValidationFlags> validationFlags = ValidationFlags::None);
 		~Instance();
 
 		std::span<const DeviceInfo> EnumerateDevices() const;

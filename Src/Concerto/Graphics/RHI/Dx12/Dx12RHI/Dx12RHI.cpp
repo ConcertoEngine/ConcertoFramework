@@ -18,10 +18,11 @@ namespace cct::gfx::rhi
 		delete CCT_FACTORY;
 	}
 
-	bool Dx12RHI::Create(rhi::ValidationLevel validationLevel)
+	bool Dx12RHI::Create(EnumFlags<rhi::ValidationFlags> validationFlags)
 	{
 		m_factory = new dx12::Factory;
-		return CCT_FACTORY->Create(validationLevel != ValidationLevel::None) == S_OK;
+		return CCT_FACTORY->Create(validationFlags.Any(),
+								   validationFlags.Contains(ValidationFlags::GpuAssisted)) == S_OK;
 	}
 
 	std::span<const rhi::DeviceInfo> Dx12RHI::EnumerateDevices()

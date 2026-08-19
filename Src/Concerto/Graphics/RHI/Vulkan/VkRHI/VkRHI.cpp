@@ -12,7 +12,7 @@
 
 namespace cct::gfx
 {
-	bool VkRHI::Create(rhi::ValidationLevel validationLevel)
+	bool VkRHI::Create(EnumFlags<rhi::ValidationFlags> validationFlags)
 	{
 		std::vector<const char*> extensions = {VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
 #ifdef VK_USE_PLATFORM_XCB_KHR
@@ -35,13 +35,24 @@ namespace cct::gfx
 		extensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
 #endif
 		std::vector<const char*> layers;
-		if (validationLevel != rhi::ValidationLevel::None)
+		std::vector<VkValidationFeatureEnableEXT> validationFeatures;
+		if (validationFlags.Any())
 		{
 			layers.push_back("VK_LAYER_KHRONOS_validation");
 			extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		}
+		if (validationFlags.Contains(rhi::ValidationFlags::SyncValidation))
+			validationFeatures.push_back(VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT);
+		if (validationFlags.Contains(rhi::ValidationFlags::BestPractices))
+			validationFeatures.push_back(VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT);
+		if (validationFlags.Contains(rhi::ValidationFlags::GpuAssisted))
+			validationFeatures.push_back(VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT);
+		if (validationFlags.Contains(rhi::ValidationFlags::DebugPrintf))
+			validationFeatures.push_back(VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT);
+		if (!validationFeatures.empty())
+			extensions.push_back(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME);
 
-		m_instance = std::make_unique<vk::Instance>("", "", Version{1, 3, 0}, Version{}, Version{}, extensions, layers);
+		m_instance = std::make_unique<vk::Instance>("", "", Version{1, 3, 0}, Version{}, Version{}, extensions, layers, validationFeatures);
 		if (m_instance->GetLastResult() != VK_SUCCESS)
 		{
 			CCT_ASSERT_FALSE("ConcertoGraphics: Failed to initialize Vulkan instance, VkResult={}", static_cast<Int32>(m_instance->GetLastResult()));

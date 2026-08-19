@@ -59,10 +59,11 @@ namespace cct::gfx::vk
 
 	Instance::Instance(const std::string& appName, const std::string& engineName, const Version& apiVersion,
 					   const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
-					   std::span<const char*> layers) :
+					   std::span<const char*> layers,
+					   std::span<const VkValidationFeatureEnableEXT> validationFeatures) :
 		m_apiVersion(apiVersion)
 	{
-		if (Create(appName, engineName, apiVersion, appVersion, engineVersion, extensions, layers) != VK_SUCCESS)
+		if (Create(appName, engineName, apiVersion, appVersion, engineVersion, extensions, layers, validationFeatures) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
@@ -75,7 +76,8 @@ namespace cct::gfx::vk
 
 	VkResult Instance::Create(const std::string& appName, const std::string& engineName, const Version& apiVersion,
 							  const Version& appVersion, const Version& engineVersion, std::span<const char*> extensions,
-							  std::span<const char*> layers)
+							  std::span<const char*> layers,
+							  std::span<const VkValidationFeatureEnableEXT> validationFeatures)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
 		m_apiVersion = apiVersion;
@@ -108,21 +110,15 @@ namespace cct::gfx::vk
 		createInfo.ppEnabledLayerNames = layers.empty() ? VK_NULL_HANDLE : layers.data();
 		createInfo.pNext = &debugCreateInfo;
 
-		// std::array enables = { VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT };
-		// VkValidationFeaturesEXT features = {};
-		// features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-		// features.enabledValidationFeatureCount = enables.size();
-		// features.pEnabledValidationFeatures = enables.data();
-
-		// if (createInfo.pNext)
-		//{
-		//	features.pNext = createInfo.pNext;
-		//	createInfo.pNext = &features;
-		// }
-		// else
-		//{
-		//	createInfo.pNext = &features;
-		// }
+		VkValidationFeaturesEXT validationFeaturesInfo = {};
+		if (!validationFeatures.empty())
+		{
+			validationFeaturesInfo.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+			validationFeaturesInfo.enabledValidationFeatureCount = static_cast<UInt32>(validationFeatures.size());
+			validationFeaturesInfo.pEnabledValidationFeatures = validationFeatures.data();
+			validationFeaturesInfo.pNext = createInfo.pNext;
+			createInfo.pNext = &validationFeaturesInfo;
+		}
 
 		for (auto& ext : extensions)
 			m_loadedExtensions.emplace(ext);

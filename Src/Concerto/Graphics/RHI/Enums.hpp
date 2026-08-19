@@ -22,13 +22,20 @@ namespace cct::gfx::rhi
 		Software // CPU software renderer
 	};
 
-	enum class ValidationLevel : UInt8
+	enum class ValidationFlags : UInt8
 	{
 		None = 0,
-		Info = 1,
-		Warning = 2,
-		Error = 3,
-		All = 4
+		// Core validation. Vulkan: VK_LAYER_KHRONOS_validation. D3D12: debug layer.
+		Standard = 1 << 0,
+		// Vulkan: VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT. No D3D12 equivalent.
+		SyncValidation = 1 << 1,
+		// Vulkan: VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT. No D3D12 equivalent. Very verbose.
+		BestPractices = 1 << 2,
+		// Vulkan: VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT.
+		// D3D12: ID3D12Debug1::SetEnableGPUBasedValidation. Costly on both, keep it off by default.
+		GpuAssisted = 1 << 3,
+		// Vulkan: VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT. No D3D12 equivalent.
+		DebugPrintf = 1 << 4
 	};
 
 	enum class AttachmentLoadOp : UInt8
@@ -181,5 +188,6 @@ namespace cct::gfx::rhi
 CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::PipelineStage)
 CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::MemoryAccess)
 CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::BufferUsage)
+CCT_ENABLE_ENUM_FLAGS(cct::gfx::rhi::ValidationFlags)
 
 #endif // CONCERTO_GRAPHICS_RHI_ENUMS_HPP
