@@ -6,6 +6,7 @@
 #define CONCERTO_CORE_ANY_HPP
 
 #include <array>
+#include <cstddef>
 #include <type_traits>
 #include <utility>
 #include <variant>
