@@ -7,6 +7,10 @@ option("enet", { description = "Enable ENet support", default = true })
 
 add_requires("stduuid")
 
+if is_plat("linux", "bsd") then
+    add_requires("libuuid")
+end
+
 if is_plat("windows") then
     add_requires("enet6",     {configs = {shared = false,      runtimes = is_mode("debug") and "MDd" or "MD"}})
     add_requires("spdlog",    {configs = {header_only = false, runtimes = is_mode("debug") and "MDd" or "MD"}})
@@ -73,6 +77,9 @@ for targetName, targetConfig in pairs(concerto_core) do
         end
 
         add_packages("stduuid")
+        if is_plat("linux", "bsd") then
+            add_packages("libuuid")
+        end
 
         for configName, config in pairs(targetConfig.configs) do
             if has_config(configName) then
