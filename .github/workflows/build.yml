@@ -128,6 +128,11 @@ jobs:
           PLATFORM_CONF="${PLATFORM_CONF} --tests=y"
         fi
 
+        # The reflection system drives clang plugins through libllvm, which makes the ci to timeout on non windows platform
+        if [ "${{ matrix.confs.plat }}" == "windows" ]; then
+          PLATFORM_CONF="${PLATFORM_CONF} --reflection=y"
+        fi
+
         if [ "${{ matrix.confs.plat }}" = "macosx" ]; then
           LLVM_PREFIX=$(brew --prefix llvm@20)
           echo "LLVM_PREFIX=${LLVM_PREFIX}" >> $GITHUB_ENV
@@ -166,7 +171,7 @@ jobs:
     # Run unit tests
     - name: Run unit tests
       if: ${{ matrix.confs.test }}
-      run: xmake run concerto-reflection-tests
+      run: xmake run concerto-tests
 
     - name: Install
       run: xmake install -vo concerto-reflection
