@@ -7,7 +7,10 @@ if has_config("tests") and has_config("reflection") then
         add_files("*.cpp", "*.refl.hpp")
         add_packages("catch2", "toml11")
         add_deps("concerto-reflection")
-        add_deps("concerto-plugin-api")
+        add_deps("concerto-plugin-api", {inherit = false})
+        add_links("concerto-plugin-api")
+        add_linkdirs("$(builddir)/$(plat)/$(arch)/$(mode)")
+        add_includedirs("../../Src")
         add_rules("cct_cpp_reflect")
         add_includedirs(".", { public = true }) -- temporary
         add_includedirs("../", { public = true })

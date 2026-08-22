@@ -73,6 +73,16 @@
 #define CCT_REFL_LOG_ERROR(channel, fmt, ...) CCT_LOG_ERROR("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define CCT_REFL_LOG_CRITICAL(channel, fmt, ...) CCT_LOG_CRITICAL("Reflection", channel, fmt __VA_OPT__(, ) __VA_ARGS__)
 
+// Both entry points carry a fixed name, so a module exposes at most one package and only a
+// loadable module can be probed for them. A static build links every package into the same
+// binary, where the names would collide; those consumers call Create<PackageName>Package instead.
+#ifdef CCT_REFLECTION_STATIC
+
+#define CCT_REFL_CREATE(PackageName)
+#define CCT_REFL_DESTROY()
+
+#else
+
 #define CCT_REFL_CREATE(PackageName)                                               \
 	extern "C" CCT_EXPORT cct::refl::Package* cct_refl_create(cct::Logger* logger) \
 	{                                                                              \
@@ -85,4 +95,7 @@
 	{                                                                        \
 		delete package;                                                      \
 	}
+
+#endif // CCT_REFLECTION_STATIC
+
 #endif // CONCERTO_REFLECTION_DEFINE_HPP
