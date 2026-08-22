@@ -123,6 +123,7 @@ for targetName, targetConfig in pairs(concerto_core) do
             "Network/Packet",
             "Network/Socket",
             "Paths",
+            "Process",
             "Result",
             "Serializer",
             "Signal",
