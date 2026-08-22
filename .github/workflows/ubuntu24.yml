@@ -6,7 +6,7 @@ on:
     paths-ignore:
       - '.github/workflows/macos.yml'
       - '.github/workflows/windows.yml'
-    branches: [ "merge" ]
+    branches: [ "main" ]
   pull_request:
 
   workflow_dispatch:

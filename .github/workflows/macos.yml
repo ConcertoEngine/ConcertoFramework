@@ -7,7 +7,7 @@ on:
     paths-ignore:
         - '.github/workflows/ubuntu22.yml'
         - '.github/workflows/windows.yml'
-    branches: [ "merge" ]
+    branches: [ "main" ]
 
 jobs:
   build:
