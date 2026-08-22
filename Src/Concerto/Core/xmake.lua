@@ -78,7 +78,9 @@ for targetName, targetConfig in pairs(concerto_core) do
 
         add_packages("stduuid")
         if is_plat("linux", "bsd") then
-            add_packages("libuuid")
+            add_packages("libuuid", {public = true})
+        elseif is_plat("macosx", "iphoneos") then
+            add_frameworks("CoreFoundation", {public = true})
         end
 
         for configName, config in pairs(targetConfig.configs) do
