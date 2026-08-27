@@ -29,6 +29,7 @@ namespace cct
 	struct LogConfig
 	{
 		LogLevel GlobalLevel = LogLevel::Info;
+		LogLevel FlushLevel = LogLevel::Error; // spdlog flush_on() threshold, independent of GlobalLevel's filtering.
 		bool EnableConsole = true;
 		bool EnableFile = false;
 		std::filesystem::path LogDir = "Logs";

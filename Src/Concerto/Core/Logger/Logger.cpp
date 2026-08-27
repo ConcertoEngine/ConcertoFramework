@@ -110,7 +110,7 @@ namespace cct
 			}
 
 			logger->set_level(ToSpdlogLevel(state.Config.GlobalLevel));
-			logger->flush_on(spdlog::level::err);
+			logger->flush_on(ToSpdlogLevel(state.Config.FlushLevel));
 			return logger;
 		}
 
