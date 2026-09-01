@@ -38,4 +38,9 @@ namespace cct::gfx::rhi
 	{
 		return m_pipelineLayout;
 	}
+
+	std::shared_ptr<PipelineLayout> VkRHIPipeline::GetPipelineLayout() const
+	{
+		return m_pipelineLayout;
+	}
 } // namespace cct::gfx::rhi

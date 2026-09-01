@@ -24,6 +24,7 @@ namespace cct::gfx::rhi
 		[[nodiscard]] VkPipeline GetVkPipeline() const;
 		[[nodiscard]] const VkRHIPipelineLayout& GetLayout() const;
 		[[nodiscard]] std::shared_ptr<VkRHIPipelineLayout> GetLayoutPtr() const;
+		[[nodiscard]] std::shared_ptr<PipelineLayout> GetPipelineLayout() const override;
 
 	private:
 		std::shared_ptr<vk::Pipeline> m_pipeline;

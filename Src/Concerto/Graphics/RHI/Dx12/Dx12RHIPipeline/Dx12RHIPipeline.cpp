@@ -16,4 +16,9 @@ namespace cct::gfx::rhi
 		CCT_ASSERT(m_pipelineState, "ConcertoGraphics: Invalid DX12 pipeline state");
 		CCT_ASSERT(m_pipelineLayout, "ConcertoGraphics: Invalid DX12 pipeline layout");
 	}
+
+	std::shared_ptr<PipelineLayout> Dx12RHIPipeline::GetPipelineLayout() const
+	{
+		return m_pipelineLayout;
+	}
 } // namespace cct::gfx::rhi

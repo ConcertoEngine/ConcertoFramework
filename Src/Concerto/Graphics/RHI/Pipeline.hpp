@@ -18,6 +18,8 @@ namespace cct::gfx::rhi
 	public:
 		Pipeline() = default;
 		virtual ~Pipeline() = default;
+
+		[[nodiscard]] virtual std::shared_ptr<PipelineLayout> GetPipelineLayout() const = 0;
 	};
 } // namespace cct::gfx::rhi
 

@@ -13,8 +13,6 @@
 #include "Concerto/Graphics/RHI/Pipeline.hpp"
 #include "Concerto/Graphics/RHI/PipelineLayout.hpp"
 #include "Concerto/Graphics/RHI/RenderPass.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIPipeline/VkRHIPipeline.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIPipelineLayout/VkRHIPipelineLayout.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -148,10 +146,7 @@ namespace cct::gfx::rhi
 
 		auto materialPtr = std::make_shared<Material>(material);
 		materialPtr->pipeline = pipelineIt->second;
-		if (auto vkPipeline = std::dynamic_pointer_cast<rhi::VkRHIPipeline>(pipelineIt->second))
-			materialPtr->pipelineLayout = std::static_pointer_cast<PipelineLayout>(vkPipeline->GetLayoutPtr());
-		else
-			materialPtr->pipelineLayout = pipelineLayout;
+		materialPtr->pipelineLayout = materialPtr->pipeline->GetPipelineLayout();
 
 		materialPtr->descriptorSets.reserve(descriptorSetLayouts.size());
 		UInt32 textureSetIndex = std::numeric_limits<UInt32>::max();

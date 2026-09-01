@@ -32,6 +32,7 @@ namespace cct::gfx::rhi
 		{
 			return m_pipelineLayout;
 		}
+		[[nodiscard]] std::shared_ptr<PipelineLayout> GetPipelineLayout() const override;
 
 		[[nodiscard]] UInt32 GetVertexStride() const
 		{
