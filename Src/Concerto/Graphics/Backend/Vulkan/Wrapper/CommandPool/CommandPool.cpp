@@ -14,7 +14,7 @@
 namespace cct::gfx::vk
 {
 	CommandPool::CommandPool(Device& device, UInt32 queueFamily) :
-		Object(device),
+		SimpleObject(device),
 		m_queueFamily(queueFamily)
 	{
 		VkCommandPoolCreateInfo info{};
@@ -26,12 +26,7 @@ namespace cct::gfx::vk
 		CCT_ASSERT(m_lastResult == VK_SUCCESS, "Error cannot create command pool: VkResult={}", static_cast<int>(m_lastResult));
 	}
 
-	CommandPool::~CommandPool()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyCommandPool(*m_device->Get(), m_handle, nullptr);
-	}
+	CommandPool::~CommandPool() = default;
 
 	void CommandPool::Reset() const
 	{

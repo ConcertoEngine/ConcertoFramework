@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 
 namespace cct::gfx::vk
 {
@@ -16,7 +16,7 @@ namespace cct::gfx::vk
 	class RenderPass;
 	class ImageView;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API FrameBuffer : public Object<VkFramebuffer>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API FrameBuffer : public SimpleObject<VkFramebuffer, &Device::vkDestroyFramebuffer>
 	{
 	public:
 		FrameBuffer();

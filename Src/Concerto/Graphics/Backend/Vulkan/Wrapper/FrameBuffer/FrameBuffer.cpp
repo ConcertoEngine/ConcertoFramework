@@ -19,19 +19,14 @@ namespace cct::gfx::vk
 	}
 
 	FrameBuffer::FrameBuffer(const RenderPass& renderPass, const std::vector<VkImageView>& attachments, VkExtent2D extent) :
-		Object(*renderPass.GetDevice()),
+		SimpleObject(*renderPass.GetDevice()),
 		m_extent(extent)
 	{
 		if (Create(renderPass, attachments, extent) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
-	FrameBuffer::~FrameBuffer()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyFramebuffer(*m_device->Get(), m_handle, nullptr);
-	}
+	FrameBuffer::~FrameBuffer() = default;
 
 	VkResult FrameBuffer::Create(const RenderPass& renderPass, const std::vector<VkImageView>& attachments, VkExtent2D extent)
 	{

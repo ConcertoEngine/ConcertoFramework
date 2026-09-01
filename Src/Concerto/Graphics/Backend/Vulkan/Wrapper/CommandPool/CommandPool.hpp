@@ -7,13 +7,13 @@
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 
 namespace cct::gfx::vk
 {
 	class Device;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API CommandPool : public Object<VkCommandPool>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API CommandPool : public SimpleObject<VkCommandPool, &Device::vkDestroyCommandPool>
 	{
 	public:
 		CommandPool(Device& device, UInt32 queueFamily);

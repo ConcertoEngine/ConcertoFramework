@@ -15,18 +15,13 @@
 namespace cct::gfx::vk
 {
 	RenderPass::RenderPass(Device& device, std::span<VkAttachmentDescription> attachmentDescriptions, std::span<VkSubpassDescription> subPassDescriptions, std::span<VkSubpassDependency> subPassDependencies) :
-		Object(device)
+		SimpleObject(device)
 	{
 		if (Create(device, attachmentDescriptions, subPassDescriptions, subPassDependencies) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
-	RenderPass::~RenderPass()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyRenderPass(*m_device->Get(), m_handle, nullptr);
-	}
+	RenderPass::~RenderPass() = default;
 
 	VkResult RenderPass::Create(Device& device, std::span<VkAttachmentDescription> attachmentDescriptions,
 								std::span<VkSubpassDescription> subPassDescriptions, std::span<VkSubpassDependency> subPassDependencies)

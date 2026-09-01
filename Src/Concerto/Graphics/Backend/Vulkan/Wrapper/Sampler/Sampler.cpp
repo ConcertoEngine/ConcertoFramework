@@ -15,18 +15,13 @@
 namespace cct::gfx::vk
 {
 	Sampler::Sampler(Device& device, VkFilter filter, VkSamplerAddressMode samplerAddressMode) :
-		Object(device)
+		SimpleObject(device)
 	{
 		if (Create(device, filter, samplerAddressMode) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
-	Sampler::~Sampler()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroySampler(*m_device->Get(), m_handle, nullptr);
-	}
+	Sampler::~Sampler() = default;
 
 	VkResult Sampler::Create(Device& device, VkFilter filter, VkSamplerAddressMode samplerAddressMode)
 	{

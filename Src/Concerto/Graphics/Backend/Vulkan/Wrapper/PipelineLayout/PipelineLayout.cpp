@@ -14,19 +14,14 @@ namespace cct::gfx::vk
 {
 
 	PipelineLayout::PipelineLayout(Device& device, const std::vector<std::shared_ptr<DescriptorSetLayout>>& descriptorSetLayouts) :
-		Object(device),
+		SimpleObject(device),
 		m_descriptorSetLayouts(descriptorSetLayouts)
 	{
 		if (Create(device, descriptorSetLayouts) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
-	PipelineLayout::~PipelineLayout()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyPipelineLayout(*m_device->Get(), m_handle, nullptr);
-	}
+	PipelineLayout::~PipelineLayout() = default;
 
 	VkResult PipelineLayout::Create(Device& device, const std::vector<std::shared_ptr<DescriptorSetLayout>>& descriptorSetLayouts)
 	{

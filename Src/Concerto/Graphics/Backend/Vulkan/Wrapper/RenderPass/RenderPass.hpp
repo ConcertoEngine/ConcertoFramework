@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 
 namespace cct::gfx::vk
 {
 	class Device;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API RenderPass : public Object<VkRenderPass>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API RenderPass : public SimpleObject<VkRenderPass, &Device::vkDestroyRenderPass>
 	{
 	public:
 		RenderPass() = default;

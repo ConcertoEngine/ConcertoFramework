@@ -15,18 +15,13 @@ namespace cct::gfx::vk
 {
 
 	Semaphore::Semaphore(Device& device) :
-		Object(device)
+		SimpleObject(device)
 	{
 		if (Create(device) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
-	Semaphore::~Semaphore()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroySemaphore(*m_device->Get(), m_handle, nullptr);
-	}
+	Semaphore::~Semaphore() = default;
 
 	VkResult Semaphore::Create(Device& device)
 	{

@@ -6,13 +6,13 @@
 #define CONCERTO_GRAPHICS_SAMPLER_HPP
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 
 namespace cct::gfx::vk
 {
 	class Device;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Sampler : public Object<VkSampler>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Sampler : public SimpleObject<VkSampler, &Device::vkDestroySampler>
 	{
 	public:
 		Sampler() = default;

@@ -11,13 +11,13 @@
 #include <Concerto/Core/Assert.hpp>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 
 namespace cct::gfx::vk
 {
 	class Device;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API DescriptorSetLayout : public Object<VkDescriptorSetLayout>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API DescriptorSetLayout : public SimpleObject<VkDescriptorSetLayout, &Device::vkDestroyDescriptorSetLayout>
 	{
 	public:
 		DescriptorSetLayout() = default;

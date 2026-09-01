@@ -15,18 +15,13 @@
 namespace cct::gfx::vk
 {
 	Fence::Fence(Device& device, bool signaled) :
-		Object(device)
+		SimpleObject(device)
 	{
 		if (Create(device, signaled) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
-	Fence::~Fence()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyFence(*m_device->Get(), m_handle, nullptr);
-	}
+	Fence::~Fence() = default;
 
 	VkResult Fence::Create(Device& device, bool signaled)
 	{

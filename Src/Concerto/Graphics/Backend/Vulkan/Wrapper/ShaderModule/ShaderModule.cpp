@@ -17,7 +17,7 @@ namespace cct::gfx::vk
 {
 
 	ShaderModule::ShaderModule(Device& device, const std::string& shaderPath, VkShaderStageFlagBits stageFlags, const std::string& entryPoint /*= "main"*/) :
-		Object(device),
+		SimpleObject(device),
 		m_stageFlags(stageFlags),
 		m_entryPoint(entryPoint)
 	{
@@ -26,7 +26,7 @@ namespace cct::gfx::vk
 	}
 
 	ShaderModule::ShaderModule(Device& device, const std::vector<UInt32>& bytes, VkShaderStageFlagBits stageFlags, const std::string& entryPoint /*= "main"*/) :
-		Object(device),
+		SimpleObject(device),
 		m_stageFlags(stageFlags),
 		m_entryPoint(entryPoint)
 	{
@@ -34,12 +34,7 @@ namespace cct::gfx::vk
 			throw VkException(GetLastResult());
 	}
 
-	ShaderModule::~ShaderModule()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyShaderModule(*m_device->Get(), m_handle, nullptr);
-	}
+	ShaderModule::~ShaderModule() = default;
 
 	VkResult ShaderModule::Create(Device& device, const std::string& shaderPath, VkShaderStageFlagBits stageFlags, const std::string& entryPoint)
 	{

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PipelineInfo/PipelineInfo.hpp"
 
 namespace cct::gfx::vk
@@ -17,7 +17,7 @@ namespace cct::gfx::vk
 	class PipelineLayout;
 	class RenderPass;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Pipeline : public Object<VkPipeline>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Pipeline : public SimpleObject<VkPipeline, &Device::vkDestroyPipeline>
 	{
 	public:
 		Pipeline() = default;

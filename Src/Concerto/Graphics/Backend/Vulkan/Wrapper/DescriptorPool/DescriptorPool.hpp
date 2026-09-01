@@ -10,13 +10,13 @@
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/DescriptorSet/DescriptorSet.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 
 namespace cct::gfx::vk
 {
 	class Device;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API DescriptorPool : public Object<VkDescriptorPool>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API DescriptorPool : public SimpleObject<VkDescriptorPool, &Device::vkDestroyDescriptorPool>
 	{
 	public:
 		DescriptorPool() = default;

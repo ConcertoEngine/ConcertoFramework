@@ -6,13 +6,13 @@
 #define CONCERTO_GRAPHICS_FENCE_HPP
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 
 namespace cct::gfx::vk
 {
 	class Device;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Fence : public Object<VkFence>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API Fence : public SimpleObject<VkFence, &Device::vkDestroyFence>
 	{
 	public:
 		Fence() = default;

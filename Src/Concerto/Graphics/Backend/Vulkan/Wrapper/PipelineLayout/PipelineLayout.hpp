@@ -9,14 +9,14 @@
 #include <vector>
 
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/Object.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Object/SimpleObject.hpp"
 
 namespace cct::gfx::vk
 {
 	class Device;
 	class DescriptorSetLayout;
 
-	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API PipelineLayout : public Object<VkPipelineLayout>
+	class CONCERTO_GRAPHICS_VULKAN_BACKEND_API PipelineLayout : public SimpleObject<VkPipelineLayout, &Device::vkDestroyPipelineLayout>
 	{
 	public:
 		PipelineLayout() = default;

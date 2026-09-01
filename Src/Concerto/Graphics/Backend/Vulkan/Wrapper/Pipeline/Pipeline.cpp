@@ -17,7 +17,7 @@ namespace cct::gfx::vk
 {
 
 	Pipeline::Pipeline(Device& device, PipelineInfo pipeLineInfo, const RenderPass& renderPass) :
-		Object(device),
+		SimpleObject(device),
 		m_pipelineInfo(std::move(pipeLineInfo)),
 		m_createInfo(),
 		m_renderPass(&renderPass)
@@ -27,7 +27,7 @@ namespace cct::gfx::vk
 	}
 
 	Pipeline::Pipeline(Device& device, const VkPipelineShaderStageCreateInfo& computeStage, VkPipelineLayout layout) :
-		Object(device),
+		SimpleObject(device),
 		m_createInfo(),
 		m_renderPass(nullptr)
 	{
@@ -40,12 +40,7 @@ namespace cct::gfx::vk
 			throw VkException(GetLastResult());
 	}
 
-	Pipeline::~Pipeline()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyPipeline(*m_device->Get(), m_handle, nullptr);
-	}
+	Pipeline::~Pipeline() = default;
 
 	VkResult Pipeline::Create(Device& device, const PipelineInfo& pipeLineInfo, const RenderPass& renderPass)
 	{

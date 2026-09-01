@@ -14,19 +14,14 @@ namespace cct::gfx::vk
 {
 
 	DescriptorSetLayout::DescriptorSetLayout(Device& device, const std::vector<VkDescriptorSetLayoutBinding>& bindings) :
-		Object(device),
+		SimpleObject(device),
 		m_bindings(bindings)
 	{
 		if (Create(device, bindings) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
-	DescriptorSetLayout::~DescriptorSetLayout()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyDescriptorSetLayout(*m_device->Get(), m_handle, nullptr);
-	}
+	DescriptorSetLayout::~DescriptorSetLayout() = default;
 
 	VkResult DescriptorSetLayout::Create(Device& device, const std::vector<VkDescriptorSetLayoutBinding>& bindings)
 	{

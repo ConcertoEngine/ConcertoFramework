@@ -14,7 +14,7 @@
 namespace cct::gfx::vk
 {
 	DescriptorPool::DescriptorPool(Device& device) :
-		Object(device)
+		SimpleObject(device)
 	{
 		std::vector<VkDescriptorPoolSize> poolSizes =
 			{
@@ -28,18 +28,13 @@ namespace cct::gfx::vk
 	}
 
 	DescriptorPool::DescriptorPool(Device& device, std::vector<VkDescriptorPoolSize> poolSizes) :
-		Object<VkDescriptorPool>(device)
+		SimpleObject(device)
 	{
 		if (Create(device, std::move(poolSizes)) != VK_SUCCESS)
 			throw VkException(GetLastResult());
 	}
 
-	DescriptorPool::~DescriptorPool()
-	{
-		if (!IsValid())
-			return;
-		m_device->vkDestroyDescriptorPool(*m_device->Get(), m_handle, nullptr);
-	}
+	DescriptorPool::~DescriptorPool() = default;
 
 	VkResult DescriptorPool::Create(Device& device, std::vector<VkDescriptorPoolSize> poolSizes)
 	{
