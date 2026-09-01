@@ -6,7 +6,6 @@
 
 #include <stdexcept>
 #include <unordered_set>
-#include <volk.h> // must be under this ^ include
 
 #include <Concerto/Core/Assert.hpp>
 
@@ -214,9 +213,9 @@ namespace cct::gfx::vk
 			}
 		}
 
-		VolkDeviceTable deviceTable;
-		volkLoadDeviceTable(&deviceTable, m_handle);
-#define CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func) this->func = deviceTable.func;
+		PFN_vkGetDeviceProcAddr getDeviceProcAddr = physicalDevice.GetInstance().vkGetDeviceProcAddr;
+		CCT_ASSERT(getDeviceProcAddr != nullptr, "ConcertoGraphics: vkGetDeviceProcAddr not loaded on instance");
+#define CONCERTO_VULKAN_BACKEND_DEVICE_FUNCTION(func) this->func = reinterpret_cast<PFN_##func>(getDeviceProcAddr(m_handle, #func));
 
 #define CONCERTO_VULKAN_BACKEND_DEVICE_EXT_BEGIN(ext) \
 	if (IsExtensionEnabled(#ext))                     \

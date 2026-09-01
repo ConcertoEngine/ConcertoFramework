@@ -16,9 +16,12 @@
 #else
 #define CONCERTO_GRAPHICS_VULKAN_BACKEND_API CCT_IMPORT
 #endif // CONCERTO_GRAPHICS_VULKAN_BACKEND_BUILD
-#define VOLK_VULKAN_H_PATH <string>
 #include <vulkan/vk_platform.h>
 #include <vulkan/vulkan_core.h>
+
+#if !defined(VK_API_VERSION_1_4) || VK_HEADER_VERSION < 309
+#error "ConcertoGraphics requires Vulkan-Headers >= 1.4.309 (VK_HEADER_VERSION)"
+#endif
 
 #ifdef CCT_PLATFORM_WINDOWS
 typedef unsigned long DWORD;

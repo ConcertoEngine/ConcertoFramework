@@ -1,8 +1,8 @@
 add_repositories("nazara-repo https://github.com/NazaraEngine/xmake-repo")
 
-add_requires("volk", {configs = {header_only = true}})
 add_requires("nzsl", {configs = {shared = false}})
-add_requires("vulkan-headers", "vulkan-memory-allocator", "stb", "vulkan-utility-libraries", "parallel-hashmap", "tinyobjloader")
+add_requires("vulkan-headers >=1.4.309")
+add_requires("vulkan-memory-allocator", "stb", "vulkan-utility-libraries", "parallel-hashmap", "tinyobjloader")
 add_requires("libsdl3", {configs = {wayland = is_plat("linux", "bsd"), x11 = is_plat("linux", "bsd")}})
 if is_plat("windows") then
     add_requires("spirv-cross")
@@ -72,7 +72,7 @@ target("concerto-vulkan-backend", function()
 
     add_includedirs("../../", { public = true })
     add_deps("concerto-core", { public = false })
-    add_packages("volk", "vulkan-headers", "vulkan-utility-libraries", "vulkan-memory-allocator", "nzsl", { public = true })
+    add_packages("vulkan-headers", "vulkan-utility-libraries", "vulkan-memory-allocator", "nzsl", { public = true })
     add_deps("concerto-graphics-core")
     add_rpathdirs("$ORIGIN")
 

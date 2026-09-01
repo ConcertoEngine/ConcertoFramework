@@ -13,9 +13,7 @@ namespace cct
 	{
 		std::error_code ec = {};
 		auto fullPath = std::filesystem::canonical(path, ec);
-		if (ec)
-			return false;
-		_module = dlopen(fullPath.c_str(), RTLD_LAZY | RTLD_GLOBAL);
+		_module = dlopen(ec ? path.c_str() : fullPath.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 		if (_module == nullptr)
 		{
 			if (error)

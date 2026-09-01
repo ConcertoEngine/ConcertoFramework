@@ -11,8 +11,7 @@
 
 #include "Concerto/Core/Logger/Logger.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#define VOLK_IMPLEMENTATION
-#include <volk.h> // must be under this ^ include
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Loader/Loader.hpp"
 
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
@@ -125,18 +124,17 @@ namespace cct::gfx::vk
 		for (auto& layer : layers)
 			m_loadedLayers.emplace(layer);
 
-		m_lastResult = volkInitialize();
+		m_lastResult = Loader::Initialize();
 		if (m_lastResult != VK_SUCCESS)
 		{
-			CCT_ASSERT_FALSE("ConcertoGraphics: volkInitialize() failed VkResult={}", static_cast<int>(m_lastResult));
-			throw std::runtime_error("volkInitialize Failed");
+			CCT_ASSERT_FALSE("ConcertoGraphics: Vulkan loader initialization failed VkResult={}", static_cast<int>(m_lastResult));
+			throw std::runtime_error("Vulkan loader initialization failed");
 		}
 
 		m_lastResult = vkCreateInstance(&createInfo, nullptr, &m_handle);
 		CCT_ASSERT(m_lastResult == VK_SUCCESS, "ConcertoGraphics: vkCreateInstance failed VKResult={}", static_cast<int>(m_lastResult));
-		volkLoadInstanceOnly(m_handle);
 		Instance::vkGetInstanceProcAddr = ::vkGetInstanceProcAddr;
-#define CONCERTO_VULKAN_BACKEND_INSTANCE_FUNCTION(func) this->func = ::func;
+#define CONCERTO_VULKAN_BACKEND_INSTANCE_FUNCTION(func) this->func = reinterpret_cast<PFN_##func>(::vkGetInstanceProcAddr(m_handle, #func));
 
 #define CONCERTO_VULKAN_BACKEND_INSTANCE_EXT_BEGIN(ext) \
 	if (IsExtensionEnabled(#ext))                       \

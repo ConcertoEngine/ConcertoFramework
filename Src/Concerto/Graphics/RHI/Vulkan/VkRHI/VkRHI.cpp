@@ -52,7 +52,7 @@ namespace cct::gfx
 		if (!validationFeatures.empty())
 			extensions.push_back(VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME);
 
-		m_instance = std::make_unique<vk::Instance>("", "", Version{1, 3, 0}, Version{}, Version{}, extensions, layers, validationFeatures);
+		m_instance = std::make_unique<vk::Instance>("", "", Version{1, 4, 0}, Version{}, Version{}, extensions, layers, validationFeatures);
 		if (m_instance->GetLastResult() != VK_SUCCESS)
 		{
 			CCT_ASSERT_FALSE("ConcertoGraphics: Failed to initialize Vulkan instance, VkResult={}", static_cast<Int32>(m_instance->GetLastResult()));
