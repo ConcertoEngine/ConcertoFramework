@@ -88,18 +88,18 @@ namespace cct::gfx::rhi
 
 			mat->diffuseTexturePath = diffuse_texname.empty() ? "" : (path / diffuse_texname).string();
 			mat->normalTexturePath = normal_texname.empty() ? "" : (path / normal_texname).string();
-			// mat->diffuseColor.x = material.diffuse[0];
-			// mat->diffuseColor.y = material.diffuse[1];
-			// mat->diffuseColor.z = material.diffuse[2];
+			mat->diffuseColor.X() = material.diffuse[0];
+			mat->diffuseColor.Y() = material.diffuse[1];
+			mat->diffuseColor.Z() = material.diffuse[2];
 			mat->metallic = material.metallic;
-			// mat->specular.x = material.specular[0];
-			// mat->specular.y = material.specular[1];
-			// mat->specular.z = material.specular[2];
+			mat->specular.X() = material.specular[0];
+			mat->specular.Y() = material.specular[1];
+			mat->specular.Z() = material.specular[2];
 			mat->roughness = material.roughness;
 			mat->anisotropy = material.anisotropy;
-			// mat->emissiveColor.x = material.emission[0];
-			// mat->emissiveColor.y = material.emission[1];
-			// mat->emissiveColor.z = material.emission[2];
+			mat->emissiveColor.X() = material.emission[0];
+			mat->emissiveColor.Y() = material.emission[1];
+			mat->emissiveColor.Z() = material.emission[2];
 			mat->name = material.name;
 			m_materials[material.name] = std::move(mat);
 			++i;
@@ -176,7 +176,7 @@ namespace cct::gfx::rhi
 													  ? "./Shaders/default_lit.nzsl"
 													  : "./Shaders/textured_lit.nzsl";
 
-				rhi::MaterialPtr material = materialBuilder.BuildMaterial(materialInfo, renderPass);
+				rhi::MaterialInstancePtr material = materialBuilder.BuildMaterial(materialInfo, renderPass);
 				auto gpuSubMesh = std::make_shared<GpuSubMesh>(subMesh, material, device);
 				// std::scoped_lock m_(subMeshesMutex);
 				gpuMesh->subMeshes.push_back(gpuSubMesh);
@@ -188,7 +188,7 @@ namespace cct::gfx::rhi
 			phmap::flat_hash_map<std::size_t, std::vector<GpuSubMeshPtr>> subMeshesByMaterial;
 			for (auto& subMesh : gpuMesh->subMeshes)
 			{
-				auto hash = MaterialInfo::Hash()(*subMesh->GetMaterial());
+				auto hash = subMesh->GetMaterial()->GetHash();
 				auto it = subMeshesByMaterial.find(hash);
 				if (it == subMeshesByMaterial.end())
 					subMeshesByMaterial.emplace(hash, std::vector{subMesh});

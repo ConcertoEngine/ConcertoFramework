@@ -178,7 +178,7 @@ namespace cct::gfx::rhi
 					const MemoryAccessFlags prevAccess = m_registry.GetCurrentBufferAccess(usage.handle);
 					it = bufferStates.emplace(usage.handle.index,
 											  BufferAccessState{prevStage, prevAccess, bufferAccessWasWrite(prevAccess)})
-							.first;
+							 .first;
 				}
 
 				BufferAccessState& prev = it->second;

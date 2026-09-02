@@ -11,10 +11,22 @@ struct SceneData
     sunlightColor : vec4[f32]
 }
 
+[layout(std140)]
+struct MaterialParams
+{
+    diffuseColor: vec3[f32],
+    metallic: f32,
+    specular: vec3[f32],
+    roughness: f32,
+    anisotropy: f32,
+    emissiveColor: vec3[f32]
+}
+
 external
 {
   [set(0), binding(1)] sceneData: uniform[SceneData],
-  [set(2), binding(0)] texture: sampler2D[f32]
+  [set(2), binding(0)] texture: sampler2D[f32],
+  [set(3), binding(0)] materialParams: uniform[MaterialParams]
 }
 
 struct VertOut
@@ -34,7 +46,7 @@ struct FragOut
 fn main(input: VertOut) -> FragOut
 {
     let output: FragOut;
-    let color: vec3[f32] = texture.Sample(input.vTexCoord).xyz;
+    let color: vec3[f32] = texture.Sample(input.vTexCoord).xyz * materialParams.diffuseColor + materialParams.emissiveColor;
     output.color = vec4[f32](color, 1.0);
     return output;
 }

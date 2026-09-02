@@ -92,8 +92,7 @@ namespace cct::gfx::rhi
 
 	private:
 		std::unique_ptr<FrameBuffer> CreateFrameBufferFromResources(UInt32 width, UInt32 height,
-																	 const std::vector<ID3D12Resource*>& colorResources);
-
+																	const std::vector<ID3D12Resource*>& colorResources);
 
 		std::optional<Dx12RHIDescriptorPool> m_descriptorPool;
 		ID3D12CommandQueue* m_renderQueue = nullptr;

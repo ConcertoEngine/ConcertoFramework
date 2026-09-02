@@ -5,8 +5,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
 
-#include <stb_image.h>
 #include <cstring>
+#include <stb_image.h>
 
 #include <Concerto/Core/DeferredExit/DeferredExit.hpp>
 

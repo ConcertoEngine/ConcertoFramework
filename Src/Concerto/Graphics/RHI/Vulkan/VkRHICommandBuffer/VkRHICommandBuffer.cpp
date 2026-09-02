@@ -10,6 +10,7 @@
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Pipeline/Pipeline.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/VulkanInitializer/VulkanInitializer.hpp"
+#include "Concerto/Graphics/RHI/Material/MaterialInstance.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/Utils/Utils.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIBuffer/VkRHIBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDescriptorSet/VkRHIDescriptorSet.hpp"
@@ -142,12 +143,14 @@ namespace cct::gfx::rhi
 		vk::CommandBuffer::EndRenderPass();
 	}
 
-	void VkRHICommandBuffer::BindMaterial(const Material& material)
+	void VkRHICommandBuffer::BindMaterial(const MaterialInstance& material)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
 
-		CCT_ASSERT(material.pipeline, "Invalid pointer");
-		const auto& pipeline = Cast<const VkRHIPipeline&>(*material.pipeline);
+		if (!material.materialTemplate || !material.materialTemplate->pipeline)
+			return;
+
+		const auto& pipeline = Cast<const VkRHIPipeline&>(*material.materialTemplate->pipeline);
 
 		const auto& pipelineLayout = pipeline.GetLayout();
 

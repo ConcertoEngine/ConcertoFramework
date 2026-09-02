@@ -37,6 +37,7 @@ namespace cct::gfx::rhi
 		const std::unordered_map<UInt32, std::vector<cct::gfx::DescriptorSetLayoutBinding>>& GetBindings() const override;
 		const std::string& GetEntryPointName() const override;
 		cct::gfx::ShaderStage GetStage() const override;
+		const cct::gfx::MaterialParamsLayout& GetMaterialParamsLayout() const override;
 
 		// DX12-specific methods
 		D3D12_SHADER_BYTECODE GetD3D12ShaderBytecode() const;

@@ -26,13 +26,13 @@ namespace cct
 } // namespace cct
 
 #ifdef CCT_ENABLE_ASSERTS
-	#include <Concerto/Core/Assert.hpp>
-	#define CCT_ASSERT_DOMAIN_THREAD()                                                        \
-		CCT_ASSERT(cct::ThreadAffinity::IsDomainThread(),                                     \
-				   "reflected state mutated from thread '{}', which is not the domain thread", \
-				   cct::ThreadAffinity::GetCurrentName())
+#include <Concerto/Core/Assert.hpp>
+#define CCT_ASSERT_DOMAIN_THREAD()                                                         \
+	CCT_ASSERT(cct::ThreadAffinity::IsDomainThread(),                                      \
+			   "reflected state mutated from thread '{}', which is not the domain thread", \
+			   cct::ThreadAffinity::GetCurrentName())
 #else
-	#define CCT_ASSERT_DOMAIN_THREAD() ((void) 0)
+#define CCT_ASSERT_DOMAIN_THREAD() ((void)0)
 #endif
 
 #endif // CONCERTO_CORE_THREAD_AFFINITY_HPP

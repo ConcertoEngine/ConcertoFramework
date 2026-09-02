@@ -22,6 +22,7 @@ namespace cct::gfx
 		std::unordered_map<UInt32, std::vector<DescriptorSetLayoutBinding>> bindings;
 		std::string entryPointName;
 		ShaderStage stage;
+		MaterialParamsLayout materialParams;
 	};
 
 	class CONCERTO_GRAPHICS_CORE_API ShaderModuleLoader

@@ -1,18 +1,53 @@
-//
-// Created by arthur on 23/10/2025.
-//
-
 #include "Concerto/Graphics/RHI/BaseMaterialBuilder.hpp"
 
 #include <algorithm>
+#include <cstddef>
+#include <limits>
 
+#include "Concerto/Graphics/Core/Vertex.hpp"
 #include "Concerto/Graphics/RHI/Buffer.hpp"
 #include "Concerto/Graphics/RHI/DescriptorSet.hpp"
 #include "Concerto/Graphics/RHI/DescriptorSetLayout.hpp"
 #include "Concerto/Graphics/RHI/Device.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/RHI/Pipeline.hpp"
 #include "Concerto/Graphics/RHI/PipelineLayout.hpp"
 #include "Concerto/Graphics/RHI/RenderPass.hpp"
+#include "Concerto/Graphics/RHI/TextureBuilder/TextureBuilder.hpp"
+
+namespace
+{
+	cct::UInt64 HashShaderPair(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const cct::gfx::rhi::PipelineConfig& config)
+	{
+		std::hash<std::string> stringHasher;
+		std::hash<int> intHasher;
+		cct::UInt64 hash = 0;
+		hash ^= stringHasher(vertexShaderPath) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+		hash ^= stringHasher(fragmentShaderPath) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+		hash ^= intHasher(config.blendEnable ? 1 : 0) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+		hash ^= intHasher(config.premultipliedAlpha ? 1 : 0) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+		hash ^= intHasher(static_cast<int>(config.blendPreset)) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+		hash ^= intHasher(config.depthTestEnable ? 1 : 0) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+		hash ^= intHasher(config.depthWriteEnable ? 1 : 0) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+		return hash;
+	}
+
+	cct::gfx::rhi::PipelineConfig BuildVertexPipelineConfig(const cct::gfx::rhi::PipelineConfig& materialConfig)
+	{
+		using cct::gfx::rhi::VertexAttribute;
+		using cct::gfx::rhi::VertexAttributeFormat;
+
+		cct::gfx::rhi::PipelineConfig config = materialConfig;
+		config.vertexStride = static_cast<cct::UInt32>(sizeof(cct::gfx::Vertex));
+		config.vertexAttributes = {
+			VertexAttribute{0, VertexAttributeFormat::Vec3f, static_cast<cct::UInt32>(offsetof(cct::gfx::Vertex, position))},
+			VertexAttribute{1, VertexAttributeFormat::Vec3f, static_cast<cct::UInt32>(offsetof(cct::gfx::Vertex, normal))},
+			VertexAttribute{2, VertexAttributeFormat::Vec3f, static_cast<cct::UInt32>(offsetof(cct::gfx::Vertex, color))},
+			VertexAttribute{3, VertexAttributeFormat::Vec2f, static_cast<cct::UInt32>(offsetof(cct::gfx::Vertex, uv))},
+		};
+		return config;
+	}
+} // namespace
 
 namespace cct::gfx::rhi
 {
@@ -49,15 +84,12 @@ namespace cct::gfx::rhi
 			auto setIt = merged.find(set);
 			if (setIt == merged.end())
 			{
-				// Set doesn't exist yet, add all bindings
 				merged.emplace(set, setBindings);
 			}
 			else
 			{
-				// Set exists, need to merge bindings carefully
 				for (const auto& fragBinding : setBindings)
 				{
-					// Look for existing binding with same binding number
 					auto bindingIt = std::find_if(setIt->second.begin(), setIt->second.end(),
 												  [&fragBinding](const cct::gfx::DescriptorSetLayoutBinding& existing)
 												  {
@@ -66,12 +98,10 @@ namespace cct::gfx::rhi
 
 					if (bindingIt != setIt->second.end())
 					{
-						// Binding exists, merge stage flags by ORing them
 						bindingIt->stageFlags = bindingIt->stageFlags | fragBinding.stageFlags;
 					}
 					else
 					{
-						// New binding, add it
 						setIt->second.push_back(fragBinding);
 					}
 				}
@@ -80,125 +110,159 @@ namespace cct::gfx::rhi
 		return merged;
 	}
 
-	MaterialPtr BaseMaterialBuilder::BuildMaterial(rhi::MaterialInfo& material, const rhi::RenderPass& renderPass)
+	MaterialTemplatePtr BaseMaterialBuilder::BuildTemplate(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const rhi::RenderPass& renderPass, const rhi::PipelineConfig& pipelineConfig)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
 
-		// Load shaders
-		auto& vertexShader = GetOrLoadShaderModule(material.vertexShaderPath);
-		auto& fragmentShader = GetOrLoadShaderModule(material.fragmentShaderPath);
+		UInt64 templateHash = HashShaderPair(vertexShaderPath, fragmentShaderPath, pipelineConfig);
+		if (auto it = m_templatesCache.find(templateHash); it != m_templatesCache.end())
+			return it->second;
 
-		// Merge bindings from both shaders
+		auto& vertexShader = GetOrLoadShaderModule(vertexShaderPath);
+		auto& fragmentShader = GetOrLoadShaderModule(fragmentShaderPath);
+
 		auto mergedBindings = MergeBindings(vertexShader, fragmentShader);
 
-		// Create descriptor set layouts from merged bindings
-		std::vector<std::pair<UInt32, std::shared_ptr<rhi::DescriptorSetLayout>>> layoutEntries;
-		layoutEntries.reserve(mergedBindings.size());
+		UInt32 maxSet = 0;
+		for (const auto& [set, bindings] : mergedBindings)
+			maxSet = std::max(maxSet, set);
+
+		UInt64 emptyLayoutHash = 0;
+		std::shared_ptr<rhi::DescriptorSetLayout> emptyLayout;
+		if (auto emptyIt = m_descriptorSetLayoutsCache.find(emptyLayoutHash); emptyIt != m_descriptorSetLayoutsCache.end())
+		{
+			emptyLayout = emptyIt->second;
+		}
+		else
+		{
+			emptyLayout = m_device.CreateDescriptorSetLayout({});
+			m_descriptorSetLayoutsCache.emplace(emptyLayoutHash, emptyLayout);
+		}
+
+		std::vector<std::shared_ptr<rhi::DescriptorSetLayout>> orderedLayouts(static_cast<std::size_t>(maxSet) + 1, emptyLayout);
 		for (const auto& [set, bindings] : mergedBindings)
 		{
-			// Try to find in cache
 			std::hash<UInt32> hasher;
-			UInt64 hash = 0;
+			UInt64 layoutHash = 0;
 			for (const auto& binding : bindings)
 			{
-				hash ^= hasher(binding.binding) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-				hash ^= hasher(static_cast<UInt32>(binding.descriptorType)) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-				hash ^= hasher(binding.descriptorCount) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-				hash ^= hasher(binding.stageFlags.Value()) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+				layoutHash ^= hasher(binding.binding) + 0x9e3779b9 + (layoutHash << 6) + (layoutHash >> 2);
+				layoutHash ^= hasher(static_cast<UInt32>(binding.descriptorType)) + 0x9e3779b9 + (layoutHash << 6) + (layoutHash >> 2);
+				layoutHash ^= hasher(binding.descriptorCount) + 0x9e3779b9 + (layoutHash << 6) + (layoutHash >> 2);
+				layoutHash ^= hasher(binding.stageFlags.Value()) + 0x9e3779b9 + (layoutHash << 6) + (layoutHash >> 2);
 			}
-			auto it = m_descriptorSetLayoutsCache.find(hash);
-			if (it != m_descriptorSetLayoutsCache.end())
+			auto layoutIt = m_descriptorSetLayoutsCache.find(layoutHash);
+			if (layoutIt != m_descriptorSetLayoutsCache.end())
 			{
-				layoutEntries.emplace_back(set, it->second);
+				orderedLayouts[set] = layoutIt->second;
 			}
 			else
 			{
 				auto layout = m_device.CreateDescriptorSetLayout(bindings);
-				m_descriptorSetLayoutsCache.emplace(hash, layout);
-				layoutEntries.emplace_back(set, layout);
+				m_descriptorSetLayoutsCache.emplace(layoutHash, layout);
+				orderedLayouts[set] = layout;
 			}
 		}
 
-		// Sort layouts by set index to match Vulkan expectations (set 0 first, then set 1, etc.)
-		std::sort(layoutEntries.begin(), layoutEntries.end(), [](const auto& lhs, const auto& rhs)
-				  { return lhs.first < rhs.first; });
-
-		std::vector<std::shared_ptr<rhi::DescriptorSetLayout>> descriptorSetLayouts;
-		descriptorSetLayouts.reserve(layoutEntries.size());
-		for (auto& entry : layoutEntries)
-			descriptorSetLayouts.push_back(std::move(entry.second));
-
-		auto pipelineLayout = m_device.CreatePipelineLayout(descriptorSetLayouts);
-
-		// Create or get cached pipeline
-		UInt64 pipelineHash = 0;
-		std::hash<std::string> hasher;
-		pipelineHash ^= hasher(material.vertexShaderPath) + 0x9e3779b9 + (pipelineHash << 6) + (pipelineHash >> 2);
-		pipelineHash ^= hasher(material.fragmentShaderPath) + 0x9e3779b9 + (pipelineHash << 6) + (pipelineHash >> 2);
-
-		// Check cache first to avoid creating duplicate pipelines
-		auto pipelineIt = m_pipelinesCache.find(pipelineHash);
-		if (pipelineIt == m_pipelinesCache.end())
+		auto materialTemplate = std::make_shared<MaterialTemplate>();
+		materialTemplate->vertexShaderPath = vertexShaderPath;
+		materialTemplate->fragmentShaderPath = fragmentShaderPath;
+		materialTemplate->materialParams = fragmentShader.GetMaterialParamsLayout().size > 0
+											   ? fragmentShader.GetMaterialParamsLayout()
+											   : vertexShader.GetMaterialParamsLayout();
+		materialTemplate->descriptorSetLayouts.reserve(orderedLayouts.size());
+		for (std::size_t i = 0; i < orderedLayouts.size(); ++i)
 		{
-			auto pipeline = m_device.CreatePipeline(vertexShader, fragmentShader, renderPass, *pipelineLayout, m_windowExtent);
-			pipelineIt = m_pipelinesCache.insert_or_assign(pipelineHash, pipeline).first;
-		}
-
-		auto materialPtr = std::make_shared<Material>(material);
-		materialPtr->pipeline = pipelineIt->second;
-		materialPtr->pipelineLayout = materialPtr->pipeline->GetPipelineLayout();
-
-		materialPtr->descriptorSets.reserve(descriptorSetLayouts.size());
-		UInt32 textureSetIndex = std::numeric_limits<UInt32>::max();
-		UInt32 textureBinding = 0;
-
-		for (std::size_t i = 0; i < descriptorSetLayouts.size(); ++i)
-		{
-			auto descriptorSet = m_device.CreateDescriptorSet(*descriptorSetLayouts[i]);
-
-			// Check if this set contains a texture binding
-			for (const auto& binding : descriptorSetLayouts[i]->GetBindings())
+			auto& layout = orderedLayouts[i];
+			for (const auto& binding : layout->GetBindings())
 			{
 				if (binding.descriptorType == cct::gfx::ShaderBindingType::Sampler)
 				{
-					textureSetIndex = static_cast<UInt32>(i);
-					textureBinding = binding.binding;
+					materialTemplate->diffuseTextureSetIndex = static_cast<UInt32>(i);
+					materialTemplate->diffuseTextureBinding = binding.binding;
 				}
 			}
-
-			// Convert unique_ptr to shared_ptr
-			materialPtr->descriptorSets.push_back(std::shared_ptr<DescriptorSet>(std::move(descriptorSet)));
+			materialTemplate->descriptorSetLayouts.push_back(std::move(layout));
 		}
 
-		// Load and bind texture if present
-		if (!material.diffuseTexturePath.empty())
-		{
-			materialPtr->diffuseTexture = TextureBuilder::Instance().BuildTexture(material.diffuseTexturePath);
+		materialTemplate->pipelineConfig = BuildVertexPipelineConfig(pipelineConfig);
 
-			// Bind texture to descriptor set if we found a texture binding
-			if (textureSetIndex != std::numeric_limits<UInt32>::max() && textureSetIndex < materialPtr->descriptorSets.size())
+		auto pipelineLayout = m_device.CreatePipelineLayout(materialTemplate->descriptorSetLayouts);
+		materialTemplate->pipeline = m_device.CreatePipeline(vertexShader, fragmentShader, renderPass, *pipelineLayout, m_windowExtent, materialTemplate->pipelineConfig);
+		materialTemplate->pipelineLayout = materialTemplate->pipeline->GetPipelineLayout();
+
+		m_templatesCache.emplace(templateHash, materialTemplate);
+		return materialTemplate;
+	}
+
+	MaterialInstancePtr BaseMaterialBuilder::Instantiate(const MaterialTemplatePtr& materialTemplate, const rhi::MaterialInfo& info)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+
+		auto instance = std::make_shared<MaterialInstance>();
+		instance->info = info;
+		instance->materialTemplate = materialTemplate;
+
+		instance->descriptorSets.reserve(materialTemplate->descriptorSetLayouts.size());
+		for (const auto& layout : materialTemplate->descriptorSetLayouts)
+			instance->descriptorSets.push_back(std::shared_ptr<DescriptorSet>(m_device.CreateDescriptorSet(*layout)));
+
+		if (!info.diffuseTexturePath.empty())
+		{
+			instance->diffuseTexture = TextureBuilder::Instance().BuildTexture(info.diffuseTexturePath);
+
+			if (materialTemplate->diffuseTextureSetIndex != std::numeric_limits<UInt32>::max() &&
+				materialTemplate->diffuseTextureSetIndex < instance->descriptorSets.size())
 			{
-				materialPtr->descriptorSets[textureSetIndex]->BindTexture(textureBinding, *materialPtr->diffuseTexture);
+				instance->descriptorSets[materialTemplate->diffuseTextureSetIndex]->BindTexture(materialTemplate->diffuseTextureBinding, *instance->diffuseTexture);
 			}
 		}
 
-		// Cache material for Update()
-		m_materialsCache.emplace(materialPtr);
+		if (materialTemplate->materialParams.size > 0)
+		{
+			instance->valueData.assign(materialTemplate->materialParams.size, std::byte{0});
 
-		return materialPtr;
+			instance->SetValue("diffuseColor", info.diffuseColor);
+			instance->SetValue("metallic", info.metallic);
+			instance->SetValue("roughness", info.roughness);
+			instance->SetValue("specular", info.specular);
+			instance->SetValue("anisotropy", info.anisotropy);
+			instance->SetValue("emissiveColor", info.emissiveColor);
+
+			instance->valueBuffer = m_device.CreateBuffer(rhi::BufferUsage::Uniform, static_cast<UInt32>(materialTemplate->materialParams.size), true);
+			instance->UploadValues();
+		}
+
+		return instance;
+	}
+
+	MaterialInstancePtr BaseMaterialBuilder::BuildMaterial(const rhi::MaterialInfo& info, const rhi::RenderPass& renderPass)
+	{
+		CCT_AUTO_PROFILER_SCOPE();
+
+		auto materialTemplate = BuildTemplate(info.vertexShaderPath, info.fragmentShaderPath, renderPass, info.pipelineConfig);
+
+		UInt64 templateHash = HashShaderPair(info.vertexShaderPath, info.fragmentShaderPath, info.pipelineConfig);
+		std::size_t instanceHash = static_cast<std::size_t>(templateHash) ^ (info.GetHash() + 0x9e3779b9 + (static_cast<std::size_t>(templateHash) << 6) + (static_cast<std::size_t>(templateHash) >> 2));
+
+		if (auto it = m_instancesCache.find(instanceHash); it != m_instancesCache.end() && it->second->info == info)
+			return it->second;
+
+		auto instance = Instantiate(materialTemplate, info);
+		m_instancesCache.insert_or_assign(instanceHash, instance);
+		return instance;
 	}
 
 	void BaseMaterialBuilder::Update(const rhi::Buffer& buffer, UInt32 setIndex, UInt32 bindingIndex)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
 
-		// Update all materials' descriptor sets with the new buffer
-		for (const auto& material : m_materialsCache)
+		for (const auto& [hash, instance] : m_instancesCache)
 		{
-			if (setIndex < material->descriptorSets.size())
+			if (setIndex < instance->descriptorSets.size())
 			{
-				CCT_ASSERT(material->descriptorSets[setIndex], "Invalid pointer");
-				material->descriptorSets[setIndex]->BindBuffer(bindingIndex, buffer);
+				CCT_ASSERT(instance->descriptorSets[setIndex], "Invalid pointer");
+				instance->descriptorSets[setIndex]->BindBuffer(bindingIndex, buffer);
 			}
 		}
 	}

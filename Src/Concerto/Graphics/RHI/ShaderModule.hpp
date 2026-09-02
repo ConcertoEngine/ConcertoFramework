@@ -41,6 +41,7 @@ namespace cct::gfx::rhi
 		 * @brief Get the shader stage (vertex, fragment, compute)
 		 */
 		virtual cct::gfx::ShaderStage GetStage() const = 0;
+		virtual const cct::gfx::MaterialParamsLayout& GetMaterialParamsLayout() const = 0;
 	};
 } // namespace cct::gfx::rhi
 

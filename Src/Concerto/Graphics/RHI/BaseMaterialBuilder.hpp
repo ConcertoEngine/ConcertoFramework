@@ -1,7 +1,3 @@
-//
-// Created by arthur on 23/10/2025.
-//
-
 #ifndef CONCERTO_GRAPHICS_RHI_BASEMATERIALBUILDER_HPP
 #define CONCERTO_GRAPHICS_RHI_BASEMATERIALBUILDER_HPP
 
@@ -26,8 +22,9 @@ namespace cct::gfx::rhi
 		explicit BaseMaterialBuilder(Device& device, const Vector2u& windowExtent);
 		~BaseMaterialBuilder() override = default;
 
-		// MaterialBuilder interface implementation
-		MaterialPtr BuildMaterial(rhi::MaterialInfo& material, const rhi::RenderPass& renderPass) override;
+		MaterialTemplatePtr BuildTemplate(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const rhi::RenderPass& renderPass, const rhi::PipelineConfig& pipelineConfig) override;
+		MaterialInstancePtr Instantiate(const MaterialTemplatePtr& materialTemplate, const rhi::MaterialInfo& info) override;
+		MaterialInstancePtr BuildMaterial(const rhi::MaterialInfo& info, const rhi::RenderPass& renderPass) override;
 		void Update(const rhi::Buffer& buffer, UInt32 setIndex, UInt32 bindingIndex) override;
 
 	protected:
@@ -40,9 +37,9 @@ namespace cct::gfx::rhi
 		Device& m_device;
 		Vector2u m_windowExtent;
 		ThreadSafeHashMap<std::string, std::shared_ptr<rhi::ShaderModule>> m_shaderModules;
-		ThreadSafeHashMap<UInt64, std::shared_ptr<rhi::Pipeline>> m_pipelinesCache;
+		ThreadSafeHashMap<UInt64, MaterialTemplatePtr> m_templatesCache;
 		ThreadSafeHashMap<UInt64, std::shared_ptr<rhi::DescriptorSetLayout>> m_descriptorSetLayoutsCache;
-		ThreadSafeHashSet<MaterialPtr> m_materialsCache; // Track all created materials for Update()
+		ThreadSafeHashMap<std::size_t, MaterialInstancePtr> m_instancesCache;
 	};
 } // namespace cct::gfx::rhi
 

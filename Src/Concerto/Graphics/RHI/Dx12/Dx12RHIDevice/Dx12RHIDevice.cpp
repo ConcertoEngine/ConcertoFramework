@@ -57,7 +57,7 @@ namespace cct::gfx::rhi
 	}
 
 	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBufferFromResources(UInt32 width, UInt32 height,
-																			  const std::vector<ID3D12Resource*>& colorResources)
+																			   const std::vector<ID3D12Resource*>& colorResources)
 	{
 		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> rtResources;
@@ -154,20 +154,20 @@ namespace cct::gfx::rhi
 		}
 
 		return std::make_shared<Dx12RHITexture>(*this, std::move(resource),
-											   dx12::Factory::PixelFormatToDXGI(info.format),
-											   static_cast<UInt32>(info.width), static_cast<UInt32>(info.height));
+												dx12::Factory::PixelFormatToDXGI(info.format),
+												static_cast<UInt32>(info.width), static_cast<UInt32>(info.height));
 	}
 
 	std::shared_ptr<Texture> Dx12RHIDevice::AdoptExternalImage(void* nativeImage, PixelFormat format, Int32 width,
-															  Int32 height, Int32 /*planeIndex*/)
+															   Int32 height, Int32 /*planeIndex*/)
 	{
 		if (nativeImage == nullptr || width <= 0 || height <= 0)
 			return nullptr;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> resource(static_cast<ID3D12Resource*>(nativeImage));
 		return std::make_shared<Dx12RHITexture>(*this, std::move(resource),
-											   dx12::Factory::PixelFormatToDXGI(format),
-											   static_cast<UInt32>(width), static_cast<UInt32>(height));
+												dx12::Factory::PixelFormatToDXGI(format),
+												static_cast<UInt32>(width), static_cast<UInt32>(height));
 	}
 
 	void* Dx12RHIDevice::GetNativeDevice() const
@@ -370,6 +370,8 @@ namespace cct::gfx::rhi
 			{
 				case rhi::VertexAttributeFormat::Vec2f:
 					return DXGI_FORMAT_R32G32_FLOAT;
+				case rhi::VertexAttributeFormat::Vec3f:
+					return DXGI_FORMAT_R32G32B32_FLOAT;
 				case rhi::VertexAttributeFormat::Vec4f:
 					return DXGI_FORMAT_R32G32B32A32_FLOAT;
 				case rhi::VertexAttributeFormat::RGBA8Unorm:

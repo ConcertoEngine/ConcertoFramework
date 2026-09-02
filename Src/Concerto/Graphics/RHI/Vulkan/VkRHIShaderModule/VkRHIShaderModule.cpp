@@ -38,6 +38,11 @@ namespace cct::gfx::rhi
 		return m_abstractShaderModule.GetStage();
 	}
 
+	const cct::gfx::MaterialParamsLayout& VkRHIShaderModule::GetMaterialParamsLayout() const
+	{
+		return m_abstractShaderModule.GetMaterialParamsLayout();
+	}
+
 	const cct::gfx::ShaderModule& VkRHIShaderModule::GetAbstractShaderModule() const
 	{
 		return m_abstractShaderModule;

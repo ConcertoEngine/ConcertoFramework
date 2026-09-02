@@ -35,6 +35,7 @@ namespace cct::gfx::rhi
 		const std::unordered_map<UInt32, std::vector<cct::gfx::DescriptorSetLayoutBinding>>& GetBindings() const override;
 		const std::string& GetEntryPointName() const override;
 		cct::gfx::ShaderStage GetStage() const override;
+		const cct::gfx::MaterialParamsLayout& GetMaterialParamsLayout() const override;
 
 		// Vulkan-specific methods
 		const cct::gfx::ShaderModule& GetAbstractShaderModule() const;

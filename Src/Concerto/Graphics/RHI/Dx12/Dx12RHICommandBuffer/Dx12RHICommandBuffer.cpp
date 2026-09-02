@@ -21,7 +21,7 @@
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIPipelineLayout/Dx12RHIPipelineLayout.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIRenderPass/Dx12RHIRenderPass.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
-#include "Concerto/Graphics/RHI/Material.hpp"
+#include "Concerto/Graphics/RHI/Material/MaterialInstance.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -211,12 +211,15 @@ namespace cct::gfx::rhi
 		}
 	}
 
-	void Dx12RHICommandBuffer::BindMaterial(const Material& material)
+	void Dx12RHICommandBuffer::BindMaterial(const MaterialInstance& material)
 	{
 		if (!IsValid() || !m_device)
 			return;
 
-		auto* dx12Pipeline = dynamic_cast<const Dx12RHIPipeline*>(material.pipeline.get());
+		if (!material.materialTemplate)
+			return;
+
+		auto* dx12Pipeline = dynamic_cast<const Dx12RHIPipeline*>(material.materialTemplate->pipeline.get());
 		if (!dx12Pipeline)
 			return;
 

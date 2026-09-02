@@ -11,13 +11,13 @@
 
 namespace cct::gfx::rhi
 {
-	GpuSubMesh::GpuSubMesh(rhi::SubMeshPtr meshPtr, rhi::MaterialPtr material) :
+	GpuSubMesh::GpuSubMesh(rhi::SubMeshPtr meshPtr, rhi::MaterialInstancePtr material) :
 		m_subMesh(std::move(meshPtr)),
 		m_material(std::move(material))
 	{
 	}
 
-	GpuSubMesh::GpuSubMesh(rhi::SubMeshPtr meshPtr, rhi::MaterialPtr material, rhi::Device& device) :
+	GpuSubMesh::GpuSubMesh(rhi::SubMeshPtr meshPtr, rhi::MaterialInstancePtr material, rhi::Device& device) :
 		m_subMesh(std::move(meshPtr)),
 		m_material(std::move(material))
 	{
@@ -32,7 +32,7 @@ namespace cct::gfx::rhi
 		return m_subMesh->GetVertices();
 	}
 
-	const rhi::MaterialPtr& GpuSubMesh::GetMaterial() const
+	const rhi::MaterialInstancePtr& GpuSubMesh::GetMaterial() const
 	{
 		return m_material;
 	}

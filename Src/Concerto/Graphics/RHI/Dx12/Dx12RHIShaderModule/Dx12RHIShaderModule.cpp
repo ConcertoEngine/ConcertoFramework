@@ -183,6 +183,11 @@ namespace cct::gfx::rhi
 		return m_abstractShaderModule.GetStage();
 	}
 
+	const cct::gfx::MaterialParamsLayout& Dx12RHIShaderModule::GetMaterialParamsLayout() const
+	{
+		return m_abstractShaderModule.GetMaterialParamsLayout();
+	}
+
 	D3D12_SHADER_BYTECODE Dx12RHIShaderModule::GetD3D12ShaderBytecode() const
 	{
 		D3D12_SHADER_BYTECODE bytecode = {};

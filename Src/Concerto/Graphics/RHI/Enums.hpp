@@ -144,6 +144,7 @@ namespace cct::gfx::rhi
 	enum class VertexAttributeFormat : UInt8
 	{
 		Vec2f,
+		Vec3f,
 		Vec4f,
 		RGBA8Unorm,
 	};

@@ -24,11 +24,11 @@ namespace cct::gfx::vk::Loader
 		bool LoadVulkanLibrary()
 		{
 #ifdef CCT_PLATFORM_WINDOWS
-			constexpr std::array candidates = { "vulkan-1.dll" };
+			constexpr std::array candidates = {"vulkan-1.dll"};
 #elif defined(CCT_PLATFORM_MACOS)
-			constexpr std::array candidates = { "libvulkan.dylib", "libvulkan.1.dylib", "libMoltenVK.dylib" };
+			constexpr std::array candidates = {"libvulkan.dylib", "libvulkan.1.dylib", "libMoltenVK.dylib"};
 #else
-			constexpr std::array candidates = { "libvulkan.so.1", "libvulkan.so" };
+			constexpr std::array candidates = {"libvulkan.so.1", "libvulkan.so"};
 #endif
 			for (const char* candidate : candidates)
 			{

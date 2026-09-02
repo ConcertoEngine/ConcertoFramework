@@ -390,6 +390,8 @@ namespace cct::gfx::rhi
 		{
 			case VertexAttributeFormat::Vec2f:
 				return VK_FORMAT_R32G32_SFLOAT;
+			case VertexAttributeFormat::Vec3f:
+				return VK_FORMAT_R32G32B32_SFLOAT;
 			case VertexAttributeFormat::Vec4f:
 				return VK_FORMAT_R32G32B32A32_SFLOAT;
 			case VertexAttributeFormat::RGBA8Unorm:

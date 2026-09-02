@@ -2,6 +2,8 @@
 // Created by arthur on 25/10/2022.
 //
 
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
+
 #include <cassert>
 #include <iostream>
 #include <stdexcept>
@@ -11,10 +13,8 @@
 
 #include "Concerto/Core/Logger/Logger.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Defines.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Loader/Loader.hpp"
-
 #include "Concerto/Graphics/Backend/Vulkan/VkException.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Instance/Instance.hpp"
+#include "Concerto/Graphics/Backend/Vulkan/Wrapper/Loader/Loader.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 
 #ifdef CCT_ENABLE_OBJECT_DEBUG

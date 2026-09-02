@@ -9,12 +9,14 @@
 #include <Concerto/Core/Assert.hpp>
 
 #include <NZSL/Ast/Cloner.hpp>
+#include <NZSL/Ast/ExpressionType.hpp>
 #include <NZSL/Ast/ReflectVisitor.hpp>
 #include <NZSL/Ast/Transformations/BindingResolverTransformer.hpp>
 #include <NZSL/Ast/Transformations/ResolveTransformer.hpp>
 #include <NZSL/Ast/Transformations/ValidationTransformer.hpp>
 #include <NZSL/Ast/TransformerExecutor.hpp>
 #include <NZSL/FilesystemModuleResolver.hpp>
+#include <NZSL/Math/FieldOffsets.hpp>
 #include <NZSL/Parser.hpp>
 #include <NZSL/SpirvWriter.hpp>
 
@@ -35,6 +37,66 @@ namespace cct::gfx
 			}
 			CCT_ASSERT_FALSE("ConcertoGraphics: Unexpected shader stage type");
 			return ShaderStage::Vertex;
+		}
+
+		bool TryGetStructFieldType(const nzsl::Ast::ExpressionType& type, nzsl::StructFieldType& out)
+		{
+			nzsl::Ast::PrimitiveType primitiveType;
+			std::size_t componentCount = 1;
+			if (std::holds_alternative<nzsl::Ast::PrimitiveType>(type))
+			{
+				primitiveType = std::get<nzsl::Ast::PrimitiveType>(type);
+			}
+			else if (std::holds_alternative<nzsl::Ast::VectorType>(type))
+			{
+				const auto& vectorType = std::get<nzsl::Ast::VectorType>(type);
+				primitiveType = vectorType.type;
+				componentCount = vectorType.componentCount;
+			}
+			else
+			{
+				return false;
+			}
+
+			if (componentCount < 1 || componentCount > 4)
+				return false;
+
+			switch (primitiveType)
+			{
+				case nzsl::Ast::PrimitiveType::Boolean:
+					out = static_cast<nzsl::StructFieldType>(static_cast<int>(nzsl::StructFieldType::Bool1) + componentCount - 1);
+					return true;
+				case nzsl::Ast::PrimitiveType::Float32:
+					out = static_cast<nzsl::StructFieldType>(static_cast<int>(nzsl::StructFieldType::Float1) + componentCount - 1);
+					return true;
+				case nzsl::Ast::PrimitiveType::Int32:
+					out = static_cast<nzsl::StructFieldType>(static_cast<int>(nzsl::StructFieldType::Int1) + componentCount - 1);
+					return true;
+				case nzsl::Ast::PrimitiveType::UInt32:
+					out = static_cast<nzsl::StructFieldType>(static_cast<int>(nzsl::StructFieldType::UInt1) + componentCount - 1);
+					return true;
+				default:
+					return false;
+			}
+		}
+
+		MaterialParamsLayout ReflectMaterialParams(const nzsl::Ast::StructDescription& description)
+		{
+			MaterialParamsLayout layout;
+
+			nzsl::FieldOffsets fieldOffsets(nzsl::StructLayout::Std140);
+			for (const auto& member : description.members)
+			{
+				const nzsl::Ast::ExpressionType& memberType = member.type.GetResultingValue();
+				std::size_t offset = nzsl::Ast::RegisterStructField(fieldOffsets, memberType);
+
+				nzsl::StructFieldType fieldType;
+				if (TryGetStructFieldType(memberType, fieldType))
+					layout.properties.push_back({member.name, fieldType, offset});
+			}
+			layout.size = fieldOffsets.GetAlignedSize();
+
+			return layout;
 		}
 	} // namespace
 
@@ -65,6 +127,11 @@ namespace cct::gfx
 		ResolvedShaderModule resolved;
 		resolved.stage = ShaderStage::Vertex;
 
+		std::unordered_map<std::size_t, const nzsl::Ast::StructDescription*> structsByIndex;
+		std::optional<std::size_t> materialParamsStructIndex;
+		UInt32 materialParamsSetIndex = 0;
+		UInt32 materialParamsBinding = 0;
+
 		nzsl::Ast::ReflectVisitor reflectVisitor;
 		nzsl::Ast::ReflectVisitor::Callbacks callbacks;
 		callbacks.onEntryPointDeclaration = [&](nzsl::ShaderStageType stageType, const std::string& functionName)
@@ -77,6 +144,12 @@ namespace cct::gfx
 			}
 		};
 
+		callbacks.onStructDeclaration = [&](const nzsl::Ast::DeclareStructStatement& structDecl)
+		{
+			if (structDecl.structIndex)
+				structsByIndex[*structDecl.structIndex] = &structDecl.description;
+		};
+
 		callbacks.onExternalDeclaration = [&](const nzsl::Ast::DeclareExternalStatement& extDecl)
 		{
 			for (auto& externalVariable : extDecl.externalVars)
@@ -84,9 +157,10 @@ namespace cct::gfx
 				const auto* varType = &externalVariable.type.GetResultingValue();
 				const ShaderBindingType descriptorType = GetBindingType(varType);
 				UInt32 bindingSet = externalVariable.bindingSet.GetResultingValue();
+				UInt32 bindingIndex = externalVariable.bindingIndex.GetResultingValue();
 
 				DescriptorSetLayoutBinding descriptorSetLayoutBinding;
-				descriptorSetLayoutBinding.binding = externalVariable.bindingIndex.GetResultingValue();
+				descriptorSetLayoutBinding.binding = bindingIndex;
 				descriptorSetLayoutBinding.descriptorCount = 1;
 				descriptorSetLayoutBinding.descriptorType = descriptorType;
 				descriptorSetLayoutBinding.stageFlags = resolved.stage;
@@ -96,6 +170,13 @@ namespace cct::gfx
 					resolved.bindings[bindingSet] = std::vector{descriptorSetLayoutBinding};
 				else
 					layoutBindings->second.push_back(descriptorSetLayoutBinding);
+
+				if (externalVariable.name == "materialParams" && descriptorType == ShaderBindingType::UniformBuffer)
+				{
+					materialParamsStructIndex = std::get<nzsl::Ast::UniformType>(*varType).containedType.structIndex;
+					materialParamsSetIndex = bindingSet;
+					materialParamsBinding = bindingIndex;
+				}
 			}
 		};
 
@@ -105,6 +186,17 @@ namespace cct::gfx
 		{
 			for (auto& binding : b)
 				binding.stageFlags = resolved.stage;
+		}
+
+		if (materialParamsStructIndex)
+		{
+			auto structIt = structsByIndex.find(*materialParamsStructIndex);
+			if (structIt != structsByIndex.end())
+			{
+				resolved.materialParams = ReflectMaterialParams(*structIt->second);
+				resolved.materialParams.setIndex = materialParamsSetIndex;
+				resolved.materialParams.binding = materialParamsBinding;
+			}
 		}
 
 		resolved.resolvedAst = std::move(resolvedModule);
@@ -122,7 +214,7 @@ namespace cct::gfx
 		spirvWriter.SetEnv(env);
 		std::vector<UInt32> spirv = spirvWriter.Generate(*resolved.resolvedAst);
 
-		return ShaderModule(std::move(spirv), std::move(resolved.bindings), std::move(resolved.entryPointName), resolved.stage);
+		return ShaderModule(std::move(spirv), std::move(resolved.bindings), std::move(resolved.entryPointName), resolved.stage, std::move(resolved.materialParams));
 	}
 
 	ResolvedShaderModule ShaderModuleLoader::ResolveShaderModuleFromSource(std::string_view source,
@@ -225,7 +317,7 @@ namespace cct::gfx
 		spirvWriter.SetEnv(env);
 		std::vector<UInt32> spirv = spirvWriter.Generate(*resolved.resolvedAst);
 
-		return ShaderModule(std::move(spirv), std::move(resolved.bindings), std::move(resolved.entryPointName), resolved.stage);
+		return ShaderModule(std::move(spirv), std::move(resolved.bindings), std::move(resolved.entryPointName), resolved.stage, std::move(resolved.materialParams));
 	}
 
 	ShaderBindingType ShaderModuleLoader::GetBindingType(const nzsl::Ast::ExpressionType* varType)
