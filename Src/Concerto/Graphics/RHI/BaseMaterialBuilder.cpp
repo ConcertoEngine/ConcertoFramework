@@ -47,6 +47,21 @@ namespace
 		};
 		return config;
 	}
+
+	using MaterialPropertySetter = void (*)(cct::gfx::rhi::MaterialInstance&, const cct::gfx::rhi::MaterialInfo&);
+
+	const std::unordered_map<std::string, MaterialPropertySetter>& GetMaterialPropertySetters()
+	{
+		static const std::unordered_map<std::string, MaterialPropertySetter> setters = {
+			{"diffuseColor", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("diffuseColor", info.diffuseColor); }},
+			{"metallic", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("metallic", info.metallic); }},
+			{"roughness", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("roughness", info.roughness); }},
+			{"specular", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("specular", info.specular); }},
+			{"anisotropy", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("anisotropy", info.anisotropy); }},
+			{"emissiveColor", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("emissiveColor", info.emissiveColor); }},
+		};
+		return setters;
+	}
 } // namespace
 
 namespace cct::gfx::rhi
@@ -222,12 +237,12 @@ namespace cct::gfx::rhi
 		{
 			instance->valueData.assign(materialTemplate->materialParams.size, std::byte{0});
 
-			instance->SetValue("diffuseColor", info.diffuseColor);
-			instance->SetValue("metallic", info.metallic);
-			instance->SetValue("roughness", info.roughness);
-			instance->SetValue("specular", info.specular);
-			instance->SetValue("anisotropy", info.anisotropy);
-			instance->SetValue("emissiveColor", info.emissiveColor);
+			const auto& setters = GetMaterialPropertySetters();
+			for (const auto& property : materialTemplate->materialParams.properties)
+			{
+				if (auto it = setters.find(property.name); it != setters.end())
+					it->second(*instance, info);
+			}
 
 			instance->valueBuffer = m_device.CreateBuffer(rhi::BufferUsage::Uniform, static_cast<UInt32>(materialTemplate->materialParams.size), true);
 			instance->UploadValues();
