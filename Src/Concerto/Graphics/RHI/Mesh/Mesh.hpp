@@ -15,6 +15,7 @@
 #include "Concerto/Graphics/Core/Vertex.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Material.hpp"
+#include "Concerto/Graphics/RHI/MeshImporter/MeshImporterRegistry.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -27,7 +28,7 @@ namespace cct::gfx::rhi
 	class CONCERTO_GRAPHICS_RHI_BASE_API Mesh
 	{
 	public:
-		explicit Mesh(std::string filePath);
+		explicit Mesh(std::string filePath, MeshImporterRegistry importerRegistry = {});
 		explicit Mesh(Vertices vertices);
 		~Mesh() = default;
 
@@ -41,6 +42,7 @@ namespace cct::gfx::rhi
 
 	private:
 		std::string m_path;
+		MeshImporterRegistry m_importerRegistry;
 		std::vector<std::shared_ptr<rhi::SubMesh>> m_subMeshes;
 		std::unordered_map<std::string, std::shared_ptr<rhi::MaterialInfo>> m_materials;
 	};
