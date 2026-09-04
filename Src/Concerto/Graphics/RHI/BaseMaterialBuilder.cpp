@@ -213,8 +213,8 @@ namespace cct::gfx::rhi
 		materialTemplate->pipeline = m_device.CreatePipeline(vertexShader, fragmentShader, renderPass, *pipelineLayout, m_windowExtent, materialTemplate->pipelineConfig);
 		materialTemplate->pipelineLayout = materialTemplate->pipeline->GetPipelineLayout();
 
-		m_templatesCache.emplace(templateHash, materialTemplate);
-		return materialTemplate;
+		auto [publishedIt, inserted] = m_templatesCache.try_emplace(templateHash, materialTemplate);
+		return publishedIt->second;
 	}
 
 	MaterialInstancePtr BaseMaterialBuilder::Instantiate(const MaterialTemplatePtr& materialTemplate, const rhi::MaterialInfo& info)
@@ -267,12 +267,25 @@ namespace cct::gfx::rhi
 		UInt64 templateHash = HashShaderPair(info.vertexShaderPath, info.fragmentShaderPath, info.pipelineConfig);
 		std::size_t instanceHash = static_cast<std::size_t>(templateHash) ^ (info.GetHash() + 0x9e3779b9 + (static_cast<std::size_t>(templateHash) << 6) + (static_cast<std::size_t>(templateHash) >> 2));
 
-		if (auto it = m_instancesCache.find(instanceHash); it != m_instancesCache.end() && it->second->info == info)
-			return it->second;
-
-		auto instance = Instantiate(materialTemplate, info);
-		m_instancesCache.insert_or_assign(instanceHash, instance);
-		return instance;
+		MaterialInstancePtr result;
+		m_instancesCache.lazy_emplace_l(
+			instanceHash,
+			[&](auto& keyValue)
+			{
+				if (keyValue.second->info == info)
+					result = keyValue.second;
+				else
+				{
+					keyValue.second = Instantiate(materialTemplate, info);
+					result = keyValue.second;
+				}
+			},
+			[&](const auto& ctor)
+			{
+				result = Instantiate(materialTemplate, info);
+				ctor(instanceHash, result);
+			});
+		return result;
 	}
 
 	void BaseMaterialBuilder::Update(const rhi::Buffer& buffer, UInt32 setIndex, UInt32 bindingIndex)
