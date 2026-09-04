@@ -12,6 +12,8 @@
 #include <string_view>
 #include <vector>
 
+#include <Concerto/Core/ThreadPool/ThreadPool.hpp>
+
 #include "Concerto/Graphics/Core/ShaderModule/ShaderModule.hpp"
 #include "Concerto/Graphics/Core/Window/NativeWindow.hpp"
 #include "Concerto/Graphics/RHI/Buffer.hpp"
@@ -194,6 +196,14 @@ namespace cct::gfx::rhi
 		{
 			return {};
 		}
+
+		[[nodiscard]] ThreadPool& GetThreadPool()
+		{
+			return m_threadPool;
+		}
+
+	private:
+		ThreadPool m_threadPool;
 	};
 } // namespace cct::gfx::rhi
 

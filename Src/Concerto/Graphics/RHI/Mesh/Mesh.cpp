@@ -82,23 +82,27 @@ namespace cct::gfx::rhi
 		auto gpuMesh = std::make_unique<rhi::GpuMesh>();
 		auto& meshes = GetSubMeshes();
 
-		std::atomic<std::size_t> totalVertices = 0;
+		for (auto& [name, materialInfo] : m_materials)
 		{
-			for (auto& subMesh : meshes)
-			{
-				// threadPool.AddTask([&](){
-				auto& materialInfo = *subMesh->GetMaterial();
-				materialInfo.vertexShaderPath = "./Shaders/tri_mesh_ssbo.nzsl";
-				materialInfo.fragmentShaderPath = materialInfo.diffuseTexturePath.empty()
-													  ? "./Shaders/default_lit.nzsl"
-													  : "./Shaders/textured_lit.nzsl";
+			materialInfo->vertexShaderPath = "./Shaders/tri_mesh_ssbo.nzsl";
+			materialInfo->fragmentShaderPath = materialInfo->diffuseTexturePath.empty()
+												   ? "./Shaders/default_lit.nzsl"
+												   : "./Shaders/textured_lit.nzsl";
+			materialBuilder.BuildTemplate(materialInfo->vertexShaderPath, materialInfo->fragmentShaderPath, renderPass, materialInfo->pipelineConfig);
+		}
 
-				rhi::MaterialInstancePtr material = materialBuilder.BuildMaterial(materialInfo, renderPass);
-				auto gpuSubMesh = std::make_shared<GpuSubMesh>(subMesh, material, device);
-				// std::scoped_lock m_(subMeshesMutex);
-				gpuMesh->subMeshes.push_back(gpuSubMesh);
-				//});
+		gpuMesh->subMeshes.resize(meshes.size());
+		{
+			ThreadPool& threadPool = device.GetThreadPool();
+			for (std::size_t i = 0; i < meshes.size(); ++i)
+			{
+				threadPool.AddTask([&, i]()
+								   {
+					auto& subMesh = meshes[i];
+					rhi::MaterialInstancePtr material = materialBuilder.BuildMaterial(*subMesh->GetMaterial(), renderPass);
+					gpuMesh->subMeshes[i] = std::make_shared<GpuSubMesh>(subMesh, material, device); });
 			}
+			threadPool.Wait(std::chrono::steady_clock::time_point::max());
 		}
 		// Sort by material for batch rendering
 		{
