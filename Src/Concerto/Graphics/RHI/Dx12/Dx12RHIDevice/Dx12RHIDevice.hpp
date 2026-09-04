@@ -33,7 +33,7 @@ namespace cct::gfx::rhi
 		std::unique_ptr<RenderPass> CreateRenderPass(std::span<RenderPass::Attachment> attachments, std::span<RenderPass::SubPassDescription> subPassDescriptions, std::span<RenderPass::SubPassDependency> subPassDependencies) override;
 		std::unique_ptr<FrameBuffer> CreateFrameBuffer(UInt32 width, UInt32 height, const RenderPass& renderPass, const std::vector<std::unique_ptr<Texture>>& attachments) override;
 		std::unique_ptr<FrameBuffer> CreateFrameBuffer(UInt32 width, UInt32 height, const RenderPass& renderPass, const std::vector<std::unique_ptr<TextureView>>& attachments) override;
-		std::unique_ptr<MaterialBuilder> CreateMaterialBuilder(const Vector2u& windowExtent) override;
+		std::unique_ptr<MaterialBuilder> CreateMaterialBuilder(const Vector2u& windowExtent, TextureBuilder& textureBuilder) override;
 		std::unique_ptr<TextureBuilder> CreateTextureBuilder() override;
 		std::unique_ptr<CommandPool> CreateCommandPool(rhi::QueueFamily family, CommandBufferUsage usage) override;
 		std::unique_ptr<Buffer> CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping) override;
@@ -55,7 +55,7 @@ namespace cct::gfx::rhi
 		std::shared_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height) override;
 		std::shared_ptr<Texture> CreateStorageTexture(PixelFormat format, Int32 width, Int32 height) override;
 		void WaitIdle() override;
-		std::unique_ptr<GpuMesh> CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, const RenderPass& renderPass) override;
+		std::unique_ptr<GpuMesh> CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, rhi::TextureBuilder& textureBuilder, const RenderPass& renderPass) override;
 
 		Queue& GetQueue(rhi::QueueFamily family) override;
 		std::unique_ptr<Fence> CreateFence() override;

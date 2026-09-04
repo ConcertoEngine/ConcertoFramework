@@ -19,25 +19,14 @@
 
 namespace cct::gfx::rhi
 {
-	TextureBuilder* TextureBuilder::s_instance = nullptr;
-
 	TextureBuilder::TextureBuilder(Device& device) :
 		m_device(device),
 		m_commandPool(device.CreateCommandPool(QueueFamily::Graphics, CommandBufferUsage::Primary)),
 		m_secondaryCommandPool(device.CreateCommandPool(QueueFamily::Graphics, CommandBufferUsage::Secondary))
 	{
-		s_instance = this;
 	}
 
-	TextureBuilder::~TextureBuilder()
-	{
-		s_instance = nullptr;
-	}
-
-	TextureBuilder& TextureBuilder::Instance()
-	{
-		return *s_instance;
-	}
+	TextureBuilder::~TextureBuilder() = default;
 
 	std::shared_ptr<Texture> TextureBuilder::BuildTexture(const std::string& path)
 	{

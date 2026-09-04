@@ -15,11 +15,12 @@ namespace cct::gfx::rhi
 	class Device;
 	class DescriptorSetLayout;
 	class Pipeline;
+	class TextureBuilder;
 
 	class CONCERTO_GRAPHICS_RHI_BASE_API BaseMaterialBuilder : public MaterialBuilder
 	{
 	public:
-		explicit BaseMaterialBuilder(Device& device, const Vector2u& windowExtent);
+		BaseMaterialBuilder(Device& device, const Vector2u& windowExtent, TextureBuilder& textureBuilder);
 		~BaseMaterialBuilder() override = default;
 
 		MaterialTemplatePtr BuildTemplate(const std::string& vertexShaderPath, const std::string& fragmentShaderPath, const rhi::RenderPass& renderPass, const rhi::PipelineConfig& pipelineConfig) override;
@@ -36,6 +37,7 @@ namespace cct::gfx::rhi
 
 		Device& m_device;
 		Vector2u m_windowExtent;
+		TextureBuilder& m_textureBuilder;
 		ThreadSafeHashMap<std::string, std::shared_ptr<rhi::ShaderModule>> m_shaderModules;
 		ThreadSafeHashMap<UInt64, MaterialTemplatePtr> m_templatesCache;
 		ThreadSafeHashMap<UInt64, std::shared_ptr<rhi::DescriptorSetLayout>> m_descriptorSetLayoutsCache;

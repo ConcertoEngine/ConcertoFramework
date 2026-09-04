@@ -156,9 +156,9 @@ namespace cct::gfx::rhi
 		return std::make_unique<VkRHIFrameBuffer>(*this, width, height, Cast<const VkRHIRenderPass&>(renderPass), attachments);
 	}
 
-	std::unique_ptr<MaterialBuilder> VkRHIDevice::CreateMaterialBuilder(const Vector2u& windowExtent)
+	std::unique_ptr<MaterialBuilder> VkRHIDevice::CreateMaterialBuilder(const Vector2u& windowExtent, TextureBuilder& textureBuilder)
 	{
-		return std::make_unique<BaseMaterialBuilder>(*this, windowExtent);
+		return std::make_unique<BaseMaterialBuilder>(*this, windowExtent, textureBuilder);
 	}
 
 	std::shared_ptr<Texture> VkRHIDevice::CreateTexture(PixelFormat format, Int32 width, Int32 height)
@@ -214,10 +214,10 @@ namespace cct::gfx::rhi
 		return vk::Device::GetPhysicalDevice().GetProperties().limits.minUniformBufferOffsetAlignment;
 	}
 
-	std::unique_ptr<GpuMesh> VkRHIDevice::CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, const RenderPass& renderPass)
+	std::unique_ptr<GpuMesh> VkRHIDevice::CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, rhi::TextureBuilder& textureBuilder, const RenderPass& renderPass)
 	{
 		Mesh mesh(meshPath);
-		return mesh.BuildGpuMesh(materialBuilder, renderPass, *this);
+		return mesh.BuildGpuMesh(materialBuilder, textureBuilder, renderPass, *this);
 	}
 
 	vk::UploadContext& VkRHIDevice::GetUploadContext()

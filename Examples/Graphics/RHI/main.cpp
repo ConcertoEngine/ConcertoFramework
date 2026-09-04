@@ -50,7 +50,7 @@ int main()
 		auto window = displayManager.CreateWindow(1, "Concerto Graphics", 1280, 720);
 		Input& inputManager = window->GetInputManager();
 
-		rhi::Instance rInstance(rhi::Instance::Backend::Vulkan);
+		rhi::Instance rInstance(rhi::Instance::Backend::Vulkan, rhi::ValidationFlags::Standard);
 		std::unique_ptr<rhi::Device> device;
 
 		std::size_t deviceIndex = 0;
@@ -77,9 +77,9 @@ int main()
 		std::unique_ptr<rhi::SwapChain> swapChain = device->CreateSwapChain(*window);
 		rhi::RenderPass* renderPass = swapChain->GetRenderPass();
 
-		std::unique_ptr<rhi::MaterialBuilder> materialBuilder = device->CreateMaterialBuilder(swapChain->GetExtent());
 		std::unique_ptr<rhi::TextureBuilder> textureBuilder = device->CreateTextureBuilder();
-		std::shared_ptr<rhi::GpuMesh> gpuMesh = device->CreateMesh("./assets/sponza/sponza.obj", *materialBuilder, *renderPass);
+		std::unique_ptr<rhi::MaterialBuilder> materialBuilder = device->CreateMaterialBuilder(swapChain->GetExtent(), *textureBuilder);
+		std::shared_ptr<rhi::GpuMesh> gpuMesh = device->CreateMesh("./assets/sponza/sponza.obj", *materialBuilder, *textureBuilder, *renderPass);
 
 		// GraphicPass& pbrPass = graphBuilder.AddPass("pbr", rhi::PipelineStage::AllGraphics);
 		// pbrPass.AddColorOutput("albedo", ??);

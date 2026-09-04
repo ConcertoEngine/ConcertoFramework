@@ -77,7 +77,7 @@ namespace cct::gfx::rhi
 		return m_materials;
 	}
 
-	std::unique_ptr<GpuMesh> Mesh::BuildGpuMesh(rhi::MaterialBuilder& materialBuilder, const rhi::RenderPass& renderPass, rhi::Device& device)
+	std::unique_ptr<GpuMesh> Mesh::BuildGpuMesh(rhi::MaterialBuilder& materialBuilder, rhi::TextureBuilder& textureBuilder, const rhi::RenderPass& renderPass, rhi::Device& device)
 	{
 		auto gpuMesh = std::make_unique<rhi::GpuMesh>();
 		auto& meshes = GetSubMeshes();
@@ -121,7 +121,7 @@ namespace cct::gfx::rhi
 			}
 		}
 
-		TextureBuilder::Instance().Commit();
+		textureBuilder.Commit();
 
 		for (auto& gpuSubMesh : gpuMesh->subMeshes)
 			gpuSubMesh->UploadVertices();

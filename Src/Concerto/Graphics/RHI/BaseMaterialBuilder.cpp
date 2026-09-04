@@ -53,12 +53,18 @@ namespace
 	const std::unordered_map<std::string, MaterialPropertySetter>& GetMaterialPropertySetters()
 	{
 		static const std::unordered_map<std::string, MaterialPropertySetter> setters = {
-			{"diffuseColor", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("diffuseColor", info.diffuseColor); }},
-			{"metallic", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("metallic", info.metallic); }},
-			{"roughness", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("roughness", info.roughness); }},
-			{"specular", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("specular", info.specular); }},
-			{"anisotropy", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("anisotropy", info.anisotropy); }},
-			{"emissiveColor", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info) { instance.SetValue("emissiveColor", info.emissiveColor); }},
+			{"diffuseColor", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info)
+			 { instance.SetValue("diffuseColor", info.diffuseColor); }},
+			{"metallic", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info)
+			 { instance.SetValue("metallic", info.metallic); }},
+			{"roughness", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info)
+			 { instance.SetValue("roughness", info.roughness); }},
+			{"specular", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info)
+			 { instance.SetValue("specular", info.specular); }},
+			{"anisotropy", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info)
+			 { instance.SetValue("anisotropy", info.anisotropy); }},
+			{"emissiveColor", [](cct::gfx::rhi::MaterialInstance& instance, const cct::gfx::rhi::MaterialInfo& info)
+			 { instance.SetValue("emissiveColor", info.emissiveColor); }},
 		};
 		return setters;
 	}
@@ -66,9 +72,10 @@ namespace
 
 namespace cct::gfx::rhi
 {
-	BaseMaterialBuilder::BaseMaterialBuilder(Device& device, const Vector2u& windowExtent) :
+	BaseMaterialBuilder::BaseMaterialBuilder(Device& device, const Vector2u& windowExtent, TextureBuilder& textureBuilder) :
 		m_device(device),
-		m_windowExtent(windowExtent)
+		m_windowExtent(windowExtent),
+		m_textureBuilder(textureBuilder)
 	{
 	}
 
@@ -224,7 +231,7 @@ namespace cct::gfx::rhi
 
 		if (!info.diffuseTexturePath.empty())
 		{
-			instance->diffuseTexture = TextureBuilder::Instance().BuildTexture(info.diffuseTexturePath);
+			instance->diffuseTexture = m_textureBuilder.BuildTexture(info.diffuseTexturePath);
 
 			if (materialTemplate->diffuseTextureSetIndex != std::numeric_limits<UInt32>::max() &&
 				materialTemplate->diffuseTextureSetIndex < instance->descriptorSets.size())

@@ -22,6 +22,7 @@ namespace cct::gfx::rhi
 	class RenderPass;
 	class Device;
 	class MaterialBuilder;
+	class TextureBuilder;
 	class SubMesh;
 	class GpuMesh;
 
@@ -38,7 +39,7 @@ namespace cct::gfx::rhi
 
 		[[nodiscard]] bool LoadFromFile(const std::string& fileName);
 
-		[[nodiscard]] std::unique_ptr<GpuMesh> BuildGpuMesh(rhi::MaterialBuilder& materialBuilder, const rhi::RenderPass& renderPass, rhi::Device& device);
+		[[nodiscard]] std::unique_ptr<GpuMesh> BuildGpuMesh(rhi::MaterialBuilder& materialBuilder, rhi::TextureBuilder& textureBuilder, const rhi::RenderPass& renderPass, rhi::Device& device);
 
 	private:
 		std::string m_path;

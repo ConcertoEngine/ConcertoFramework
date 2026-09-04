@@ -33,8 +33,6 @@ namespace cct::gfx::rhi
 		TextureBuilder& operator=(TextureBuilder&&) = default;
 		TextureBuilder& operator=(const TextureBuilder&) = delete;
 
-		static TextureBuilder& Instance();
-
 		std::shared_ptr<Texture> BuildTexture(const std::string& path);
 		std::shared_ptr<Texture> BuildTextureFromMemory(const std::byte* pixels, UInt32 width, UInt32 height, PixelFormat format);
 		void Commit();
@@ -43,7 +41,6 @@ namespace cct::gfx::rhi
 		Device& m_device;
 		std::unique_ptr<CommandPool> m_commandPool;
 		std::unique_ptr<CommandPool> m_secondaryCommandPool;
-		static TextureBuilder* s_instance;
 		ThreadSafeHashMap<std::string, std::shared_ptr<Texture>> m_texturesCache;
 		using PendingUpload = std::pair<std::shared_ptr<Texture>, std::unique_ptr<Buffer>>;
 		ThreadSafeHashMap<size_t, std::unique_ptr<Buffer>> m_pendingUploads;

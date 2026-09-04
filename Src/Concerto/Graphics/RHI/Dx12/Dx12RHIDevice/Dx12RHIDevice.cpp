@@ -120,9 +120,9 @@ namespace cct::gfx::rhi
 		return CreateFrameBufferFromResources(width, height, colorResources);
 	}
 
-	std::unique_ptr<MaterialBuilder> Dx12RHIDevice::CreateMaterialBuilder(const Vector2u& windowExtent)
+	std::unique_ptr<MaterialBuilder> Dx12RHIDevice::CreateMaterialBuilder(const Vector2u& windowExtent, TextureBuilder& textureBuilder)
 	{
-		return std::make_unique<BaseMaterialBuilder>(*this, windowExtent);
+		return std::make_unique<BaseMaterialBuilder>(*this, windowExtent, textureBuilder);
 	}
 
 	std::shared_ptr<Texture> Dx12RHIDevice::CreateTexture(PixelFormat format, Int32 width, Int32 height)
@@ -239,10 +239,10 @@ namespace cct::gfx::rhi
 		return D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
 	}
 
-	std::unique_ptr<GpuMesh> Dx12RHIDevice::CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, const RenderPass& renderPass)
+	std::unique_ptr<GpuMesh> Dx12RHIDevice::CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, rhi::TextureBuilder& textureBuilder, const RenderPass& renderPass)
 	{
 		Mesh mesh(meshPath);
-		return mesh.BuildGpuMesh(materialBuilder, renderPass, *this);
+		return mesh.BuildGpuMesh(materialBuilder, textureBuilder, renderPass, *this);
 	}
 
 	std::shared_ptr<rhi::ShaderModule> Dx12RHIDevice::CreateShaderModule(const std::string& path,
