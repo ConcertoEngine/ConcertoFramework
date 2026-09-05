@@ -33,6 +33,7 @@ int main()
 	{
 		Logger logger;
 		Logger::SetContext(&logger);
+		rhi::Instance::SetLogger(logger);
 
 		DisplayManager displayManager;
 		auto displayInfos = displayManager.EnumerateDisplaysInfos();
