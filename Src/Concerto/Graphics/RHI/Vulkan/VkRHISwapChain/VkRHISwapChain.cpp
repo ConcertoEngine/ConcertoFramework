@@ -171,12 +171,13 @@ namespace cct::gfx::rhi
 		const std::span<vk::ImageView> imagesViews = vk::SwapChain::GetImageViews();
 
 		m_frameBuffers.reserve(imagesViews.size());
-		for (const vk::ImageView& imageView : imagesViews)
+		for (std::size_t i = 0; i < imagesViews.size(); ++i)
 		{
+			const vk::ImageView& imageView = imagesViews[i];
 			std::vector<std::unique_ptr<rhi::TextureView>> attachments;
 			attachments.emplace_back(std::make_unique<VkRHITextureView>(imageView));
-			attachments.emplace_back(std::make_unique<VkRHITextureView>(GetDepthImageView()));
-			CCT_ASSERT(imageView.Get() != VK_NULL_HANDLE && GetDepthImageView().Get() != VK_NULL_HANDLE, "ConcertoGraphics: iInvalid attachment");
+			attachments.emplace_back(std::make_unique<VkRHITextureView>(GetDepthImageView(i)));
+			CCT_ASSERT(imageView.Get() != VK_NULL_HANDLE && GetDepthImageView(i).Get() != VK_NULL_HANDLE, "ConcertoGraphics: iInvalid attachment");
 
 			auto extent = vk::SwapChain::GetExtent();
 			auto fb = device.CreateFrameBuffer(extent.width, extent.height, Cast<VkRHIRenderPass&>(*m_renderPass), attachments);
@@ -216,21 +217,13 @@ namespace cct::gfx::rhi
 		subPass.depthStencilAttachment = {1, rhi::ImageLayout::DepthStencilAttachmentOptimal};
 
 		std::vector<rhi::RenderPass::SubPassDependency> subPassDependencies;
-		auto& colorDependency = subPassDependencies.emplace_back();
-		colorDependency.srcSubPassIndex = rhi::RenderPass::SubPassDependency::ExternalSubPass;
-		colorDependency.dstSubPassIndex = 0u;
-		colorDependency.srcStageMask = rhi::PipelineStage::ColorAttachmentOutput;
-		colorDependency.srcAccessFlags = {};
-		colorDependency.dstStageMask = rhi::PipelineStage::ColorAttachmentOutput;
-		colorDependency.dstAccessFlags = rhi::MemoryAccess::ColorAttachmentWrite;
-
-		auto& depthDependency = subPassDependencies.emplace_back();
-		depthDependency.srcSubPassIndex = rhi::RenderPass::SubPassDependency::ExternalSubPass;
-		depthDependency.dstSubPassIndex = 0u;
-		depthDependency.srcStageMask = rhi::PipelineStage::EarlyFragmentTests | rhi::PipelineStage::LateFragmentTests;
-		depthDependency.srcAccessFlags = {};
-		depthDependency.dstStageMask = rhi::PipelineStage::EarlyFragmentTests | rhi::PipelineStage::LateFragmentTests;
-		depthDependency.dstAccessFlags = rhi::MemoryAccess::DepthStencilAttachmentWrite;
+		auto& dependency = subPassDependencies.emplace_back();
+		dependency.srcSubPassIndex = rhi::RenderPass::SubPassDependency::ExternalSubPass;
+		dependency.dstSubPassIndex = 0u;
+		dependency.srcStageMask = rhi::PipelineStage::ColorAttachmentOutput | rhi::PipelineStage::EarlyFragmentTests | rhi::PipelineStage::LateFragmentTests;
+		dependency.srcAccessFlags = {};
+		dependency.dstStageMask = rhi::PipelineStage::ColorAttachmentOutput | rhi::PipelineStage::EarlyFragmentTests | rhi::PipelineStage::LateFragmentTests;
+		dependency.dstAccessFlags = rhi::MemoryAccess::ColorAttachmentWrite | rhi::MemoryAccess::DepthStencilAttachmentWrite;
 
 		m_renderPass = Cast<VkRHIDevice&>(*m_device).CreateRenderPass(attachment, subPassDescriptions, subPassDependencies);
 		CCT_ASSERT(m_renderPass && Cast<VkRHIRenderPass&>(*m_renderPass).GetLastResult() == VK_SUCCESS, "ConcertoGraphics: Could not create render pass");

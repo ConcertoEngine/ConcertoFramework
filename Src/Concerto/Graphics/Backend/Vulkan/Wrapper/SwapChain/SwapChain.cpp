@@ -24,8 +24,9 @@ namespace cct::gfx::vk
 		m_swapChainImageViews(),
 		m_windowExtent(),
 		m_swapChainImageFormat(),
-		m_depthImage(),
-		m_depthImageView(),
+		m_depthFormat(),
+		m_depthImages(),
+		m_depthImageViews(),
 		m_window(&window),
 		m_nativeWindow(),
 		m_currentImageIndex(0),
@@ -41,8 +42,9 @@ namespace cct::gfx::vk
 		m_swapChainImageViews(),
 		m_windowExtent(),
 		m_swapChainImageFormat(),
-		m_depthImage(),
-		m_depthImageView(),
+		m_depthFormat(),
+		m_depthImages(),
+		m_depthImageViews(),
 		m_window(nullptr),
 		m_nativeWindow(nativeWindow),
 		m_currentImageIndex(0),
@@ -66,12 +68,8 @@ namespace cct::gfx::vk
 		Destroy();
 
 		m_device = &device;
-		m_windowExtent = {.width = window.GetWidth(), .height = window.GetHeight()},
-		m_depthImage = device.GetAllocator().AllocateImage(m_windowExtent, depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT),
-
-		m_lastResult = m_depthImageView.Create(device, m_depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
-		if (m_lastResult != VK_SUCCESS)
-			return m_lastResult;
+		m_windowExtent = {.width = window.GetWidth(), .height = window.GetHeight()};
+		m_depthFormat = depthFormat;
 
 		m_window = &window,
 		m_windowExtent = {.width = m_window->GetWidth(), .height = m_window->GetHeight()};
@@ -133,11 +131,7 @@ namespace cct::gfx::vk
 		m_window = nullptr;
 		m_nativeWindow = nativeWindow;
 		m_windowExtent = {.width = width, .height = height};
-
-		m_depthImage = device.GetAllocator().AllocateImage(m_windowExtent, depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-		m_lastResult = m_depthImageView.Create(device, m_depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
-		if (m_lastResult != VK_SUCCESS)
-			return m_lastResult;
+		m_depthFormat = depthFormat;
 
 		m_lastResult = CreateSurface();
 		if (m_lastResult != VK_SUCCESS)
@@ -203,8 +197,9 @@ namespace cct::gfx::vk
 		m_swapChainImageViews = std::nullopt;
 		m_windowExtent = {};
 		m_swapChainImageFormat = {};
-		m_depthImage = {};
-		m_depthImageView = {};
+		m_depthFormat = {};
+		m_depthImages = std::nullopt;
+		m_depthImageViews = std::nullopt;
 		m_window = nullptr;
 		m_currentImageIndex = {};
 		m_surface = nullptr;
@@ -244,14 +239,30 @@ namespace cct::gfx::vk
 		return m_windowExtent;
 	}
 
-	const ImageView& SwapChain::GetDepthImageView() const
+	const ImageView& SwapChain::GetDepthImageView(std::size_t index) const
 	{
-		return m_depthImageView;
+		if (!m_depthImageViews.has_value())
+		{
+			const std::span<Image> images = GetImages();
+			std::vector<Image> depthImages;
+			std::vector<ImageView> depthImageViews;
+			depthImages.reserve(images.size());
+			depthImageViews.reserve(images.size());
+			for (std::size_t i = 0; i < images.size(); ++i)
+			{
+				depthImages.push_back(m_device->GetAllocator().AllocateImage(m_windowExtent, m_depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT));
+				depthImageViews.emplace_back(*m_device, depthImages.back(), VK_IMAGE_ASPECT_DEPTH_BIT);
+			}
+			m_depthImages = std::move(depthImages);
+			m_depthImageViews = std::move(depthImageViews);
+		}
+		CCT_ASSERT(index < m_depthImageViews->size(), "SwapChain::GetDepthImageView: index out of range");
+		return (*m_depthImageViews)[index];
 	}
 
-	ImageView& SwapChain::GetDepthImageView()
+	ImageView& SwapChain::GetDepthImageView(std::size_t index)
 	{
-		return m_depthImageView;
+		return const_cast<ImageView&>(const_cast<const SwapChain*>(this)->GetDepthImageView(index));
 	}
 
 	VkFormat SwapChain::GetImageFormat() const
@@ -261,7 +272,7 @@ namespace cct::gfx::vk
 
 	VkFormat SwapChain::GetDepthFormat() const
 	{
-		return m_depthImage.GetFormat();
+		return m_depthFormat;
 	}
 
 	UInt32 SwapChain::GetCurrentImageIndex() const

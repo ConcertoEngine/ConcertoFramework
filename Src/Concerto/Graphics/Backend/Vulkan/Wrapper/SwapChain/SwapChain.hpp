@@ -48,8 +48,8 @@ namespace cct::gfx::vk
 		[[nodiscard]] std::span<Image> GetImages() const;
 		[[nodiscard]] std::span<ImageView> GetImageViews() const;
 		[[nodiscard]] VkExtent2D GetExtent() const;
-		[[nodiscard]] const ImageView& GetDepthImageView() const;
-		[[nodiscard]] ImageView& GetDepthImageView();
+		[[nodiscard]] const ImageView& GetDepthImageView(std::size_t index) const;
+		[[nodiscard]] ImageView& GetDepthImageView(std::size_t index);
 		[[nodiscard]] VkFormat GetImageFormat() const;
 		[[nodiscard]] VkFormat GetDepthFormat() const;
 		[[nodiscard]] UInt32 GetCurrentImageIndex() const;
@@ -65,8 +65,9 @@ namespace cct::gfx::vk
 		mutable std::optional<std::vector<ImageView>> m_swapChainImageViews;
 		VkExtent2D m_windowExtent;
 		VkFormat m_swapChainImageFormat;
-		Image m_depthImage;
-		ImageView m_depthImageView;
+		VkFormat m_depthFormat;
+		mutable std::optional<std::vector<Image>> m_depthImages;
+		mutable std::optional<std::vector<ImageView>> m_depthImageViews;
 		Window* m_window;
 		NativeWindow m_nativeWindow;
 		UInt32 m_currentImageIndex;
