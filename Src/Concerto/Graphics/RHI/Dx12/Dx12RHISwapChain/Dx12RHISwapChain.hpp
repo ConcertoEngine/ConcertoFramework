@@ -9,7 +9,6 @@
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/SwapChain/SwapChain.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandPool/Dx12RHICommandPool.hpp"
-#include "Concerto/Graphics/RHI/Dx12/Dx12RHIFrameBuffer/Dx12RHIFrameBuffer.hpp"
 #include "Concerto/Graphics/RHI/SwapChain.hpp"
 
 namespace cct::gfx::rhi
@@ -21,11 +20,11 @@ namespace cct::gfx::rhi
 	public:
 		Dx12RHISwapChain(rhi::Dx12RHIDevice& device, Window& window, PixelFormat pixelFormat, PixelFormat depthPixelFormat);
 
-		RenderPass* GetRenderPass() override;
 		Vector2u GetExtent() const override;
 		UInt32 GetImageCount() const override;
 		rhi::Frame& AcquireFrame() override;
 		void WaitAll() const override;
+		std::shared_ptr<Texture> GetColorTexture(UInt32 imageIndex) override;
 		CommandPool& GetCommandPool();
 
 	private:
@@ -37,7 +36,6 @@ namespace cct::gfx::rhi
 			void Present() override;
 			rhi::CommandBuffer& GetCommandBuffer() override;
 			std::size_t GetCurrentFrameIndex() override;
-			rhi::FrameBuffer& GetFrameBuffer() override;
 			void Wait() const;
 
 			const dx12::Fence& GetRenderFence() const;
@@ -47,23 +45,17 @@ namespace cct::gfx::rhi
 		private:
 			Dx12RHICommandBuffer m_commandBuffer;
 			dx12::Fence m_renderFence;
-			Dx12RHIFrameBuffer m_frameBuffer;
 			Dx12RHISwapChain* m_owner = nullptr;
 			UInt32 m_imageIndex = 0;
 		};
 
-		void CreateDepthBuffer();
+		void CreateColorTextures();
 
 		Dx12RHIDevice* m_rhiDevice;
 		UInt64 m_currentFrameIndex;
-		std::unique_ptr<RenderPass> m_renderPass;
 		std::vector<SwapChainFrame> m_frames;
+		std::vector<std::shared_ptr<Texture>> m_colorTextures;
 		Dx12RHICommandPool m_commandPool;
-
-		// Depth buffer shared by all frames
-		Microsoft::WRL::ComPtr<ID3D12Resource> m_depthBuffer;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
-		D3D12_CPU_DESCRIPTOR_HANDLE m_dsvHandle{};
 	};
 } // namespace cct::gfx::rhi
 

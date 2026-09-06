@@ -53,10 +53,13 @@ namespace cct::gfx::rhi
 		std::unique_ptr<RenderPass> renderPass; // non-null when this pass opens a new render pass
 		bool closesRenderPass = true; // false when the next pass continues the same render pass
 
-		// Declared so the framebuffer is destroyed before the views it references
-		// (members are destroyed in reverse declaration order).
-		std::vector<std::unique_ptr<TextureView>> attachmentViews;
-		std::unique_ptr<FrameBuffer> frameBuffer; // cached, created lazily on first Execute after Compile
+		struct CachedFrameBuffer
+		{
+			std::vector<const Texture*> attachmentIdentity;
+			std::vector<std::unique_ptr<TextureView>> attachmentViews;
+			std::unique_ptr<FrameBuffer> frameBuffer;
+		};
+		std::vector<CachedFrameBuffer> frameBufferCache;
 	};
 } // namespace cct::gfx::rhi
 

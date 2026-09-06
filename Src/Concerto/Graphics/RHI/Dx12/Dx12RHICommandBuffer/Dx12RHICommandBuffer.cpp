@@ -85,21 +85,6 @@ namespace cct::gfx::rhi
 		const auto& dx12FrameBuffer = Cast<const Dx12RHIFrameBuffer&>(frameBuffer);
 		m_currentFrameBuffer = &dx12FrameBuffer;
 
-		if (dx12FrameBuffer.IsSwapchainTarget())
-		{
-			for (const auto& rtResource : dx12FrameBuffer.GetRenderTargetResources())
-			{
-				D3D12_RESOURCE_BARRIER barrier = {};
-				barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-				barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-				barrier.Transition.pResource = rtResource.Get();
-				barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-				Get()->ResourceBarrier(1, &barrier);
-			}
-		}
-
 		const auto& rtvHandles = dx12FrameBuffer.GetRTVHandles();
 		const auto& dsvHandle = dx12FrameBuffer.GetDSVHandle();
 
@@ -144,22 +129,6 @@ namespace cct::gfx::rhi
 	{
 		if (!IsValid() || !m_currentFrameBuffer)
 			return;
-
-		// See the matching comment in BeginRenderPass.
-		if (m_currentFrameBuffer->IsSwapchainTarget())
-		{
-			for (const auto& rtResource : m_currentFrameBuffer->GetRenderTargetResources())
-			{
-				D3D12_RESOURCE_BARRIER barrier = {};
-				barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-				barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-				barrier.Transition.pResource = rtResource.Get();
-				barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-				barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-				barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-				Get()->ResourceBarrier(1, &barrier);
-			}
-		}
 
 		m_currentFrameBuffer = nullptr;
 	}

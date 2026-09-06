@@ -7,7 +7,6 @@
 
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/CommandBuffer/CommandBuffer.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Fence/Fence.hpp"
-#include "Concerto/Graphics/Backend/Vulkan/Wrapper/RenderPass/RenderPass.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/Semaphore/Semaphore.hpp"
 #include "Concerto/Graphics/Backend/Vulkan/Wrapper/SwapChain/SwapChain.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
@@ -30,24 +29,21 @@ namespace cct::gfx::rhi
 		VkRHISwapChain(rhi::VkRHIDevice& device, NativeWindow nativeWindow, UInt32 width, UInt32 height, PixelFormat pixelFormat, PixelFormat depthPixelFormat);
 		~VkRHISwapChain() override;
 
-		rhi::RenderPass* GetRenderPass() override;
 		Vector2u GetExtent() const override;
 		UInt32 GetImageCount() const override;
 		Frame& AcquireFrame() override;
 		void WaitAll() const override;
+		std::shared_ptr<Texture> GetColorTexture(UInt32 imageIndex) override;
 
 		inline VkRHICommandPool& GetCommandPool() const;
 		inline VkRHIDevice& GetRHIDevice() const;
 		inline vk::Queue& GetPresentQueue() const;
-		inline rhi::FrameBuffer& GetCurrentFrameBuffer();
-		inline const rhi::FrameBuffer& GetCurrentFrameBuffer() const;
 
 		void Present(UInt32 imageIndex);
 
 	private:
-		void CreateFrameBuffers(rhi::VkRHIDevice& device);
-		void CreateRenderPass();
 		void CreateFrames();
+		void CreateColorTextures(rhi::VkRHIDevice& device);
 
 		class SwapChainFrame : public rhi::Frame
 		{
@@ -57,7 +53,6 @@ namespace cct::gfx::rhi
 			void Present() override;
 			rhi::CommandBuffer& GetCommandBuffer() override;
 			std::size_t GetCurrentFrameIndex() override;
-			rhi::FrameBuffer& GetFrameBuffer() override;
 			void SetNextImageIndex(UInt32 imageIndex);
 			void Wait() const;
 
@@ -79,8 +74,7 @@ namespace cct::gfx::rhi
 		PixelFormat m_pixelFormat;
 		PixelFormat m_depthPixelFormat;
 
-		std::vector<std::unique_ptr<FrameBuffer>> m_frameBuffers;
-		std::unique_ptr<rhi::RenderPass> m_renderPass;
+		std::vector<std::shared_ptr<Texture>> m_colorTextures;
 		std::unique_ptr<rhi::CommandPool> m_commandPool;
 		std::unique_ptr<vk::Queue> m_presentQueue;
 		std::vector<SwapChainFrame> m_frames;

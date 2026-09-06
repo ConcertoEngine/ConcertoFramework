@@ -417,10 +417,10 @@ namespace cct::gfx::rhi
 		const PipelineStageFlags allCmds = PS::AllCommands;
 
 		if (oldLayout == ImageLayout::Undefined && newLayout == ImageLayout::ColorAttachmentOptimal)
-			return {pipe, caoStage, {}, caWrite};
+			return {caoStage, caoStage, {}, caWrite};
 
 		if (oldLayout == ImageLayout::Undefined && newLayout == ImageLayout::DepthStencilAttachmentOptimal)
-			return {pipe, eftStage, {}, dsWrite};
+			return {eftStage, eftStage, {}, dsWrite};
 
 		if (oldLayout == ImageLayout::Undefined && newLayout == ImageLayout::ShaderReadOnlyOptimal)
 			return {pipe, fsStage, {}, shRead};

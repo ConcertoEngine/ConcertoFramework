@@ -5,16 +5,17 @@
 #ifndef CONCERTO_GRAPHICS_RHI_SWAPCHAIN_HPP
 #define CONCERTO_GRAPHICS_RHI_SWAPCHAIN_HPP
 
+#include <memory>
+
 #include <Concerto/Core/Math/Vector/Vector.hpp>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Enums.hpp"
 #include "Concerto/Graphics/RHI/Frame.hpp"
-#include "Concerto/Graphics/RHI/RenderPass.hpp"
 
 namespace cct::gfx::rhi
 {
-	class RenderPass;
+	class Texture;
 
 	class CONCERTO_GRAPHICS_RHI_BASE_API SwapChain
 	{
@@ -22,11 +23,12 @@ namespace cct::gfx::rhi
 		inline SwapChain(PixelFormat pixelFormat, PixelFormat depthPixelFormat);
 		virtual ~SwapChain() = default;
 
-		virtual RenderPass* GetRenderPass() = 0;
 		virtual Vector2u GetExtent() const = 0;
 		virtual UInt32 GetImageCount() const = 0;
 		virtual rhi::Frame& AcquireFrame() = 0;
 		virtual void WaitAll() const = 0;
+
+		virtual std::shared_ptr<Texture> GetColorTexture(UInt32 imageIndex) = 0;
 
 		[[nodiscard]] inline PixelFormat GetPixelFormat() const;
 		[[nodiscard]] inline PixelFormat GetDepthPixelFormat() const;

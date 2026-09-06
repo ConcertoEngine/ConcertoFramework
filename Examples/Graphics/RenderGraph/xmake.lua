@@ -3,6 +3,7 @@ target('concerto-rendergraph-sample')
     add_files('main.cpp')
     set_languages('cxx20')
     set_warnings('allextra')
+    add_rules('download.assets', 'compile.shaders')
     add_deps("concerto-core", { public = true })
     add_rpathdirs("$ORIGIN")
 

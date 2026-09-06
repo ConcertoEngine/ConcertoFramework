@@ -49,6 +49,8 @@ namespace cct::gfx::rhi
 									PipelineStageFlags initialStage = {},
 									MemoryAccessFlags initialAccess = {});
 
+		void UpdateImportedTexture(RGTextureHandle handle, std::shared_ptr<Texture> texture, ImageLayout currentLayout);
+
 		// Pass declaration
 		void AddPass(const char* name, RGPassType type,
 					 std::function<void(RenderGraphBuilder&)> setup,
@@ -80,6 +82,12 @@ namespace cct::gfx::rhi
 		// The assignment is stable until Clear(): descriptor sets bound to this texture
 		// stay valid across frames.
 		[[nodiscard]] Texture& GetTexture(RGTextureHandle handle);
+
+		// Render pass compiled for the named graphics pass (or the group it was merged
+		// into). Requires Compile() to have run. Useful to create pipelines ahead of the
+		// first Execute() against a render pass that is format/attachment-compatible with
+		// the one the graph will actually use at runtime.
+		[[nodiscard]] const RenderPass& GetPassRenderPass(const char* name) const;
 
 		// Update the tracked layout of an imported texture after an external pipeline barrier.
 		// Call this when you manually emit a barrier on a texture that bypasses the graph's tracking.

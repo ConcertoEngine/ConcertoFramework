@@ -14,18 +14,16 @@
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandBuffer/VkRHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHICommandPool/VkRHICommandPool.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
-#include "Concerto/Graphics/RHI/Vulkan/VkRHIRenderPass/VkRHIRenderPass.hpp"
 #include "Concerto/Graphics/RHI/Vulkan/VkRHITexture/VKRHITexture.hpp"
 namespace cct::gfx::rhi
 {
 	VkRHISwapChain::VkRHISwapChain(rhi::VkRHIDevice& device, Window& window, PixelFormat pixelFormat, PixelFormat depthPixelFormat) :
-		rhi::SwapChain(pixelFormat, depthPixelFormat),
+		rhi::SwapChain(window.GetFormat(), depthPixelFormat),
 		vk::SwapChain(device, window, Converters::ToVulkan(window.GetFormat()), Converters::ToVulkan(depthPixelFormat)),
 		m_pixelFormat(window.GetFormat()),
 		m_depthPixelFormat(depthPixelFormat)
 	{
-		CreateRenderPass();
-		CreateFrameBuffers(device);
+		CreateColorTextures(device);
 		m_commandPool = device.CreateCommandPool(QueueFamily::Graphics, CommandBufferUsage::Primary);
 		m_presentQueue = std::make_unique<vk::Queue>(device, device.GetQueueFamilyIndex(vk::Queue::Type::Graphics));
 		CreateFrames();
@@ -37,8 +35,7 @@ namespace cct::gfx::rhi
 		m_pixelFormat(pixelFormat),
 		m_depthPixelFormat(depthPixelFormat)
 	{
-		CreateRenderPass();
-		CreateFrameBuffers(device);
+		CreateColorTextures(device);
 		m_commandPool = device.CreateCommandPool(QueueFamily::Graphics, CommandBufferUsage::Primary);
 		m_presentQueue = std::make_unique<vk::Queue>(device, device.GetQueueFamilyIndex(vk::Queue::Type::Graphics));
 		CreateFrames();
@@ -51,19 +48,10 @@ namespace cct::gfx::rhi
 		if (m_presentQueue)
 			m_presentQueue->WaitIdle();
 
-		// Explicitly destroy frame buffers and render pass before base class destructor
-		// This ensures ImageViews are not referenced after they're destroyed
-		m_frameBuffers.clear();
+		m_colorTextures.clear();
 		m_frames.clear();
-		m_renderPass.reset();
 		m_commandPool.reset();
 		m_presentQueue.reset();
-	}
-
-	rhi::RenderPass* VkRHISwapChain::GetRenderPass()
-	{
-		CCT_ASSERT(m_renderPass, "ConcertoGraphics: Invalid renderpass");
-		return m_renderPass.get();
 	}
 
 	Vector2u VkRHISwapChain::GetExtent() const
@@ -88,11 +76,10 @@ namespace cct::gfx::rhi
 		{
 			GetDevice()->WaitIdle();
 			vk::SwapChain::Create(*m_device, GetWindow(), Converters::ToVulkan(m_pixelFormat), Converters::ToVulkan(m_depthPixelFormat));
-			m_frameBuffers.clear();
+			m_colorTextures.clear();
 			m_frames.clear();
-			CreateRenderPass();
 			CreateFrames();
-			CreateFrameBuffers(GetRHIDevice());
+			CreateColorTextures(GetRHIDevice());
 			m_needResize = false;
 			vk::SwapChain::AcquireNextImage(currentFrame.GetPresentSemaphore(), nextImageIndex, nullptr);
 			m_frames[m_currentFrameIndex].SetNextImageIndex(nextImageIndex);
@@ -126,16 +113,6 @@ namespace cct::gfx::rhi
 		return *m_presentQueue;
 	}
 
-	rhi::FrameBuffer& VkRHISwapChain::GetCurrentFrameBuffer()
-	{
-		return *m_frameBuffers[m_currentFrameIndex];
-	}
-
-	const rhi::FrameBuffer& VkRHISwapChain::GetCurrentFrameBuffer() const
-	{
-		return *m_frameBuffers[m_currentFrameIndex];
-	}
-
 	void VkRHISwapChain::Present(UInt32 imageIndex)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
@@ -164,69 +141,27 @@ namespace cct::gfx::rhi
 		}
 	}
 
-	void VkRHISwapChain::CreateFrameBuffers(rhi::VkRHIDevice& device)
+	std::shared_ptr<Texture> VkRHISwapChain::GetColorTexture(UInt32 imageIndex)
 	{
-		CCT_AUTO_PROFILER_SCOPE();
-
-		const std::span<vk::ImageView> imagesViews = vk::SwapChain::GetImageViews();
-
-		m_frameBuffers.reserve(imagesViews.size());
-		for (std::size_t i = 0; i < imagesViews.size(); ++i)
-		{
-			const vk::ImageView& imageView = imagesViews[i];
-			std::vector<std::unique_ptr<rhi::TextureView>> attachments;
-			attachments.emplace_back(std::make_unique<VkRHITextureView>(imageView));
-			attachments.emplace_back(std::make_unique<VkRHITextureView>(GetDepthImageView(i)));
-			CCT_ASSERT(imageView.Get() != VK_NULL_HANDLE && GetDepthImageView(i).Get() != VK_NULL_HANDLE, "ConcertoGraphics: iInvalid attachment");
-
-			auto extent = vk::SwapChain::GetExtent();
-			auto fb = device.CreateFrameBuffer(extent.width, extent.height, Cast<VkRHIRenderPass&>(*m_renderPass), attachments);
-			CCT_ASSERT(fb, "ConcertoGraphics: Could not create frame buffer");
-
-			m_frameBuffers.emplace_back(std::move(fb));
-		}
+		CCT_ASSERT(imageIndex < m_colorTextures.size(), "ConcertoGraphics: Invalid swapchain image index {}", imageIndex);
+		return m_colorTextures[imageIndex];
 	}
 
-	void VkRHISwapChain::CreateRenderPass()
+	void VkRHISwapChain::CreateColorTextures(rhi::VkRHIDevice& device)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
 
-		std::vector<rhi::RenderPass::Attachment> attachment;
-		auto& colorAttachment = attachment.emplace_back();
-		colorAttachment.pixelFormat = Converters::FromVulkan(vk::SwapChain::GetImageFormat());
-		colorAttachment.loadOp = rhi::AttachmentLoadOp::Clear;
-		colorAttachment.storeOp = rhi::AttachmentStoreOp::Store;
-		colorAttachment.stencilLoadOp = rhi::AttachmentLoadOp::DontCare;
-		colorAttachment.stencilStoreOp = rhi::AttachmentStoreOp::DontCare;
-		colorAttachment.initialLayout = rhi::ImageLayout::Undefined;
-		colorAttachment.finalLayout = rhi::ImageLayout::PresentSrcKhr;
+		const std::span<vk::Image> images = vk::SwapChain::GetImages();
+		const VkExtent2D extent = vk::SwapChain::GetExtent();
+		const VkFormat format = vk::SwapChain::GetImageFormat();
 
-		auto& depthAttachment = attachment.emplace_back();
-		depthAttachment.pixelFormat = GetDepthPixelFormat();
-		depthAttachment.loadOp = rhi::AttachmentLoadOp::Clear;
-		depthAttachment.storeOp = rhi::AttachmentStoreOp::Store;
-		depthAttachment.stencilLoadOp = rhi::AttachmentLoadOp::Clear;
-		depthAttachment.stencilStoreOp = rhi::AttachmentStoreOp::DontCare;
-		depthAttachment.initialLayout = rhi::ImageLayout::Undefined;
-		depthAttachment.finalLayout = rhi::ImageLayout::DepthStencilAttachmentOptimal;
-
-		std::vector<rhi::RenderPass::SubPassDescription> subPassDescriptions;
-
-		auto& subPass = subPassDescriptions.emplace_back();
-		subPass.colorAttachments.push_back({0, rhi::ImageLayout::ColorAttachmentOptimal});
-		subPass.depthStencilAttachment = {1, rhi::ImageLayout::DepthStencilAttachmentOptimal};
-
-		std::vector<rhi::RenderPass::SubPassDependency> subPassDependencies;
-		auto& dependency = subPassDependencies.emplace_back();
-		dependency.srcSubPassIndex = rhi::RenderPass::SubPassDependency::ExternalSubPass;
-		dependency.dstSubPassIndex = 0u;
-		dependency.srcStageMask = rhi::PipelineStage::ColorAttachmentOutput | rhi::PipelineStage::EarlyFragmentTests | rhi::PipelineStage::LateFragmentTests;
-		dependency.srcAccessFlags = {};
-		dependency.dstStageMask = rhi::PipelineStage::ColorAttachmentOutput | rhi::PipelineStage::EarlyFragmentTests | rhi::PipelineStage::LateFragmentTests;
-		dependency.dstAccessFlags = rhi::MemoryAccess::ColorAttachmentWrite | rhi::MemoryAccess::DepthStencilAttachmentWrite;
-
-		m_renderPass = Cast<VkRHIDevice&>(*m_device).CreateRenderPass(attachment, subPassDescriptions, subPassDependencies);
-		CCT_ASSERT(m_renderPass && Cast<VkRHIRenderPass&>(*m_renderPass).GetLastResult() == VK_SUCCESS, "ConcertoGraphics: Could not create render pass");
+		m_colorTextures.clear();
+		m_colorTextures.reserve(images.size());
+		for (const vk::Image& image : images)
+		{
+			vk::Image borrowedImage(device.GetAllocator(), extent, *image.Get(), format);
+			m_colorTextures.push_back(std::make_shared<VkRHITexture>(device, std::move(borrowedImage), VK_IMAGE_ASPECT_COLOR_BIT));
+		}
 	}
 
 	void VkRHISwapChain::CreateFrames()
@@ -279,11 +214,6 @@ namespace cct::gfx::rhi
 	std::size_t VkRHISwapChain::SwapChainFrame::GetCurrentFrameIndex()
 	{
 		return m_imageIndex;
-	}
-
-	rhi::FrameBuffer& VkRHISwapChain::SwapChainFrame::GetFrameBuffer()
-	{
-		return m_owner->GetCurrentFrameBuffer();
 	}
 
 	void VkRHISwapChain::SwapChainFrame::SetNextImageIndex(UInt32 imageIndex)

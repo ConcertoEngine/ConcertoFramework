@@ -89,7 +89,7 @@ namespace cct::gfx::rhi
 		}
 
 		return std::make_unique<Dx12RHIFrameBuffer>(width, height, std::move(rtvHandles), std::move(rtResources),
-													std::nullopt, nullptr, /* isSwapchainTarget */ false, std::move(rtvHeap));
+													std::nullopt, nullptr, std::move(rtvHeap));
 	}
 
 	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBuffer(UInt32 width, UInt32 height,

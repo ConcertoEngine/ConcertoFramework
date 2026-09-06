@@ -51,6 +51,8 @@ namespace cct::gfx::rhi
 									PipelineStageFlags initialStage = {},
 									MemoryAccessFlags initialAccess = {});
 
+		void UpdateImportedTexture(RGTextureHandle handle, std::shared_ptr<Texture> texture, ImageLayout currentLayout);
+
 		void Allocate(Device& device);
 
 		// Extract physical resources from transient entries into caller-owned snapshots

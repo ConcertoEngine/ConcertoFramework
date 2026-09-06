@@ -4,7 +4,9 @@
 
 #include "Concerto/Graphics/RenderGraph/RenderGraph.hpp"
 
+#include <format>
 #include <ostream>
+#include <stdexcept>
 
 #include <Concerto/Core/Assert.hpp>
 
@@ -48,6 +50,11 @@ namespace cct::gfx::rhi
 	{
 		MarkDirty();
 		return m_registry.ImportBuffer(name, std::move(buffer), initialStage, initialAccess);
+	}
+
+	void RenderGraph::UpdateImportedTexture(RGTextureHandle handle, std::shared_ptr<Texture> texture, ImageLayout currentLayout)
+	{
+		m_registry.UpdateImportedTexture(handle, std::move(texture), currentLayout);
 	}
 
 	void RenderGraph::AddPass(const char* name, RGPassType type,
@@ -114,15 +121,35 @@ namespace cct::gfx::rhi
 		return m_registry.GetTexture(handle);
 	}
 
+	const RenderPass& RenderGraph::GetPassRenderPass(const char* name) const
+	{
+		for (std::size_t i = 0; i < m_compiledPasses.size(); ++i)
+		{
+			if (m_passes[m_compiledPasses[i].passIndex].name != name)
+				continue;
+
+			for (std::size_t j = i + 1; j-- > 0;)
+			{
+				if (m_compiledPasses[j].renderPass)
+					return *m_compiledPasses[j].renderPass;
+			}
+		}
+
+		throw std::runtime_error(std::format("RenderGraph::GetPassRenderPass: no compiled render pass for '{}' (culled, never declared, or Compile() not called)", name));
+	}
+
 	void RenderGraph::RetireCompiledPasses()
 	{
 		for (RGCompiledPass& cp : m_compiledPasses)
 		{
-			if (cp.frameBuffer)
-				m_retired.frameBuffers.push_back(std::move(cp.frameBuffer));
-			for (auto& view : cp.attachmentViews)
-				m_retired.attachmentViews.push_back(std::move(view));
-			cp.attachmentViews.clear();
+			for (auto& cached : cp.frameBufferCache)
+			{
+				if (cached.frameBuffer)
+					m_retired.frameBuffers.push_back(std::move(cached.frameBuffer));
+				for (auto& view : cached.attachmentViews)
+					m_retired.attachmentViews.push_back(std::move(view));
+			}
+			cp.frameBufferCache.clear();
 			if (cp.renderPass)
 				m_retired.renderPasses.push_back(std::move(cp.renderPass));
 		}
@@ -220,10 +247,27 @@ namespace cct::gfx::rhi
 					emitBarriersForPass(mp);
 				}
 
-				if (!compiled.frameBuffer)
+				std::vector<const Texture*> attachmentIdentity;
+				attachmentIdentity.reserve(pass.colorAttachments.size() + (pass.depthAttachment.has_value() ? 1 : 0));
+				for (const RGTextureHandle colorHandle : pass.colorAttachments)
+					attachmentIdentity.push_back(&m_registry.GetTexture(colorHandle));
+				if (pass.depthAttachment.has_value())
+					attachmentIdentity.push_back(&m_registry.GetTexture(*pass.depthAttachment));
+
+				RGCompiledPass::CachedFrameBuffer* cachedFrameBuffer = nullptr;
+				for (auto& cached : compiled.frameBufferCache)
+				{
+					if (cached.attachmentIdentity == attachmentIdentity)
+					{
+						cachedFrameBuffer = &cached;
+						break;
+					}
+				}
+
+				if (!cachedFrameBuffer)
 				{
 					std::vector<std::unique_ptr<TextureView>> views;
-					views.reserve(pass.colorAttachments.size() + (pass.depthAttachment.has_value() ? 1 : 0));
+					views.reserve(attachmentIdentity.size());
 
 					for (const RGTextureHandle colorHandle : pass.colorAttachments)
 						views.push_back(m_registry.GetTexture(colorHandle).CreateView());
@@ -245,11 +289,15 @@ namespace cct::gfx::rhi
 							fbWidth = desc.width, fbHeight = desc.height;
 					}
 
-					compiled.frameBuffer = m_device.CreateFrameBuffer(fbWidth, fbHeight, *compiled.renderPass, views);
-					compiled.attachmentViews = std::move(views);
+					RGCompiledPass::CachedFrameBuffer newEntry;
+					newEntry.attachmentIdentity = attachmentIdentity;
+					newEntry.frameBuffer = m_device.CreateFrameBuffer(fbWidth, fbHeight, *compiled.renderPass, views);
+					newEntry.attachmentViews = std::move(views);
+					compiled.frameBufferCache.push_back(std::move(newEntry));
+					cachedFrameBuffer = &compiled.frameBufferCache.back();
 				}
 
-				m_currentFrameBuffer = compiled.frameBuffer.get();
+				m_currentFrameBuffer = cachedFrameBuffer->frameBuffer.get();
 				activeRenderPass = compiled.renderPass.get();
 				cmd.BeginRenderPass(*compiled.renderPass, *m_currentFrameBuffer, Vector3f{0.f, 0.f, 0.f});
 			}

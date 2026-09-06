@@ -21,7 +21,6 @@ namespace cct::gfx::rhi
 						   std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetResources,
 						   std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandle = std::nullopt,
 						   Microsoft::WRL::ComPtr<ID3D12Resource> depthResource = nullptr,
-						   bool isSwapchainTarget = false,
 						   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap = nullptr);
 
 		UInt32 GetWidth() const override
@@ -50,11 +49,6 @@ namespace cct::gfx::rhi
 			return m_depthResource.Get();
 		}
 
-		[[nodiscard]] bool IsSwapchainTarget() const
-		{
-			return m_isSwapchainTarget;
-		}
-
 	private:
 		UInt32 m_width;
 		UInt32 m_height;
@@ -62,7 +56,6 @@ namespace cct::gfx::rhi
 		std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> m_dsvHandle;
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_renderTargetResources;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_depthResource;
-		bool m_isSwapchainTarget;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
 	};
 } // namespace cct::gfx::rhi

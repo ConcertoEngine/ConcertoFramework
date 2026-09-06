@@ -17,7 +17,6 @@ namespace cct::gfx::rhi
 		void Present() override;
 		rhi::CommandBuffer& GetCommandBuffer() override;
 		std::size_t GetCurrentFrameIndex() override;
-		rhi::FrameBuffer& GetFrameBuffer() override;
 	};
 } // namespace cct::gfx::rhi
 

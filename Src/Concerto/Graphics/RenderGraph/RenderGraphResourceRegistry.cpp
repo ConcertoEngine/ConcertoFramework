@@ -53,6 +53,16 @@ namespace cct::gfx::rhi
 		return {idx, 0};
 	}
 
+	void RenderGraphResourceRegistry::UpdateImportedTexture(RGTextureHandle handle, std::shared_ptr<Texture> texture, ImageLayout currentLayout)
+	{
+		CCT_ASSERT(handle.index < m_textures.size() && m_textures[handle.index].imported,
+				   "RenderGraphResourceRegistry::UpdateImportedTexture: handle {} is not an imported texture", handle.index);
+		TextureEntry& entry = m_textures[handle.index];
+		entry.physical = std::move(texture);
+		entry.currentLayout = currentLayout;
+		entry.initialLayout = currentLayout;
+	}
+
 	void RenderGraphResourceRegistry::Allocate(Device& device)
 	{
 		for (auto& entry : m_textures)

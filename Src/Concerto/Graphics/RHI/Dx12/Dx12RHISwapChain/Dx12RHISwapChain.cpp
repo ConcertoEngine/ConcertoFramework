@@ -4,11 +4,14 @@
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHISwapChain/Dx12RHISwapChain.hpp"
 
+#include <Concerto/Core/Assert.hpp>
 #include <Concerto/Core/Cast.hpp>
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/CommandList/CommandList.hpp"
+#include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHICommandBuffer/Dx12RHICommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHIDevice/Dx12RHIDevice.hpp"
+#include "Concerto/Graphics/RHI/Dx12/Dx12RHITexture/Dx12RHITexture.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -16,71 +19,37 @@ namespace cct::gfx::rhi
 		rhi::SwapChain(pixelFormat, depthPixelFormat),
 		dx12::SwapChain(device, window),
 		m_rhiDevice(&device),
-		m_renderPass(std::make_unique<RenderPass>()),
 		m_currentFrameIndex(0),
 		m_commandPool(device, CommandBufferUsage::Primary, D3D12_COMMAND_LIST_TYPE_DIRECT)
 	{
 		// Register the swapchain's command queue on the device for upload operations
 		device.RegisterRenderQueue(GetCommandQueue().Get());
 
-		CreateDepthBuffer();
+		CreateColorTextures();
 
 		m_frames.reserve(dx12::SwapChain::ImageCount);
 		for (UINT32 i = 0; i < dx12::SwapChain::ImageCount; ++i)
 			m_frames.emplace_back(*this, i);
 	}
 
-	void Dx12RHISwapChain::CreateDepthBuffer()
+	void Dx12RHISwapChain::CreateColorTextures()
 	{
-		auto extent = GetExtent();
-		auto* d3dDevice = m_rhiDevice->dx12::Device::Get();
+		const Vector2u extent = GetExtent();
+		const DXGI_FORMAT format = dx12::Factory::PixelFormatToDXGI(GetPixelFormat());
 
-		// Create DSV descriptor heap
-		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
-		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-		dsvHeapDesc.NumDescriptors = 1;
-		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&m_dsvHeap));
-
-		m_dsvHandle = m_dsvHeap->GetCPUDescriptorHandleForHeapStart();
-
-		// Create depth buffer resource
-		D3D12_RESOURCE_DESC depthDesc{};
-		depthDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-		depthDesc.Width = extent.X();
-		depthDesc.Height = extent.Y();
-		depthDesc.DepthOrArraySize = 1;
-		depthDesc.MipLevels = 1;
-		depthDesc.Format = DXGI_FORMAT_D32_FLOAT;
-		depthDesc.SampleDesc.Count = 1;
-		depthDesc.SampleDesc.Quality = 0;
-		depthDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		depthDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-		D3D12_CLEAR_VALUE clearValue{};
-		clearValue.Format = DXGI_FORMAT_D32_FLOAT;
-		clearValue.DepthStencil.Depth = 1.0f;
-		clearValue.DepthStencil.Stencil = 0;
-
-		D3D12_HEAP_PROPERTIES heapProps{};
-		heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
-
-		d3dDevice->CreateCommittedResource(
-			&heapProps, D3D12_HEAP_FLAG_NONE,
-			&depthDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE,
-			&clearValue, IID_PPV_ARGS(&m_depthBuffer));
-
-		// Create DSV
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
-		dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
-		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		dsvDesc.Texture2D.MipSlice = 0;
-		d3dDevice->CreateDepthStencilView(m_depthBuffer.Get(), &dsvDesc, m_dsvHandle);
+		m_colorTextures.clear();
+		m_colorTextures.reserve(dx12::SwapChain::ImageCount);
+		for (UInt32 i = 0; i < dx12::SwapChain::ImageCount; ++i)
+		{
+			m_colorTextures.push_back(std::make_shared<Dx12RHITexture>(
+				*m_rhiDevice, GetRenderTargets()[i], format, extent.X(), extent.Y()));
+		}
 	}
 
-	RenderPass* Dx12RHISwapChain::GetRenderPass()
+	std::shared_ptr<Texture> Dx12RHISwapChain::GetColorTexture(UInt32 imageIndex)
 	{
-		return m_renderPass.get();
+		CCT_ASSERT(imageIndex < m_colorTextures.size(), "ConcertoGraphics: Invalid swapchain image index {}", imageIndex);
+		return m_colorTextures[imageIndex];
 	}
 
 	Vector2u Dx12RHISwapChain::GetExtent() const
@@ -116,14 +85,7 @@ namespace cct::gfx::rhi
 		m_renderFence(*owner.GetDevice()),
 		m_owner(&owner),
 		m_imageIndex(imageIndex),
-		m_commandBuffer(Cast<Dx12RHICommandPool&>(owner.GetCommandPool()), D3D12_COMMAND_LIST_TYPE_DIRECT, *owner.m_rhiDevice),
-		m_frameBuffer(
-			owner.GetExtent().X(), owner.GetExtent().Y(),
-			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>{owner.GetRenderTargetViewHandles()[imageIndex]},
-			std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>>{owner.GetRenderTargets()[imageIndex]},
-			owner.m_dsvHandle,
-			owner.m_depthBuffer,
-			/* isSwapchainTarget */ true)
+		m_commandBuffer(Cast<Dx12RHICommandPool&>(owner.GetCommandPool()), D3D12_COMMAND_LIST_TYPE_DIRECT, *owner.m_rhiDevice)
 	{
 	}
 
@@ -144,11 +106,6 @@ namespace cct::gfx::rhi
 	std::size_t Dx12RHISwapChain::SwapChainFrame::GetCurrentFrameIndex()
 	{
 		return m_imageIndex;
-	}
-
-	rhi::FrameBuffer& Dx12RHISwapChain::SwapChainFrame::GetFrameBuffer()
-	{
-		return m_frameBuffer;
 	}
 
 	void Dx12RHISwapChain::SwapChainFrame::Wait() const

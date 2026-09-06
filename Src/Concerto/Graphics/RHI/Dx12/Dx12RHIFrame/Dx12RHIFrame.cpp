@@ -19,9 +19,4 @@ namespace cct::gfx::rhi
 	{
 		return 0;
 	}
-
-	rhi::FrameBuffer& Dx12RHIFrame::GetFrameBuffer()
-	{
-		return *reinterpret_cast<FrameBuffer*>(nullptr);
-	}
 } // namespace cct::gfx::rhi

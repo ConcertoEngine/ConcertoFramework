@@ -7,7 +7,6 @@
 
 #include "Concerto/Graphics/RHI/CommandBuffer.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
-#include "Concerto/Graphics/RHI/FrameBuffer.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -19,7 +18,6 @@ namespace cct::gfx::rhi
 		virtual void Present() = 0;
 		virtual rhi::CommandBuffer& GetCommandBuffer() = 0;
 		virtual std::size_t GetCurrentFrameIndex() = 0;
-		virtual rhi::FrameBuffer& GetFrameBuffer() = 0;
 	};
 } // namespace cct::gfx::rhi
 
