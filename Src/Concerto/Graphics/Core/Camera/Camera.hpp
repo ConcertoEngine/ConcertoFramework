@@ -55,8 +55,6 @@ namespace cct::gfx
 		EulerAnglesf m_eulerAngles;
 		Vector3f m_velocity;
 		Vector3f m_position;
-		float m_movementSpeed;
-		float m_mouseSensitivity;
 		float m_fov;
 		float m_near;
 		float m_far;

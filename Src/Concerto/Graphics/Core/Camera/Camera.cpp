@@ -10,8 +10,6 @@ namespace cct::gfx
 		m_eulerAngles(),
 		m_velocity(),
 		m_position(),
-		m_movementSpeed(),
-		m_mouseSensitivity(),
 		m_fov(fov),
 		m_near(near),
 		m_far(far),
@@ -120,7 +118,7 @@ namespace cct::gfx
 		projectionMatrix(0, 0) = 1.f / (m_aspectRatio * tanHalfFov);
 		projectionMatrix(1, 1) = 1.f / tanHalfFov;
 		projectionMatrix(2, 2) = m_far / (m_near - m_far);
-		projectionMatrix(2, 3) = -(2.f * m_far * m_near) / (m_far - m_near);
+		projectionMatrix(2, 3) = -(m_far * m_near) / (m_far - m_near);
 		projectionMatrix(3, 2) = -1.f;
 	}
 
@@ -146,10 +144,10 @@ namespace cct::gfx
 				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Backward() * x;
 				break;
 			case CameraMovement::Left:
-				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Right() * x;
+				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Left() * x;
 				break;
 			case CameraMovement::Right:
-				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Left() * x;
+				m_position += m_eulerAngles.ToQuaternion() * Vector3f::Right() * x;
 				break;
 		}
 	}
