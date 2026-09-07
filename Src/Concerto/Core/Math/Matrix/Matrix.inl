@@ -5,6 +5,9 @@
 #ifndef CONCERTO_CORE_MATH_MATRIX_INL
 #define CONCERTO_CORE_MATH_MATRIX_INL
 
+#include <cmath>
+#include <utility>
+
 #include "Concerto/Core/Assert.hpp"
 #include "Concerto/Core/Math/Matrix/Matrix.hpp"
 
@@ -95,14 +98,58 @@ namespace cct
 	template<typename T, std::size_t Rows, std::size_t Columns>
 	constexpr Matrix<T, Rows, Columns> Matrix<T, Rows, Columns>::Inverse() const noexcept
 	{
-		Matrix result;
-		for (std::size_t i = 0; i < Rows; ++i)
+		static_assert(Rows == Columns, "Inverse is only defined for square matrices");
+
+		Matrix a = *this;
+		Matrix result = Identity();
+
+		for (std::size_t col = 0; col < Columns; ++col)
 		{
+			std::size_t pivotRow = col;
+			T pivotValue = std::abs(a.GetElement(col, col));
+			for (std::size_t row = col + 1; row < Rows; ++row)
+			{
+				T value = std::abs(a.GetElement(row, col));
+				if (value > pivotValue)
+				{
+					pivotValue = value;
+					pivotRow = row;
+				}
+			}
+
+			CCT_ASSERT(pivotValue != T(0), "Matrix is not invertible");
+
+			if (pivotRow != col)
+			{
+				for (std::size_t j = 0; j < Columns; ++j)
+				{
+					std::swap(a.GetElement(col, j), a.GetElement(pivotRow, j));
+					std::swap(result.GetElement(col, j), result.GetElement(pivotRow, j));
+				}
+			}
+
+			T pivot = a.GetElement(col, col);
 			for (std::size_t j = 0; j < Columns; ++j)
 			{
-				result.GetElement(i, j) = GetElement(j, i);
+				a.GetElement(col, j) /= pivot;
+				result.GetElement(col, j) /= pivot;
+			}
+
+			for (std::size_t row = 0; row < Rows; ++row)
+			{
+				if (row == col)
+					continue;
+				T factor = a.GetElement(row, col);
+				if (factor == T(0))
+					continue;
+				for (std::size_t j = 0; j < Columns; ++j)
+				{
+					a.GetElement(row, j) -= factor * a.GetElement(col, j);
+					result.GetElement(row, j) -= factor * result.GetElement(col, j);
+				}
 			}
 		}
+
 		return result;
 	}
 
