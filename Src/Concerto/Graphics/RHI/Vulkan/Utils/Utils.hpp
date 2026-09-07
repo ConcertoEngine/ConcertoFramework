@@ -24,6 +24,7 @@ namespace cct::gfx::rhi
 		static constexpr inline VkShaderStageFlags ToVulkan(EnumFlags<cct::gfx::ShaderStage> stageFlags);
 		static constexpr inline VkDescriptorType ToVulkan(cct::gfx::ShaderBindingType bindingType);
 		static constexpr inline VkFormat ToVulkan(rhi::VertexAttributeFormat format);
+		static constexpr inline VkSamplerAddressMode ToVulkan(SamplerAddressMode addressMode);
 
 		template<typename T>
 		static constexpr inline VkFlags ToVulkan(UInt32 flags);

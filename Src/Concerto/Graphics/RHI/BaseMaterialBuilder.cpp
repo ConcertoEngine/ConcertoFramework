@@ -236,7 +236,7 @@ namespace cct::gfx::rhi
 			if (materialTemplate->diffuseTextureSetIndex != std::numeric_limits<UInt32>::max() &&
 				materialTemplate->diffuseTextureSetIndex < instance->descriptorSets.size())
 			{
-				instance->descriptorSets[materialTemplate->diffuseTextureSetIndex]->BindTexture(materialTemplate->diffuseTextureBinding, *instance->diffuseTexture);
+				instance->descriptorSets[materialTemplate->diffuseTextureSetIndex]->BindTexture(materialTemplate->diffuseTextureBinding, *instance->diffuseTexture, info.diffuseTextureAddressMode);
 			}
 		}
 

@@ -141,6 +141,13 @@ namespace cct::gfx::rhi
 	};
 	using BufferUsageFlags = cct::EnumFlags<BufferUsage>;
 
+	enum class SamplerAddressMode : UInt8
+	{
+		Repeat,
+		ClampToEdge,
+		MirroredRepeat
+	};
+
 	enum class VertexAttributeFormat : UInt8
 	{
 		Vec2f,

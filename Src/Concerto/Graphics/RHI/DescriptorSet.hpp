@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "Concerto/Graphics/RHI/Defines.hpp"
+#include "Concerto/Graphics/RHI/Enums.hpp"
 
 namespace cct::gfx::rhi
 {
@@ -31,7 +32,8 @@ namespace cct::gfx::rhi
 		/**
 		 * @brief Bind a texture to a specific binding index
 		 */
-		virtual void BindTexture(UInt32 binding, const Texture& texture) = 0;
+		virtual void BindTexture(UInt32 binding, const Texture& texture,
+								 SamplerAddressMode addressMode = SamplerAddressMode::Repeat) = 0;
 
 		virtual void BindStorageImage(UInt32 binding, const Texture& texture)
 		{

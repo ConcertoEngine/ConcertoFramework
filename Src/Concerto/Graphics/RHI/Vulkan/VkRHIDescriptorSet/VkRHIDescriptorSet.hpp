@@ -29,16 +29,23 @@ namespace cct::gfx::rhi
 		VkRHIDescriptorSet& operator=(VkRHIDescriptorSet&&) noexcept = default;
 
 		void BindBuffer(UInt32 binding, const Buffer& buffer, UInt32 offset = 0, UInt32 range = 0) override;
-		void BindTexture(UInt32 binding, const Texture& texture) override;
+		void BindTexture(UInt32 binding, const Texture& texture,
+						 SamplerAddressMode addressMode = SamplerAddressMode::Repeat) override;
 		void BindStorageImage(UInt32 binding, const Texture& texture) override;
 		const std::shared_ptr<DescriptorSetLayout>& GetLayout() const override;
 		const vk::DescriptorSetPtr& Get() const;
 
 	private:
+		struct CachedSampler
+		{
+			SamplerAddressMode addressMode;
+			std::unique_ptr<vk::Sampler> sampler;
+		};
+
 		vk::DescriptorSetPtr m_vkDescriptorSet;
 		std::shared_ptr<DescriptorSetLayout> m_layout;
-		// One sampler per binding, created once and reused every frame.
-		std::unordered_map<UInt32, std::unique_ptr<vk::Sampler>> m_samplerCache;
+		// One sampler per binding, recreated only when the requested address mode changes.
+		std::unordered_map<UInt32, CachedSampler> m_samplerCache;
 	};
 } // namespace cct::gfx::rhi
 

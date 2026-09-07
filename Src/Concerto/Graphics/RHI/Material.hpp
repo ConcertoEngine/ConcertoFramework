@@ -35,6 +35,7 @@ namespace cct::gfx::rhi
 				Combine(hash, material.emissiveColor.X());
 				Combine(hash, material.emissiveColor.Y());
 				Combine(hash, material.emissiveColor.Z());
+				Combine(hash, static_cast<UInt8>(material.diffuseTextureAddressMode));
 				return hash;
 			}
 
@@ -48,7 +49,7 @@ namespace cct::gfx::rhi
 		MaterialInfo() = default;
 		bool operator==(const MaterialInfo& other) const
 		{
-			return diffuseTexturePath == other.diffuseTexturePath && diffuseColor == other.diffuseColor && metallic == other.metallic && specular == other.specular && roughness == other.roughness && anisotropy == other.anisotropy && emissiveColor == other.emissiveColor && normalTexturePath == other.normalTexturePath;
+			return diffuseTexturePath == other.diffuseTexturePath && diffuseColor == other.diffuseColor && metallic == other.metallic && specular == other.specular && roughness == other.roughness && anisotropy == other.anisotropy && emissiveColor == other.emissiveColor && normalTexturePath == other.normalTexturePath && diffuseTextureAddressMode == other.diffuseTextureAddressMode;
 		}
 
 		[[nodiscard]] std::size_t GetHash() const
@@ -64,6 +65,7 @@ namespace cct::gfx::rhi
 		float anisotropy = 0.0f;
 		Vector3f emissiveColor;
 		std::string normalTexturePath;
+		SamplerAddressMode diffuseTextureAddressMode = SamplerAddressMode::Repeat;
 		std::string name;
 		std::string vertexShaderPath;
 		std::string fragmentShaderPath;

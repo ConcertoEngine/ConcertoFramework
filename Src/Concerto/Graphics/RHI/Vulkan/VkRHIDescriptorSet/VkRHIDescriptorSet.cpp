@@ -56,7 +56,7 @@ namespace cct::gfx::rhi
 		device->vkUpdateDescriptorSets(*device->Get(), 1, &write, 0, nullptr);
 	}
 
-	void VkRHIDescriptorSet::BindTexture(UInt32 binding, const Texture& texture)
+	void VkRHIDescriptorSet::BindTexture(UInt32 binding, const Texture& texture, SamplerAddressMode addressMode)
 	{
 		auto* vkTexture = dynamic_cast<const VkRHITexture*>(&texture);
 		CCT_ASSERT(vkTexture, "VkRHIDescriptorSet::BindTexture expects a VkRHITexture");
@@ -74,14 +74,15 @@ namespace cct::gfx::rhi
 		auto* device = m_vkDescriptorSet->GetDevice();
 		CCT_ASSERT(device, "DescriptorSet device is null");
 
-		auto& sampler = m_samplerCache[binding];
-		if (!sampler)
+		auto& cachedSampler = m_samplerCache[binding];
+		if (!cachedSampler.sampler || cachedSampler.addressMode != addressMode)
 		{
-			sampler = std::make_unique<vk::Sampler>(*device, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+			cachedSampler.addressMode = addressMode;
+			cachedSampler.sampler = std::make_unique<vk::Sampler>(*device, VK_FILTER_LINEAR, Converters::ToVulkan(addressMode));
 		}
 
 		VkDescriptorImageInfo imageInfo{};
-		imageInfo.sampler = *sampler->Get();
+		imageInfo.sampler = *cachedSampler.sampler->Get();
 		imageInfo.imageView = *vkTexture->GetImageView().Get();
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

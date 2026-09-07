@@ -400,6 +400,20 @@ namespace cct::gfx::rhi
 		return VK_FORMAT_UNDEFINED;
 	}
 
+	constexpr VkSamplerAddressMode Converters::ToVulkan(SamplerAddressMode addressMode)
+	{
+		switch (addressMode)
+		{
+			case SamplerAddressMode::Repeat:
+				return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			case SamplerAddressMode::ClampToEdge:
+				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+			case SamplerAddressMode::MirroredRepeat:
+				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+		}
+		return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	}
+
 	constexpr PixelFormat Converters::FromVulkan(VkFormat format)
 	{
 		switch (format)

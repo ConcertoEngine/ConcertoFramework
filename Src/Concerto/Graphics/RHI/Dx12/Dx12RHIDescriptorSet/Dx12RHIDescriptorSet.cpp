@@ -90,7 +90,7 @@ namespace cct::gfx::rhi
 		}
 	}
 
-	void Dx12RHIDescriptorSet::BindTexture(UInt32 binding, const Texture& texture)
+	void Dx12RHIDescriptorSet::BindTexture(UInt32 binding, const Texture& texture, SamplerAddressMode addressMode)
 	{
 		const auto& dx12Texture = Cast<const Dx12RHITexture&>(texture);
 		const auto& bindings = m_layout->GetBindings();
@@ -135,11 +135,26 @@ namespace cct::gfx::rhi
 		if (isSampler && m_samplerRange.baseHandle.IsValid())
 		{
 			auto samplerHandle = m_samplerRange[samplerOffset].cpuHandle;
+			D3D12_TEXTURE_ADDRESS_MODE dx12AddressMode = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			switch (addressMode)
+			{
+				case SamplerAddressMode::ClampToEdge:
+					dx12AddressMode = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+					break;
+				case SamplerAddressMode::MirroredRepeat:
+					dx12AddressMode = D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+					break;
+				case SamplerAddressMode::Repeat:
+				default:
+					dx12AddressMode = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+					break;
+			}
+
 			D3D12_SAMPLER_DESC samplerDesc{};
 			samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-			samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-			samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+			samplerDesc.AddressU = dx12AddressMode;
+			samplerDesc.AddressV = dx12AddressMode;
+			samplerDesc.AddressW = dx12AddressMode;
 			samplerDesc.MipLODBias = 0.0f;
 			samplerDesc.MaxAnisotropy = 1;
 			samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
