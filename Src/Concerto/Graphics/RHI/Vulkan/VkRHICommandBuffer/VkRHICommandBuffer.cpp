@@ -87,9 +87,9 @@ namespace cct::gfx::rhi
 	{
 		VkViewport vkViewport = {
 			.x = viewport.x,
-			.y = viewport.y,
+			.y = viewport.y + viewport.height,
 			.width = viewport.width,
-			.height = viewport.height,
+			.height = -viewport.height,
 			.minDepth = viewport.minDepth,
 			.maxDepth = viewport.maxDepth};
 		vk::CommandBuffer::SetViewport(vkViewport);
