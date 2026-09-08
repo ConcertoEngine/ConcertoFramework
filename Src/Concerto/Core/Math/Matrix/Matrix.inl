@@ -297,13 +297,7 @@ namespace cct
 	template<typename T, std::size_t Rows, std::size_t Columns>
 	constexpr Matrix<T, Rows, Columns>& Matrix<T, Rows, Columns>::operator*=(const Matrix<T, Rows, Columns>& other) noexcept
 	{
-		for (std::size_t i = 0; i < Rows; ++i)
-		{
-			for (std::size_t j = 0; j < Columns; ++j)
-			{
-				GetElement(i, j) *= other.GetElement(i, j);
-			}
-		}
+		*this = *this * other;
 		return *this;
 	}
 

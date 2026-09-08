@@ -179,9 +179,9 @@ namespace cct
 	Matrix4<T> Vector<T, Size>::ToTranslationMatrix() const noexcept
 	{
 		Matrix4<T> res = Matrix4<T>::Identity();
-		res(3, 0) += X();
-		res(3, 1) += Y();
-		res(3, 2) += Z();
+		res(0, 3) += X();
+		res(1, 3) += Y();
+		res(2, 3) += Z();
 		return res;
 	}
 
