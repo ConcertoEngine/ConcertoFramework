@@ -13,6 +13,8 @@
 
 namespace cct
 {
+	class Trackable;
+
 	/// Type-safe signal that can be connected to zero or more slots (callbacks).
 	///
 	/// - Lazy allocation: no heap allocation until the first Connect() call.
@@ -53,6 +55,12 @@ namespace cct
 		template<typename T>
 		[[nodiscard]] Connection Connect(const T* obj, void (T::*method)(Args...) const);
 
+		Connection Connect(const Trackable& context, std::function<void(Args...)> slot);
+		template<typename T>
+		Connection Connect(const Trackable& context, T* obj, void (T::*method)(Args...));
+		template<typename T>
+		Connection Connect(const Trackable& context, const T* obj, void (T::*method)(Args...) const);
+
 		void Disconnect(Connection& connection);
 		void DisconnectAll();
 
@@ -68,6 +76,7 @@ namespace cct
 			std::size_t id;
 			std::function<void(Args...)> fn;
 			bool active = true;
+			std::shared_ptr<bool> connected;
 		};
 
 		struct SlotList
@@ -78,7 +87,7 @@ namespace cct
 		};
 
 		void EnsureState() const;
-		void DisconnectById(std::size_t id) const;
+		Connection MakeConnection(std::size_t id, std::shared_ptr<bool> connected);
 
 		mutable std::shared_ptr<SlotList> m_state; // null until first Connect()
 	};

@@ -18,7 +18,7 @@ namespace cct
 
 	inline bool Connection::IsConnected() const
 	{
-		return m_disconnectFn && !m_weakSignal.expired();
+		return m_connectedFlag && *m_connectedFlag && !m_weakSignal.expired();
 	}
 
 	inline void ScopedConnection::Disconnect()

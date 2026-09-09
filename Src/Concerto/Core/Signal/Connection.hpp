@@ -27,9 +27,10 @@ namespace cct
 		[[nodiscard]] inline bool IsConnected() const;
 
 	private:
-		explicit Connection(std::function<void()> disconnectFn, std::weak_ptr<void> weakSignal) :
+		explicit Connection(std::function<void()> disconnectFn, std::weak_ptr<void> weakSignal, std::shared_ptr<bool> connectedFlag) :
 			m_disconnectFn(std::move(disconnectFn)),
-			m_weakSignal(std::move(weakSignal))
+			m_weakSignal(std::move(weakSignal)),
+			m_connectedFlag(std::move(connectedFlag))
 		{
 		}
 
@@ -38,6 +39,7 @@ namespace cct
 
 		std::function<void()> m_disconnectFn;
 		std::weak_ptr<void> m_weakSignal;
+		std::shared_ptr<bool> m_connectedFlag;
 	};
 
 	/// RAII wrapper around Connection. Automatically disconnects when destroyed.

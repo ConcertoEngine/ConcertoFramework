@@ -3,8 +3,11 @@
 //
 
 #define CATCH_CONFIG_RUNNER
+#include <memory>
+
 #include <Concerto/Core/Signal/Connection.hpp>
 #include <Concerto/Core/Signal/Signal.hpp>
+#include <Concerto/Core/Signal/Trackable.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -83,6 +86,11 @@ SCENARIO("Signal - basic connectivity")
 			AND_WHEN("DisconnectAll() is called")
 			{
 				signal.DisconnectAll();
+				THEN("The Connection handle reflects the disconnect immediately")
+				{
+					CHECK_FALSE(conn.IsConnected());
+				}
+
 				signal.Emit();
 				THEN("The lambda is NOT called")
 				{
@@ -273,6 +281,37 @@ SCENARIO("Signal - reentrancy: disconnect inside Emit()")
 			CHECK(bCount == 2);
 		}
 	}
+
+	GIVEN("A Signal<> with a slot that calls DisconnectAll() during emission")
+	{
+		cct::Signal<> signal;
+		int aCount = 0;
+		int bCount = 0;
+
+		cct::Connection connA = signal.Connect([&]()
+											   {
+			++aCount;
+			signal.DisconnectAll(); });
+		cct::Connection connB = signal.Connect([&bCount]()
+											   { ++bCount; });
+
+		signal.Emit();
+		THEN("No crash; slots not yet visited this Emit() are skipped and both are disconnected")
+		{
+			CHECK(aCount == 1);
+			CHECK(bCount == 0);
+			CHECK_FALSE(connA.IsConnected());
+			CHECK_FALSE(connB.IsConnected());
+			CHECK(signal.GetConnectionCount() == 0);
+		}
+
+		signal.Emit();
+		THEN("After the second Emit(), nothing fires again")
+		{
+			CHECK(aCount == 1);
+			CHECK(bCount == 0);
+		}
+	}
 }
 
 SCENARIO("Signal - lifetime safety: Signal destroyed before Connection")
@@ -292,6 +331,212 @@ SCENARIO("Signal - lifetime safety: Signal destroyed before Connection")
 		{
 			CHECK_FALSE(conn.IsConnected());
 			conn.Disconnect(); // must not crash
+		}
+	}
+}
+
+SCENARIO("Signal - Connect with Trackable context")
+{
+	struct Receiver : cct::Trackable
+	{
+	};
+
+	GIVEN("A Signal<> and a live Receiver")
+	{
+		cct::Signal<> signal;
+		int callCount = 0;
+		auto receiver = std::make_unique<Receiver>();
+
+		signal.Connect(*receiver, [&callCount]()
+					   { ++callCount; });
+
+		WHEN("The receiver is still alive")
+		{
+			signal.Emit();
+			THEN("The slot fires")
+			{
+				CHECK(callCount == 1);
+			}
+		}
+
+		WHEN("The receiver is destroyed before Emit()")
+		{
+			receiver.reset();
+			signal.Emit();
+			THEN("The slot does not fire and is removed")
+			{
+				CHECK(callCount == 0);
+				CHECK(signal.GetConnectionCount() == 0);
+			}
+		}
+
+		WHEN("The receiver is destroyed after firing once")
+		{
+			signal.Emit();
+			receiver.reset();
+			signal.Emit();
+			THEN("Only the first Emit() fired")
+			{
+				CHECK(callCount == 1);
+			}
+		}
+	}
+
+	GIVEN("A Signal<> and a CallTracker connected via (context, obj, method)")
+	{
+		cct::Signal<> signal;
+		CallTracker tracker;
+		auto receiver = std::make_unique<Receiver>();
+
+		signal.Connect(*receiver, &tracker, &CallTracker::OnChanged);
+
+		WHEN("The receiver is destroyed")
+		{
+			receiver.reset();
+			signal.Emit();
+			THEN("The member function is not called")
+			{
+				CHECK(tracker.callCount == 0);
+			}
+		}
+	}
+
+	GIVEN("A Signal<> and a Connection returned by a tracked Connect")
+	{
+		cct::Signal<> signal;
+		int callCount = 0;
+		auto receiver = std::make_unique<Receiver>();
+		cct::Connection conn = signal.Connect(*receiver, [&callCount]()
+											  { ++callCount; });
+
+		WHEN("The receiver is destroyed and Emit() runs")
+		{
+			CHECK(conn.IsConnected());
+			receiver.reset();
+			signal.Emit();
+			THEN("IsConnected() reflects the auto-disconnect")
+			{
+				CHECK_FALSE(conn.IsConnected());
+			}
+		}
+
+		WHEN("The caller disconnects manually while the receiver is still alive")
+		{
+			conn.Disconnect();
+			THEN("IsConnected() is false and the receiver's destruction does not crash")
+			{
+				CHECK_FALSE(conn.IsConnected());
+				receiver.reset();
+				signal.Emit();
+				CHECK(callCount == 0);
+			}
+		}
+
+		WHEN("The receiver is destroyed but Emit() has not run yet")
+		{
+			receiver.reset();
+			THEN("GetConnectionCount() still counts the slot until the next Emit()")
+			{
+				CHECK(signal.GetConnectionCount() == 1);
+				signal.Emit();
+				CHECK(signal.GetConnectionCount() == 0);
+			}
+		}
+	}
+
+	GIVEN("A Connect(T*, method) call where T derives from Trackable")
+	{
+		struct PingableReceiver : cct::Trackable
+		{
+			void Ping()
+			{
+			}
+		};
+
+		cct::Signal<> signal;
+		auto receiver = std::make_unique<PingableReceiver>();
+
+		(void)signal.Connect(receiver.get(), &PingableReceiver::Ping);
+
+		WHEN("The receiver is destroyed")
+		{
+			receiver.reset();
+			THEN("Emit() does not crash and the slot is gone")
+			{
+				signal.Emit();
+				CHECK(signal.GetConnectionCount() == 0);
+			}
+		}
+	}
+}
+
+SCENARIO("Trackable - copy and move semantics")
+{
+	struct Receiver : cct::Trackable
+	{
+	};
+
+	GIVEN("A Signal<> connected through a Receiver")
+	{
+		cct::Signal<> signal;
+		int callCount = 0;
+
+		WHEN("The Receiver is copied and the copy is destroyed")
+		{
+			auto original = std::make_unique<Receiver>();
+			signal.Connect(*original, [&callCount]()
+						   { ++callCount; });
+
+			auto copy = std::make_unique<Receiver>(*original);
+			copy.reset();
+			signal.Emit();
+			THEN("The connection tied to the original is unaffected")
+			{
+				CHECK(callCount == 1);
+			}
+		}
+
+		WHEN("The Receiver is move-constructed elsewhere")
+		{
+			auto original = std::make_unique<Receiver>();
+			signal.Connect(*original, [&callCount]()
+						   { ++callCount; });
+
+			Receiver moved(std::move(*original));
+			original.reset();
+
+			signal.Emit();
+			THEN("The connection survives the move and follows the new instance")
+			{
+				CHECK(callCount == 1);
+			}
+		}
+
+		WHEN("dst = std::move(src) is used after Connect(src, ...)")
+		{
+			Receiver src;
+			signal.Connect(src, [&callCount]()
+						   { ++callCount; });
+
+			auto dst = std::make_unique<Receiver>();
+			*dst = std::move(src);
+
+			signal.Emit();
+			THEN("The connection follows dst through the move-assignment")
+			{
+				CHECK(callCount == 1);
+			}
+
+			AND_WHEN("dst is then destroyed")
+			{
+				dst.reset();
+				signal.Emit();
+				THEN("The connection is gone and does not fire again")
+				{
+					CHECK(callCount == 1);
+					CHECK(signal.GetConnectionCount() == 0);
+				}
+			}
 		}
 	}
 }
