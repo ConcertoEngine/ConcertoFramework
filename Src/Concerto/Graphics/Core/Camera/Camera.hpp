@@ -7,13 +7,14 @@
 
 #include <Concerto/Core/Math/Quaternion/Quaternion.hpp>
 #include <Concerto/Core/Math/Vector/Vector.hpp>
+#include <Concerto/Core/Signal/Trackable.hpp>
 
 #include "Concerto/Graphics/Core/Camera/GPUData.hpp"
 #include "Concerto/Graphics/Core/Defines.hpp"
 
 namespace cct::gfx
 {
-	class CONCERTO_GRAPHICS_CORE_API Camera : public GPUCamera
+	class CONCERTO_GRAPHICS_CORE_API Camera : public GPUCamera, public Trackable
 	{
 	public:
 		enum class CameraMovement

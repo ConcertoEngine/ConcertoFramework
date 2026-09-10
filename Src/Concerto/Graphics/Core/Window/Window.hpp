@@ -9,6 +9,9 @@
 #include <string>
 #include <vector>
 
+#include <Concerto/Core/Signal/Signal.hpp>
+#include <Concerto/Core/Signal/Trackable.hpp>
+
 #include "Concerto/Graphics/Core/Defines.hpp"
 #include "Concerto/Graphics/Core/Input/Input.hpp"
 #include "Concerto/Graphics/Core/PixelFormat.hpp"
@@ -40,7 +43,7 @@ namespace cct::gfx
 		ResizeLeft = 9,
 	};
 
-	class CONCERTO_GRAPHICS_CORE_API Window
+	class CONCERTO_GRAPHICS_CORE_API Window : public Trackable
 	{
 	public:
 		struct DraggableRect
@@ -74,11 +77,12 @@ namespace cct::gfx
 
 		bool ShouldClose() const;
 
-		void RegisterResizeCallback(std::function<void(Window& window)> callback);
-		void RegisterKeyCallback(std::function<void(Window& window, Key button, int scancode, int action, int mods)> callback);
-		void RegisterMouseButtonCallback(std::function<void(Window& window, int button, int action, int mods)> callback);
-		void RegisterCursorPosCallback(std::function<void(Window& window, double xpos, double ypos)> callback);
-		void RegisterStateChangeCallback(std::function<void(Window& window, WindowState state)> callback);
+		Connection RegisterResizeCallback(std::function<void(Window& window)> callback);
+		Connection RegisterResizeCallback(const Trackable& context, std::function<void(Window& window)> callback);
+		Connection RegisterKeyCallback(std::function<void(Window& window, Key button, int scancode, int action, int mods)> callback);
+		Connection RegisterMouseButtonCallback(std::function<void(Window& window, int button, int action, int mods)> callback);
+		Connection RegisterCursorPosCallback(std::function<void(Window& window, double xpos, double ypos)> callback);
+		Connection RegisterStateChangeCallback(std::function<void(Window& window, WindowState state)> callback);
 
 		Input& GetInputManager();
 
@@ -105,7 +109,7 @@ namespace cct::gfx
 		void FireStateChange(WindowState state);
 		void FireTextInput(const char* text);
 
-		void SetTextInputCallback(std::function<void(const char*)> cb);
+		[[nodiscard]] Connection SetTextInputCallback(std::function<void(const char*)> cb);
 		void StartTextInput();
 		void StopTextInput();
 
@@ -115,12 +119,12 @@ namespace cct::gfx
 		std::size_t m_height;
 		SDL_Window* m_window;
 		Input m_input;
-		std::function<void(Window& window)> m_resizeCallback;
-		std::function<void(Window& window, Key key, int scancode, int action, int mods)> m_keyCallback;
-		std::function<void(Window& window, int button, int action, int mods)> m_mouseButtonCallback;
-		std::function<void(Window& window, double xpos, double ypos)> m_cursorPosCallback;
-		std::function<void(Window& window, WindowState state)> m_stateCallback;
-		std::function<void(const char*)> m_textInputCb;
+		Signal<Window&> m_resizeSignal;
+		Signal<Window&, Key, int, int, int> m_keySignal;
+		Signal<Window&, int, int, int> m_mouseButtonSignal;
+		Signal<Window&, double, double> m_cursorPosSignal;
+		Signal<Window&, WindowState> m_stateSignal;
+		Signal<const char*> m_textInputSignal;
 		UInt32 m_windowID;
 		bool m_shouldQuit;
 		int m_titleBarHeight;

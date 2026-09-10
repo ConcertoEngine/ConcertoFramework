@@ -606,28 +606,34 @@ namespace cct::gfx
 		return m_shouldQuit;
 	}
 
-	void Window::RegisterResizeCallback(std::function<void(Window& window)> callback)
+	Connection Window::RegisterResizeCallback(std::function<void(Window& window)> callback)
 	{
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
-		m_resizeCallback = std::move(callback);
+		return m_resizeSignal.Connect(std::move(callback));
 	}
 
-	void Window::RegisterKeyCallback(std::function<void(Window&, Key, int, int, int)> callback)
+	Connection Window::RegisterResizeCallback(const Trackable& context, std::function<void(Window& window)> callback)
 	{
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
-		m_keyCallback = std::move(callback);
+		return m_resizeSignal.Connect(context, std::move(callback));
 	}
 
-	void Window::RegisterMouseButtonCallback(std::function<void(Window& window, int button, int action, int mods)> callback)
+	Connection Window::RegisterKeyCallback(std::function<void(Window&, Key, int, int, int)> callback)
 	{
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
-		m_mouseButtonCallback = std::move(callback);
+		return m_keySignal.Connect(std::move(callback));
 	}
 
-	void Window::RegisterCursorPosCallback(std::function<void(Window& window, double xpos, double ypos)> callback)
+	Connection Window::RegisterMouseButtonCallback(std::function<void(Window& window, int button, int action, int mods)> callback)
 	{
 		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
-		m_cursorPosCallback = std::move(callback);
+		return m_mouseButtonSignal.Connect(std::move(callback));
+	}
+
+	Connection Window::RegisterCursorPosCallback(std::function<void(Window& window, double xpos, double ypos)> callback)
+	{
+		CCT_ASSERT(m_window, "ConcertoGraphics: invalid window pointer");
+		return m_cursorPosSignal.Connect(std::move(callback));
 	}
 
 	Input& Window::GetInputManager()
@@ -647,8 +653,7 @@ namespace cct::gfx
 
 	void Window::TriggerResize()
 	{
-		if (m_resizeCallback)
-			m_resizeCallback(*this);
+		m_resizeSignal.Emit(*this);
 	}
 
 	PixelFormat Window::GetFormat() const
@@ -656,9 +661,9 @@ namespace cct::gfx
 		return PixelFormatFromSDL(SDL_GetWindowPixelFormat(m_window));
 	}
 
-	void Window::RegisterStateChangeCallback(std::function<void(Window&, WindowState)> callback)
+	Connection Window::RegisterStateChangeCallback(std::function<void(Window&, WindowState)> callback)
 	{
-		m_stateCallback = std::move(callback);
+		return m_stateSignal.Connect(std::move(callback));
 	}
 
 	void Window::Minimize()
@@ -718,21 +723,18 @@ namespace cct::gfx
 
 	void Window::FireStateChange(WindowState state)
 	{
-		if (m_stateCallback)
-			m_stateCallback(*this, state);
+		m_stateSignal.Emit(*this, state);
 	}
 
 	void Window::FireTextInput(const char* text)
 	{
-		if (m_textInputCb)
-		{
-			m_textInputCb(text);
-		}
+		m_textInputSignal.Emit(text);
 	}
 
-	void Window::SetTextInputCallback(std::function<void(const char*)> cb)
+	Connection Window::SetTextInputCallback(std::function<void(const char*)> cb)
 	{
-		m_textInputCb = std::move(cb);
+		m_textInputSignal.DisconnectAll();
+		return m_textInputSignal.Connect(std::move(cb));
 	}
 
 	void Window::StartTextInput()

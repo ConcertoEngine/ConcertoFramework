@@ -8,32 +8,30 @@
 
 namespace cct
 {
-	void Input::Register(const std::string& name, Key key, TriggerType triggerType, std::function<void()>&& callback)
+	Connection Input::Register(const std::string& name, Key key, TriggerType triggerType, std::function<void()> callback)
 	{
-		auto it = m_keyCallbacks.find(name);
-		if (it == m_keyCallbacks.end())
-		{
-			auto pair = std::make_pair(SparseVector<bool>(), TriggerTypeCallbacks());
-			pair.first.Emplace(static_cast<std::size_t>(key), true);
-			pair.second[triggerType].push_back(callback);
-			m_keyCallbacks.emplace(name, std::move(pair));
-			return;
-		}
+		auto [it, inserted] = m_keyBindings.try_emplace(name);
 		it->second.first.Emplace(static_cast<std::size_t>(key), true);
-		it->second.second[triggerType].push_back(callback);
+		return it->second.second[triggerType].Connect(std::move(callback));
 	}
 
-	void Input::Register(const std::string& name, MouseEvent::Type key, MouseEventCallback&& callback)
+	Connection Input::Register(const std::string& name, MouseEvent::Type key, MouseEventCallback callback)
 	{
-		const auto it = m_mouseCallback.find(name);
-		if (it == m_mouseCallback.end())
-		{
-			std::vector<MouseEventCallback> vec = {callback};
-			auto pair = std::make_pair(key, std::move(vec));
-			m_mouseCallback.emplace(name, std::move(pair));
-			return;
-		}
-		it->second.second.push_back(callback);
+		auto [it, inserted] = m_mouseBindings.try_emplace(name, MouseBinding{key, {}});
+		return it->second.second.Connect(std::move(callback));
+	}
+
+	Connection Input::Register(const std::string& name, Key key, TriggerType triggerType, const Trackable& context, std::function<void()> callback)
+	{
+		auto [it, inserted] = m_keyBindings.try_emplace(name);
+		it->second.first.Emplace(static_cast<std::size_t>(key), true);
+		return it->second.second[triggerType].Connect(context, std::move(callback));
+	}
+
+	Connection Input::Register(const std::string& name, MouseEvent::Type key, const Trackable& context, MouseEventCallback callback)
+	{
+		auto [it, inserted] = m_mouseBindings.try_emplace(name, MouseBinding{key, {}});
+		return it->second.second.Connect(context, std::move(callback));
 	}
 
 	void Input::Trigger(const std::vector<Event>& events)
@@ -49,30 +47,25 @@ namespace cct
 
 	void Input::TriggerKeyEvent(const KeyEvent& keyEvent)
 	{
-		for (auto& [key, bindingCallback] : m_keyCallbacks)
+		for (auto& [name, binding] : m_keyBindings)
 		{
 			const auto keyIndex = static_cast<std::size_t>(keyEvent.key);
-			if (!bindingCallback.first.Has(keyIndex) || !bindingCallback.first[keyIndex])
+			if (!binding.first.Has(keyIndex) || !binding.first[keyIndex])
 				continue;
-			auto it = bindingCallback.second.find(keyEvent.triggerType);
-			if (it == bindingCallback.second.end())
+			auto it = binding.second.find(keyEvent.triggerType);
+			if (it == binding.second.end())
 				continue;
-			for (auto& callback : it->second)
-				callback();
+			it->second.Emit();
 		}
 	}
 
 	void Input::TriggerMouseEvent(const MouseEvent& mouseEvent)
 	{
-		for (const auto& [key, callbacks] : m_mouseCallback)
+		for (auto& [name, binding] : m_mouseBindings)
 		{
-			if (callbacks.first != mouseEvent.type)
+			if (binding.first != mouseEvent.type)
 				continue;
-			for (auto& callback : callbacks.second)
-			{
-				if (callback)
-					callback(mouseEvent);
-			}
+			binding.second.Emit(mouseEvent);
 		}
 	}
 } // namespace cct

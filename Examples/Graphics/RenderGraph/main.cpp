@@ -148,30 +148,31 @@ int main()
 		float deltaTime = 0.f;
 		float speed = 15000.f;
 		window->SetCursorDisabled(cursorDisabled);
-		window->RegisterResizeCallback([&](Window& window)
-									   {
+
+		window->RegisterResizeCallback(camera, [&](Window& window)
+											 {
 			aspect = static_cast<float>(window.GetWidth()) / static_cast<float>(window.GetHeight());
 			camera.SetAspectRatio(aspect);
 			camera.SetFov(45.f);
 			camera.SetNear(0.0001f);
 			camera.SetFar(1000.f); });
-		inputManager.Register("MouseMoved", MouseEvent::Type::Moved, [&camera](const MouseEvent& e)
-							  { camera.Rotate(e.mouseMove.deltaX, -e.mouseMove.deltaY); });
+		inputManager.Register("MouseMoved", MouseEvent::Type::Moved, camera, [&camera](const MouseEvent& e)
+									{ camera.Rotate(e.mouseMove.deltaX, -e.mouseMove.deltaY); });
 
-		inputManager.Register("Forward", Key::Z, TriggerType::Pressed, [&camera, &speed, &deltaTime]()
-							  { camera.Move(Camera::CameraMovement::Forward, deltaTime * speed); });
+		inputManager.Register("Forward", Key::Z, TriggerType::Pressed, camera, [&camera, &speed, &deltaTime]()
+									{ camera.Move(Camera::CameraMovement::Forward, deltaTime * speed); });
 
-		inputManager.Register("Backward", Key::S, TriggerType::Pressed, [&camera, &speed, &deltaTime]()
-							  { camera.Move(Camera::CameraMovement::Backward, deltaTime * speed); });
+		inputManager.Register("Backward", Key::S, TriggerType::Pressed, camera, [&camera, &speed, &deltaTime]()
+									{ camera.Move(Camera::CameraMovement::Backward, deltaTime * speed); });
 
-		inputManager.Register("Left", Key::Q, TriggerType::Pressed, [&camera, &speed, &deltaTime]()
-							  { camera.Move(Camera::CameraMovement::Left, deltaTime * speed); });
+		inputManager.Register("Left", Key::Q, TriggerType::Pressed, camera, [&camera, &speed, &deltaTime]()
+									{ camera.Move(Camera::CameraMovement::Left, deltaTime * speed); });
 
-		inputManager.Register("Right", Key::D, TriggerType::Pressed, [&camera, &speed, &deltaTime]()
-							  { camera.Move(Camera::CameraMovement::Right, deltaTime * speed); });
+		inputManager.Register("Right", Key::D, TriggerType::Pressed, camera, [&camera, &speed, &deltaTime]()
+									{ camera.Move(Camera::CameraMovement::Right, deltaTime * speed); });
 
-		inputManager.Register("MouseFocused", Key::LeftAlt, TriggerType::Pressed, [&cursorDisabled, &window]()
-							  {
+		inputManager.Register("MouseFocused", Key::LeftAlt, TriggerType::Pressed, *window, [&cursorDisabled, &window]()
+									{
 			cursorDisabled = !cursorDisabled;
 			window->SetCursorDisabled(cursorDisabled); });
 
