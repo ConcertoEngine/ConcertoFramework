@@ -10,11 +10,13 @@
 #include <Concerto/Graphics/Core/Camera/GPUData.hpp>
 #include <Concerto/Graphics/Core/DisplayManager/DisplayManager.hpp>
 #include <Concerto/Graphics/Core/Window/Window.hpp>
-#include <Concerto/Graphics/RenderGraph/RenderGraph.hpp>
+#include <Concerto/Graphics/Renderer/ForwardOpaqueFeature.hpp>
+#include <Concerto/Graphics/Renderer/Renderer.hpp>
+#include <Concerto/Graphics/Renderer/RenderTarget.hpp>
+#include <Concerto/Graphics/Renderer/View.hpp>
 #include <Concerto/Graphics/RHI/CommandBuffer.hpp>
 #include <Concerto/Graphics/RHI/Frame.hpp>
 #include <Concerto/Graphics/RHI/GpuMesh.hpp>
-#include <Concerto/Graphics/RHI/GpuSubMesh/GpuSubMesh.hpp>
 #include <Concerto/Graphics/RHI/Instance/APIImpl.hpp>
 #include <Concerto/Graphics/RHI/Instance/Instance.hpp>
 #include <Concerto/Graphics/RHI/MaterialBuilder.hpp>
@@ -25,39 +27,6 @@
 
 using namespace cct;
 using namespace cct::gfx;
-
-namespace
-{
-	void DrawScene(rhi::RenderGraphContext& ctx, const rhi::GpuMesh& gpuMesh)
-	{
-		rhi::CommandBuffer& cmd = ctx.GetCommandBuffer();
-		cmd.SetViewport({
-			.x = 0.f,
-			.y = 0.f,
-			.width = static_cast<float>(ctx.GetWidth()),
-			.height = static_cast<float>(ctx.GetHeight()),
-			.minDepth = 0.f,
-			.maxDepth = 1.f,
-		});
-		cmd.SetScissor({0, 0, ctx.GetWidth(), ctx.GetHeight()});
-
-		std::size_t lastBoundMaterial = 0;
-		for (const auto& subMesh : gpuMesh.subMeshes)
-		{
-			const auto& material = subMesh->GetMaterial();
-			if (material == nullptr)
-				continue;
-			const std::size_t materialHash = material->GetHash();
-			if (lastBoundMaterial != materialHash)
-			{
-				lastBoundMaterial = materialHash;
-				cmd.BindMaterial(*material);
-			}
-			cmd.BindVertexBuffer(subMesh->GetVertexBuffer());
-			cmd.Draw(static_cast<UInt32>(subMesh->GetVertices().size()), 1, 0, 0);
-		}
-	}
-} // namespace
 
 int main()
 {
@@ -97,50 +66,30 @@ int main()
 		std::size_t minimumAlignment = device->GetMinimumUniformBufferOffsetAlignment();
 		std::unique_ptr<rhi::SwapChain> swapChain = device->CreateSwapChain(*window);
 
-		rhi::RenderGraph renderGraph(*device, swapChain->GetImageCount());
+		Renderer renderer(*device, swapChain->GetImageCount());
+		auto forwardFeatureOwner = std::make_unique<ForwardOpaqueFeature>();
+		ForwardOpaqueFeature& forwardFeature = *forwardFeatureOwner;
+		renderer.AddFeature(std::move(forwardFeatureOwner));
 
 		std::unique_ptr<rhi::TextureBuilder> textureBuilder = device->CreateTextureBuilder();
 		std::unique_ptr<rhi::MaterialBuilder> materialBuilder = device->CreateMaterialBuilder(swapChain->GetExtent(), *textureBuilder);
 
-		std::shared_ptr<rhi::GpuMesh> gpuMesh;
-		rhi::RGTextureHandle backbufferHandle;
-		rhi::RGTextureHandle depthHandle;
-		UInt32 declaredWidth = 0;
-		UInt32 declaredHeight = 0;
-
-		auto declareGraph = [&](UInt32 width, UInt32 height, UInt32 imageIndex, rhi::ImageLayout backbufferLayout)
-		{
-			renderGraph.Clear();
-
-			backbufferHandle = renderGraph.ImportTexture(
-				"Backbuffer", swapChain->GetColorTexture(imageIndex), backbufferLayout,
-				swapChain->GetPixelFormat(), width, height);
-			depthHandle = renderGraph.CreateTexture(
-				{width, height, swapChain->GetDepthPixelFormat(), true, "SceneDepth"});
-
-			renderGraph.AddGraphicsPass(
-				"SceneOpaque",
-				[&](rhi::RenderGraphBuilder& b)
-				{
-					backbufferHandle = b.Write(backbufferHandle);
-					depthHandle = b.WriteDepth(depthHandle);
-				},
-				[&](rhi::RenderGraphContext& ctx)
-				{ DrawScene(ctx, *gpuMesh); });
-
-			renderGraph.SetFinalOutput(backbufferHandle);
-			renderGraph.SetExportLayout(backbufferHandle, rhi::ImageLayout::PresentSrcKhr);
-
-			declaredWidth = width;
-			declaredHeight = height;
-		};
-
 		const Vector2u extent = swapChain->GetExtent();
-		declareGraph(extent.X(), extent.Y(), 0, rhi::ImageLayout::Undefined);
-		renderGraph.Compile();
+		std::vector<bool> backbufferEverUsed(swapChain->GetImageCount(), false);
 
-		const rhi::RenderPass& sceneRenderPass = renderGraph.GetPassRenderPass("SceneOpaque");
-		gpuMesh = device->CreateMesh("./assets/sponza/sponza.obj", *materialBuilder, *textureBuilder, sceneRenderPass);
+		RenderTarget target;
+		target.colorTexture = swapChain->GetColorTexture(0);
+		target.currentLayout = rhi::ImageLayout::Undefined;
+		target.exportLayout = rhi::ImageLayout::PresentSrcKhr;
+		target.colorFormat = swapChain->GetPixelFormat();
+		target.depthFormat = swapChain->GetDepthPixelFormat();
+		target.width = extent.X();
+		target.height = extent.Y();
+		renderer.Build(target);
+
+		std::shared_ptr<rhi::GpuMesh> gpuMesh = device->CreateMesh(
+			"./assets/sponza/sponza.obj", *materialBuilder, *textureBuilder, renderer.GetPassRenderPass("SceneOpaque"));
+		forwardFeature.SetMesh(gpuMesh);
 
 		float aspect = static_cast<float>(window->GetWidth()) / static_cast<float>(window->GetHeight());
 		Camera camera(ToRadians(90.f), 0.1f, 1000000.f, aspect);
@@ -150,29 +99,29 @@ int main()
 		window->SetCursorDisabled(cursorDisabled);
 
 		window->RegisterResizeCallback(camera, [&](Window& window)
-											 {
+									   {
 			aspect = static_cast<float>(window.GetWidth()) / static_cast<float>(window.GetHeight());
 			camera.SetAspectRatio(aspect);
 			camera.SetFov(45.f);
 			camera.SetNear(0.0001f);
 			camera.SetFar(1000.f); });
 		inputManager.Register("MouseMoved", MouseEvent::Type::Moved, camera, [&camera](const MouseEvent& e)
-									{ camera.Rotate(e.mouseMove.deltaX, -e.mouseMove.deltaY); });
+							  { camera.Rotate(e.mouseMove.deltaX, -e.mouseMove.deltaY); });
 
 		inputManager.Register("Forward", Key::Z, TriggerType::Pressed, camera, [&camera, &speed, &deltaTime]()
-									{ camera.Move(Camera::CameraMovement::Forward, deltaTime * speed); });
+							  { camera.Move(Camera::CameraMovement::Forward, deltaTime * speed); });
 
 		inputManager.Register("Backward", Key::S, TriggerType::Pressed, camera, [&camera, &speed, &deltaTime]()
-									{ camera.Move(Camera::CameraMovement::Backward, deltaTime * speed); });
+							  { camera.Move(Camera::CameraMovement::Backward, deltaTime * speed); });
 
 		inputManager.Register("Left", Key::Q, TriggerType::Pressed, camera, [&camera, &speed, &deltaTime]()
-									{ camera.Move(Camera::CameraMovement::Left, deltaTime * speed); });
+							  { camera.Move(Camera::CameraMovement::Left, deltaTime * speed); });
 
 		inputManager.Register("Right", Key::D, TriggerType::Pressed, camera, [&camera, &speed, &deltaTime]()
-									{ camera.Move(Camera::CameraMovement::Right, deltaTime * speed); });
+							  { camera.Move(Camera::CameraMovement::Right, deltaTime * speed); });
 
 		inputManager.Register("MouseFocused", Key::LeftAlt, TriggerType::Pressed, *window, [&cursorDisabled, &window]()
-									{
+							  {
 			cursorDisabled = !cursorDisabled;
 			window->SetCursorDisabled(cursorDisabled); });
 
@@ -198,8 +147,6 @@ int main()
 		materialBuilder->Update(*sceneBuffer, 0, 1);
 		materialBuilder->Update(*objectsBuffer, 1, 0);
 
-		std::vector<bool> backbufferEverUsed(swapChain->GetImageCount(), false);
-
 		std::chrono::high_resolution_clock::time_point lastFrameTime = std::chrono::high_resolution_clock::now();
 		while (!window->ShouldClose())
 		{
@@ -211,8 +158,6 @@ int main()
 
 			rhi::Frame& currentFrame = swapChain->AcquireFrame();
 
-			renderGraph.Reset();
-
 			cameraBuffer->Write<GPUCamera>(camera, rhi::PadUniformBuffer(sizeof(GPUCamera), minimumAlignment * currentFrame.GetCurrentFrameIndex()));
 			sceneBuffer->Write(sceneParameters.gpuSceneData);
 			objectsBuffer->Write(modelMatrix);
@@ -220,27 +165,22 @@ int main()
 			const auto imageIndex = static_cast<UInt32>(currentFrame.GetCurrentFrameIndex());
 			const auto width = static_cast<UInt32>(window->GetWidth());
 			const auto height = static_cast<UInt32>(window->GetHeight());
+			const View view = View::FromCamera(camera, Vector2u{width, height});
 
-			if (width != declaredWidth || height != declaredHeight)
-			{
+			if (width != target.width || height != target.height)
 				std::fill(backbufferEverUsed.begin(), backbufferEverUsed.end(), false);
-				declareGraph(width, height, imageIndex, rhi::ImageLayout::Undefined);
-				backbufferEverUsed[imageIndex] = true;
-			}
-			else
-			{
-				const rhi::ImageLayout backbufferLayout = backbufferEverUsed[imageIndex]
-															  ? rhi::ImageLayout::PresentSrcKhr
-															  : rhi::ImageLayout::Undefined;
-				backbufferEverUsed[imageIndex] = true;
-				renderGraph.UpdateImportedTexture(backbufferHandle, swapChain->GetColorTexture(imageIndex), backbufferLayout);
-			}
+
+			target.colorTexture = swapChain->GetColorTexture(imageIndex);
+			target.currentLayout = backbufferEverUsed[imageIndex] ? rhi::ImageLayout::PresentSrcKhr : rhi::ImageLayout::Undefined;
+			target.width = width;
+			target.height = height;
+			backbufferEverUsed[imageIndex] = true;
 
 			rhi::CommandBuffer& commandBuffer = currentFrame.GetCommandBuffer();
 			commandBuffer.Reset();
 			commandBuffer.Begin();
 			{
-				renderGraph.Execute(commandBuffer, width, height);
+				renderer.DrawFrame(commandBuffer, target, view);
 			}
 			commandBuffer.End();
 			currentFrame.Present();
