@@ -156,13 +156,35 @@ static const char* StripToBareClassName(const char* type, char* buf, size_t bufS
 	return buf;
 }
 
+// Reflected method return values are boxed into a cct::refl::Object-derived instance
+// (see EmitBoxedReturn). A raw pointer return type (e.g. "int*", "const cct::refl::Class*")
+// has no such wrapper, so methods with that return type are excluded from reflection
+// generation entirely rather than emitting code that fails to compile.
+static int IsUnsupportedPointerReturnType(const char* returnType)
+{
+	if (!returnType || returnType[0] == '\0')
+		return 0;
+	size_t len = strlen(returnType);
+	while (len > 0 && returnType[len - 1] == ' ')
+		--len;
+	return len > 0 && returnType[len - 1] == '*';
+}
+
 static void BeforeMethodGeneration(const CrpClassMethod* method, CrpGenerationContext* ctx)
 {
 	const CrpClass* cls = crpGenerationContextGetClass(ctx);
 	const char* className = crpClassGetName(cls);
 	const char* methodName = crpClassMethodGetName(method);
 	const char* base = crpClassMethodGetBase(method);
+	const char* returnType = crpClassMethodGetReturnType(method);
 	size_t paramCount = crpClassMethodGetParamCount(method);
+
+	if (IsUnsupportedPointerReturnType(returnType))
+	{
+		fprintf(stderr, "CppPlugin: skipping reflection for %s::%s - raw pointer return type '%s' is not supported\n",
+				className ? className : "<null>", methodName ? methodName : "<null>", returnType);
+		return;
+	}
 
 	const char* baseClass = (base && base[0] != '\0') ? base : "cct::refl::Method";
 
@@ -497,6 +519,8 @@ static void OnMethodGeneration(const CrpClassMethod* method, CrpGenerationContex
 	const char* methodName = crpClassMethodGetName(method);
 	const char* returnType = crpClassMethodGetReturnType(method);
 	size_t paramCount = crpClassMethodGetParamCount(method);
+	if (IsUnsupportedPointerReturnType(returnType))
+		return;
 	if (!returnType || returnType[0] == '\0')
 		returnType = "void";
 
@@ -593,6 +617,8 @@ static void AfterMethodGeneration(const CrpClassMethod* method, CrpGenerationCon
 	const char* methodName = crpClassMethodGetName(method);
 	const char* returnType = crpClassMethodGetReturnType(method);
 	size_t paramCount = crpClassMethodGetParamCount(method);
+	if (IsUnsupportedPointerReturnType(returnType))
+		return;
 	if (!returnType || returnType[0] == '\0')
 		returnType = "void";
 
@@ -693,6 +719,8 @@ static void AfterClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx)
 		const char* methodName = crpClassMethodGetName(method);
 		const char* returnType = crpClassMethodGetReturnType(method);
 		size_t paramCount = crpClassMethodGetParamCount(method);
+		if (IsUnsupportedPointerReturnType(returnType))
+			continue;
 		if (!returnType || returnType[0] == '\0')
 			returnType = "void";
 
