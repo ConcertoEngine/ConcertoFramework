@@ -5,8 +5,8 @@ namespace cct::gfx
 	View View::FromCamera(const Camera& camera, const Vector2u& viewportSize)
 	{
 		View view;
-		view.viewMatrix = camera.viewMatrix;
-		view.projectionMatrix = camera.projectionMatrix;
+		view.viewMatrix = camera.GetViewMatrix();
+		view.projectionMatrix = camera.GetProjectionMatrix();
 		view.viewportSize = viewportSize;
 		return view;
 	}

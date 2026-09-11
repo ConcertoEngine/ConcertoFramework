@@ -14,7 +14,7 @@
 
 namespace cct::gfx
 {
-	class CONCERTO_GRAPHICS_CORE_API Camera : public GPUCamera, public Trackable
+	class CONCERTO_GRAPHICS_CORE_API Camera : public Trackable
 	{
 	public:
 		enum class CameraMovement
@@ -38,6 +38,10 @@ namespace cct::gfx
 		[[nodiscard]] float GetNear() const;
 		[[nodiscard]] float GetFar() const;
 		[[nodiscard]] float GetAspectRatio() const;
+		[[nodiscard]] const Matrix4f& GetViewMatrix() const;
+		[[nodiscard]] const Matrix4f& GetProjectionMatrix() const;
+		[[nodiscard]] const Matrix4f& GetViewProjectionMatrix() const;
+		[[nodiscard]] GPUCamera ToGPUCamera() const;
 
 		void SetClearColor(const Vector4f& clearColor);
 		void SetPosition(const Vector3f& position);
@@ -61,6 +65,9 @@ namespace cct::gfx
 		float m_far;
 		float m_aspectRatio;
 		Vector4f m_clearColor;
+		Matrix4f m_viewMatrix;
+		Matrix4f m_projectionMatrix;
+		Matrix4f m_viewProjectionMatrix;
 	};
 } // namespace cct::gfx
 

@@ -54,6 +54,26 @@ namespace cct::gfx
 		return m_aspectRatio;
 	}
 
+	const Matrix4f& Camera::GetViewMatrix() const
+	{
+		return m_viewMatrix;
+	}
+
+	const Matrix4f& Camera::GetProjectionMatrix() const
+	{
+		return m_projectionMatrix;
+	}
+
+	const Matrix4f& Camera::GetViewProjectionMatrix() const
+	{
+		return m_viewProjectionMatrix;
+	}
+
+	GPUCamera Camera::ToGPUCamera() const
+	{
+		return GPUCamera{m_viewMatrix, m_projectionMatrix, m_viewProjectionMatrix};
+	}
+
 	void Camera::SetClearColor(const Vector4f& clearColor)
 	{
 		m_clearColor = clearColor;
@@ -107,19 +127,19 @@ namespace cct::gfx
 	{
 		const Matrix4f translation = m_position.ToTranslationMatrix();
 		const Matrix4f cameraRotation = m_eulerAngles.ToQuaternion().ToRotationMatrix<Matrix4f>();
-		viewMatrix = (translation * cameraRotation).Inverse();
-		viewProjectionMatrix = projectionMatrix * viewMatrix;
+		m_viewMatrix = (translation * cameraRotation).Inverse();
+		m_viewProjectionMatrix = m_projectionMatrix * m_viewMatrix;
 	}
 
 	void Camera::UpdateProjectionMatrix()
 	{
 		const float tanHalfFov = std::tan(m_fov / 2.0f);
-		projectionMatrix = Matrix4f();
-		projectionMatrix(0, 0) = 1.f / (m_aspectRatio * tanHalfFov);
-		projectionMatrix(1, 1) = 1.f / tanHalfFov;
-		projectionMatrix(2, 2) = m_far / (m_near - m_far);
-		projectionMatrix(2, 3) = -(m_far * m_near) / (m_far - m_near);
-		projectionMatrix(3, 2) = -1.f;
+		m_projectionMatrix = Matrix4f();
+		m_projectionMatrix(0, 0) = 1.f / (m_aspectRatio * tanHalfFov);
+		m_projectionMatrix(1, 1) = 1.f / tanHalfFov;
+		m_projectionMatrix(2, 2) = m_far / (m_near - m_far);
+		m_projectionMatrix(2, 3) = -(m_far * m_near) / (m_far - m_near);
+		m_projectionMatrix(3, 2) = -1.f;
 	}
 
 	void Camera::Rotate(double deltaX, double deltaY)

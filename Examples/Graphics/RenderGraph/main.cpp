@@ -158,7 +158,8 @@ int main()
 
 			rhi::Frame& currentFrame = swapChain->AcquireFrame();
 
-			cameraBuffer->Write<GPUCamera>(camera, rhi::PadUniformBuffer(sizeof(GPUCamera), minimumAlignment * currentFrame.GetCurrentFrameIndex()));
+			GPUCamera gpuCamera = camera.ToGPUCamera();
+			cameraBuffer->Write(gpuCamera, rhi::PadUniformBuffer(sizeof(GPUCamera), minimumAlignment * currentFrame.GetCurrentFrameIndex()));
 			sceneBuffer->Write(sceneParameters.gpuSceneData);
 			objectsBuffer->Write(modelMatrix);
 
