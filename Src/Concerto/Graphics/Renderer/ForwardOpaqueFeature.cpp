@@ -24,6 +24,7 @@ namespace cct::gfx
 			cmd.SetScissor({0, 0, ctx.GetWidth(), ctx.GetHeight()});
 
 			std::size_t lastBoundMaterial = 0;
+			bool lastBindSucceeded = false;
 			for (const auto& subMesh : mesh.subMeshes)
 			{
 				const auto& material = subMesh->GetMaterial();
@@ -33,8 +34,10 @@ namespace cct::gfx
 				if (lastBoundMaterial != materialHash)
 				{
 					lastBoundMaterial = materialHash;
-					cmd.BindMaterial(*material);
+					lastBindSucceeded = cmd.BindMaterial(*material);
 				}
+				if (!lastBindSucceeded)
+					continue;
 				cmd.BindVertexBuffer(subMesh->GetVertexBuffer());
 				cmd.Draw(static_cast<UInt32>(subMesh->GetVertices().size()), 1, 0, 0);
 			}

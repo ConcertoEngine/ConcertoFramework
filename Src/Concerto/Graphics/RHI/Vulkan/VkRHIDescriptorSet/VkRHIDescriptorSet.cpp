@@ -74,15 +74,13 @@ namespace cct::gfx::rhi
 		auto* device = m_vkDescriptorSet->GetDevice();
 		CCT_ASSERT(device, "DescriptorSet device is null");
 
-		auto& cachedSampler = m_samplerCache[binding];
-		if (!cachedSampler.sampler || cachedSampler.addressMode != addressMode)
-		{
-			cachedSampler.addressMode = addressMode;
-			cachedSampler.sampler = std::make_unique<vk::Sampler>(*device, VK_FILTER_LINEAR, Converters::ToVulkan(addressMode));
-		}
+		const UInt64 samplerKey = (static_cast<UInt64>(binding) << 8) | static_cast<UInt8>(addressMode);
+		auto& cachedSampler = m_samplerCache[samplerKey];
+		if (!cachedSampler)
+			cachedSampler = std::make_unique<vk::Sampler>(*device, VK_FILTER_LINEAR, Converters::ToVulkan(addressMode));
 
 		VkDescriptorImageInfo imageInfo{};
-		imageInfo.sampler = *cachedSampler.sampler->Get();
+		imageInfo.sampler = *cachedSampler->Get();
 		imageInfo.imageView = *vkTexture->GetImageView().Get();
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 

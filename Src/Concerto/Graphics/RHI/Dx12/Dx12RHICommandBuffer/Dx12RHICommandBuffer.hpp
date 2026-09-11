@@ -35,7 +35,7 @@ namespace cct::gfx::rhi
 		void SetScissor(const Rect2D& scissor) override;
 		void BeginRenderPass(const rhi::RenderPass& renderPass, const rhi::FrameBuffer& frameBuffer, const Vector3f& clearColor) override;
 		void EndRenderPass() override;
-		void BindMaterial(const MaterialInstance& material) override;
+		bool BindMaterial(const MaterialInstance& material) override;
 		void BindPipeline(const Pipeline& pipeline) override;
 		void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set) override;
 		void BindDescriptorSet(const PipelineLayout& layout, const DescriptorSet& set, UInt32 dynamicOffset) override;

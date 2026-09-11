@@ -36,16 +36,9 @@ namespace cct::gfx::rhi
 		const vk::DescriptorSetPtr& Get() const;
 
 	private:
-		struct CachedSampler
-		{
-			SamplerAddressMode addressMode;
-			std::unique_ptr<vk::Sampler> sampler;
-		};
-
 		vk::DescriptorSetPtr m_vkDescriptorSet;
 		std::shared_ptr<DescriptorSetLayout> m_layout;
-		// One sampler per binding, recreated only when the requested address mode changes.
-		std::unordered_map<UInt32, CachedSampler> m_samplerCache;
+		std::unordered_map<UInt64 /*(binding, addressMode)*/, std::unique_ptr<vk::Sampler>> m_samplerCache;
 	};
 } // namespace cct::gfx::rhi
 

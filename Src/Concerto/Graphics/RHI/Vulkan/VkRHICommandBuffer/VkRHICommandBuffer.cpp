@@ -143,12 +143,12 @@ namespace cct::gfx::rhi
 		vk::CommandBuffer::EndRenderPass();
 	}
 
-	void VkRHICommandBuffer::BindMaterial(const MaterialInstance& material)
+	bool VkRHICommandBuffer::BindMaterial(const MaterialInstance& material)
 	{
 		CCT_AUTO_PROFILER_SCOPE();
 
 		if (!material.materialTemplate || !material.materialTemplate->pipeline)
-			return;
+			return false;
 
 		const auto& pipeline = Cast<const VkRHIPipeline&>(*material.materialTemplate->pipeline);
 
@@ -167,6 +167,8 @@ namespace cct::gfx::rhi
 		}
 
 		vk::CommandBuffer::BindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, *pipelineLayout.Get(), descriptorSets);
+
+		return true;
 	}
 
 	void VkRHICommandBuffer::BindVertexBuffer(const rhi::Buffer& buffer)

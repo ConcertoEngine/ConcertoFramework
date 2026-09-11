@@ -180,17 +180,17 @@ namespace cct::gfx::rhi
 		}
 	}
 
-	void Dx12RHICommandBuffer::BindMaterial(const MaterialInstance& material)
+	bool Dx12RHICommandBuffer::BindMaterial(const MaterialInstance& material)
 	{
 		if (!IsValid() || !m_device)
-			return;
+			return false;
 
 		if (!material.materialTemplate)
-			return;
+			return false;
 
 		auto* dx12Pipeline = dynamic_cast<const Dx12RHIPipeline*>(material.materialTemplate->pipeline.get());
 		if (!dx12Pipeline)
-			return;
+			return false;
 
 		SetHeapsAndRootSignature(*dx12Pipeline, /* isCompute */ false);
 
@@ -200,6 +200,8 @@ namespace cct::gfx::rhi
 			if (auto* dx12DescSet = dynamic_cast<const Dx12RHIDescriptorSet*>(material.descriptorSets[i].get()))
 				BindDescriptorSetImpl(rootSig, *dx12DescSet, static_cast<UINT>(i), /* isCompute */ false);
 		}
+
+		return true;
 	}
 
 	void Dx12RHICommandBuffer::BindPipeline(const Pipeline& pipeline)

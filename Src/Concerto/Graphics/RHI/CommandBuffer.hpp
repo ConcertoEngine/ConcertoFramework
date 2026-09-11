@@ -47,7 +47,7 @@ namespace cct::gfx::rhi
 		virtual void SetScissor(const Rect2D& scissor) = 0;
 		virtual void BeginRenderPass(const rhi::RenderPass& renderPass, const rhi::FrameBuffer& frameBuffer, const Vector3f& clearColor) = 0;
 		virtual void EndRenderPass() = 0;
-		virtual void BindMaterial(const MaterialInstance& material) = 0;
+		virtual bool BindMaterial(const MaterialInstance& material) = 0;
 		virtual void BindVertexBuffer(const rhi::Buffer& buffer) = 0;
 		virtual void Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance) = 0;
 		virtual void Copy(const Buffer& src, const Texture& dst) = 0;
