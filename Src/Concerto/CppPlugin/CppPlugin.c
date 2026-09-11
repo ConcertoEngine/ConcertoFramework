@@ -139,18 +139,21 @@ static int AppendToBuffer(char* dest, size_t destSize, const char* src)
 	return 1;
 }
 
-static const char* StripConst(const char* type, char* buf, size_t bufSize)
+// Strips a leading "const " and any trailing "&"/"*"/space, leaving the bare class name
+// (e.g. "const MoveNodeArgs &" -> "MoveNodeArgs").
+static const char* StripToBareClassName(const char* type, char* buf, size_t bufSize)
 {
-	if (strncmp(type, "const ", 6) == 0)
-	{
-		size_t len = strlen(type) - 6;
-		if (len >= bufSize)
-			len = bufSize - 1;
-		memcpy(buf, type + 6, len);
-		buf[len] = '\0';
-		return buf;
-	}
-	return type;
+	const char* p = type;
+	if (strncmp(p, "const ", 6) == 0)
+		p += 6;
+	size_t len = strlen(p);
+	while (len > 0 && (p[len - 1] == '&' || p[len - 1] == ' ' || p[len - 1] == '*'))
+		--len;
+	if (len >= bufSize)
+		len = bufSize - 1;
+	memcpy(buf, p, len);
+	buf[len] = '\0';
+	return buf;
 }
 
 static void BeforeMethodGeneration(const CrpClassMethod* method, CrpGenerationContext* ctx)
@@ -176,7 +179,7 @@ static void BeforeMethodGeneration(const CrpClassMethod* method, CrpGenerationCo
 		crpGenerationContextLeaveScope(ctx, NULL);
 		crpGenerationContextNewLine(ctx);
 
-		crpGenerationContextWrite(ctx, "cct::Result<cct::Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const override");
+		crpGenerationContextWrite(ctx, "cct::Result<std::unique_ptr<cct::refl::Object>, std::string> Invoke(cct::refl::Object& self, std::span<cct::refl::Object* const> parameters) const override");
 		crpGenerationContextEnterScope(ctx);
 		{
 			crpGenerationContextWrite(ctx, "if (parameters.size() != %zu)", paramCount);
@@ -193,18 +196,19 @@ static void BeforeMethodGeneration(const CrpClassMethod* method, CrpGenerationCo
 				const char* paramType = crpClassMethodParamGetType(param);
 				const char* paramName = crpClassMethodParamGetName(param);
 
-				char strippedType[512];
-				const char* usedType = StripConst(paramType, strippedType, sizeof(strippedType));
+				char bareType[512];
+				const char* usedType = StripToBareClassName(paramType, bareType, sizeof(bareType));
 
 				crpGenerationContextWrite(ctx, "using Param%zu = %s;", i, usedType);
-				crpGenerationContextWrite(ctx, "if (parameters[%zu].Is<Param%zu>() == false)", i, i);
+				crpGenerationContextWrite(ctx, "Param%zu* param%zuPtr = cct::refl::Cast<Param%zu>(parameters[%zu]);", i, i, i, i);
+				crpGenerationContextWrite(ctx, "if (param%zuPtr == nullptr)", i);
 				crpGenerationContextEnterScope(ctx);
 				{
 					crpGenerationContextWrite(ctx, "CCT_ASSERT_FALSE(\"Expected '%s' in argument %zu\");", paramType, i);
 					crpGenerationContextWrite(ctx, "return {\"Expected '%s' in argument %zu\"s};", paramType, i);
 				}
 				crpGenerationContextLeaveScope(ctx, NULL);
-				crpGenerationContextWrite(ctx, "Param%zu %s = parameters[%zu].As<Param%zu>();", i, paramName, i, i);
+				crpGenerationContextWrite(ctx, "Param%zu& %s = *param%zuPtr;", i, paramName, i);
 				crpGenerationContextNewLine(ctx);
 			}
 
@@ -470,6 +474,22 @@ static void OnMemberGeneration(const CrpClassMember* member, CrpGenerationContex
 	}
 }
 
+// Emits "return std::make_unique<...>(exprText);" boxing a method's return value into a
+// cct::refl::Object-derived instance. bool/std::string get wrapped in the matching primitive
+// wrapper (Boolean/String); any other return type is assumed to already be Object-derived.
+static void EmitBoxedReturn(CrpGenerationContext* ctx, const char* returnType, const char* exprText)
+{
+	// The intermediate std::unique_ptr<cct::refl::Object> cast must be explicit: chaining the
+	// unique_ptr<Derived>->unique_ptr<Object> conversion with Result's own converting
+	// constructor is two user-defined conversions in a row, which isn't implicit-convertible.
+	if (strcmp(returnType, "bool") == 0)
+		crpGenerationContextWrite(ctx, "return std::unique_ptr<cct::refl::Object>(std::make_unique<cct::refl::Boolean>(%s));", exprText);
+	else if (strcmp(returnType, "std::string") == 0)
+		crpGenerationContextWrite(ctx, "return std::unique_ptr<cct::refl::Object>(std::make_unique<cct::refl::String>(%s));", exprText);
+	else
+		crpGenerationContextWrite(ctx, "return std::unique_ptr<cct::refl::Object>(std::make_unique<%s>(std::move(%s)));", returnType, exprText);
+}
+
 static void OnMethodGeneration(const CrpClassMethod* method, CrpGenerationContext* ctx)
 {
 	const CrpClass* cls = crpGenerationContextGetClass(ctx);
@@ -536,7 +556,7 @@ static void OnMethodGeneration(const CrpClassMethod* method, CrpGenerationContex
 		{
 			crpGenerationContextWrite(ctx, "static_cast<%s&>(self).%s(%s);", className, methodName, callArgs);
 		}
-		crpGenerationContextWrite(ctx, "return Any{};");
+		crpGenerationContextWrite(ctx, "return nullptr;");
 	}
 	else
 	{
@@ -548,16 +568,20 @@ static void OnMethodGeneration(const CrpClassMethod* method, CrpGenerationContex
 			crpGenerationContextWrite(ctx, "return {\"Missing Delegate\"s};");
 			crpGenerationContextLeaveScope(ctx, NULL);
 			crpGenerationContextWrite(ctx, "auto func = reinterpret_cast<%s(*)(%s)>(GetCustomDelegate());", returnType, callArgsTypes);
-			crpGenerationContextWrite(ctx, "return Any::Make<%s>(func(%s));", returnType, callArgs);
+			char delegateCallExpr[2048];
+			snprintf(delegateCallExpr, sizeof(delegateCallExpr), "func(%s)", callArgs);
+			EmitBoxedReturn(ctx, returnType, delegateCallExpr);
 		}
 		else if (hasDelegate && delegateName)
 		{
-			crpGenerationContextWrite(ctx, "return Any::Make<%s>(static_cast<%s&>(self).%s(%s));", returnType, className, methodName, callArgs);
+			char delegateCallExpr[2048];
+			snprintf(delegateCallExpr, sizeof(delegateCallExpr), "static_cast<%s&>(self).%s(%s)", className, methodName, callArgs);
+			EmitBoxedReturn(ctx, returnType, delegateCallExpr);
 		}
 		else
 		{
 			crpGenerationContextWrite(ctx, "auto res = static_cast<%s&>(self).%s(%s);", className, methodName, callArgs);
-			crpGenerationContextWrite(ctx, "return cct::Any::Make<%s>(res);", returnType);
+			EmitBoxedReturn(ctx, returnType, "res");
 		}
 	}
 }
@@ -717,19 +741,10 @@ static void AfterClassGeneration(const CrpClass* cls, CrpGenerationContext* ctx)
 				if (paramType && paramType[0] != '\0')
 				{
 					char stripped[256];
-					const char* p = paramType;
-					if (strncmp(p, "const ", 6) == 0)
-						p += 6;
-					size_t len = strlen(p);
-					while (len > 0 && (p[len - 1] == '&' || p[len - 1] == ' ' || p[len - 1] == '*'))
-						--len;
-					if (len >= sizeof(stripped))
-						len = sizeof(stripped) - 1;
-					memcpy(stripped, p, len);
-					stripped[len] = '\0';
-					if (stripped[0] != '\0')
+					const char* bareType = StripToBareClassName(paramType, stripped, sizeof(stripped));
+					if (bareType[0] != '\0')
 						crpGenerationContextWrite(ctx, "%sMethod->AddAttribute(\"Param0\", \"%s\");",
-												  methodName, stripped);
+												  methodName, bareType);
 				}
 			}
 		}
@@ -1231,11 +1246,13 @@ static void BeforePackageGeneration(const CrpPackage* package, CrpGenerationCont
 	crpGenerationContextWrite(ctx, "#include <string>");
 	crpGenerationContextWrite(ctx, "#include <vector>");
 	crpGenerationContextNewLine(ctx);
+	crpGenerationContextWrite(ctx, "#include <Concerto/Reflection/Boolean/Boolean.refl.hpp>");
 	crpGenerationContextWrite(ctx, "#include <Concerto/Reflection/Enumeration/Enumeration.refl.hpp>");
 	crpGenerationContextWrite(ctx, "#include <Concerto/Reflection/Enumeration/EnumerationClass.hpp>");
 	crpGenerationContextWrite(ctx, "#include <Concerto/Reflection/EnumValue/EnumValue.hpp>");
 	crpGenerationContextWrite(ctx, "#include <Concerto/Reflection/GlobalNamespace/GlobalNamespace.hpp>");
 	crpGenerationContextWrite(ctx, "#include <Concerto/Reflection/Namespace/Namespace.hpp>");
+	crpGenerationContextWrite(ctx, "#include <Concerto/Reflection/String/String.refl.hpp>");
 	crpGenerationContextNewLine(ctx);
 
 	size_t headerCount = crpGenerationContextGetHeaderCount(ctx);

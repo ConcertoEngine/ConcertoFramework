@@ -1,3 +1,4 @@
+
 //
 // Created by arthur on 10/11/2024.
 //
@@ -9,12 +10,14 @@
 #include <memory>
 #include <span>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <vector>
 
-#include <Concerto/Core/Any/Any.hpp>
+#include <Concerto/Core/Assert.hpp>
 #include <Concerto/Core/Result/Result.hpp>
 
+#include "Concerto/Reflection/Cast.hpp"
 #include "Concerto/Reflection/Defines.hpp"
 #include "Concerto/Reflection/Object/Object.refl.hpp"
 
@@ -41,10 +44,9 @@ namespace cct::refl
 		template<typename T, typename... Args>
 		Result<T, std::string> Invoke(Object& self, Args&&... args) const;
 
-		// Result<string,string> is illegal; string returns stay erased.
-		Result<Any, std::string> InvokeErased(Object& self, std::span<cct::Any> parameters) const
+		Result<std::unique_ptr<Object>, std::string> InvokeErased(Object& self, std::span<Object* const> args) const
 		{
-			return Invoke(self, parameters);
+			return Invoke(self, args);
 		}
 
 		inline bool HasAttribute(std::string_view attribute) const;
@@ -56,7 +58,7 @@ namespace cct::refl
 		inline void* GetCustomDelegate() const;
 
 	protected:
-		virtual Result<Any, std::string> Invoke(cct::refl::Object& self, std::span<cct::Any> parameters) const = 0;
+		virtual Result<std::unique_ptr<Object>, std::string> Invoke(cct::refl::Object& self, std::span<Object* const> args) const = 0;
 		inline void SetCustomDelegate(void* delegate);
 
 	private:
@@ -71,10 +73,11 @@ namespace cct::refl
 	template<typename T, typename... Args>
 	Result<T, std::string> Method::Invoke(Object& self, Args&&... args) const
 	{
-		std::array<cct::Any, sizeof...(Args)> erasedArgs = {
-			cct::Any::Make<Args>(std::forward<Args>(args))...};
+		static_assert((std::is_base_of_v<Object, std::remove_cvref_t<Args>> && ...),
+			"Method::Invoke: every argument must derive cct::refl::Object");
+		std::array<Object*, sizeof...(Args)> erasedArgs = {std::addressof(args)...};
 
-		Result<Any, std::string> result = Invoke(self, erasedArgs);
+		Result<std::unique_ptr<Object>, std::string> result = InvokeErased(self, erasedArgs);
 
 		if constexpr (std::is_void_v<T>)
 		{
@@ -84,9 +87,16 @@ namespace cct::refl
 		}
 		else
 		{
-			if (result.IsOk())
-				return std::move(result).GetValue().template As<T>();
-			return std::move(result).GetError();
+			if (result.IsError())
+				return std::move(result).GetError();
+			std::unique_ptr<Object> value = std::move(result).GetValue();
+			T* casted = Cast<T>(value.get());
+			if (casted == nullptr)
+			{
+				CCT_ASSERT_FALSE("Method::Invoke: return type mismatch");
+				return std::string("Method::Invoke: return type mismatch");
+			}
+			return std::move(*casted);
 		}
 	}
 } // namespace cct::refl

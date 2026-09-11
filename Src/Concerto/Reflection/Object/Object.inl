@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <Concerto/Core/TypeInfo/TypeInfo.hpp>
+
 #include "Concerto/Reflection/Class/Class.hpp"
 #include "Concerto/Reflection/MemberVariable/MemberVariable.hpp"
 #include "Concerto/Reflection/Method/Method.hpp"
