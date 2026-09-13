@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include <Concerto/Core/Math/AABB/AABB.hpp>
+
 #include "Concerto/Graphics/RHI/Buffer.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 #include "Concerto/Graphics/RHI/Material/MaterialInstance.hpp"
@@ -27,13 +29,17 @@ namespace cct::gfx::rhi
 		[[nodiscard]] const rhi::MaterialInstancePtr& GetMaterial() const;
 		[[nodiscard]] const rhi::SubMeshPtr& GetSubMesh() const;
 		const rhi::Buffer& GetVertexBuffer() const;
+		[[nodiscard]] const AABB& GetLocalBounds() const;
 
 		void UploadVertices();
 
 	private:
+		void ComputeLocalBounds();
+
 		rhi::SubMeshPtr m_subMesh;
 		rhi::MaterialInstancePtr m_material;
 		std::unique_ptr<rhi::Buffer> m_vertexBuffer;
+		AABB m_localBounds;
 	};
 	using GpuSubMeshPtr = std::shared_ptr<GpuSubMesh>;
 } // namespace cct::gfx::rhi

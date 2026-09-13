@@ -15,12 +15,14 @@ namespace cct::gfx::rhi
 		m_subMesh(std::move(meshPtr)),
 		m_material(std::move(material))
 	{
+		ComputeLocalBounds();
 	}
 
 	GpuSubMesh::GpuSubMesh(rhi::SubMeshPtr meshPtr, rhi::MaterialInstancePtr material, rhi::Device& device) :
 		m_subMesh(std::move(meshPtr)),
 		m_material(std::move(material))
 	{
+		ComputeLocalBounds();
 		m_vertexBuffer = device.CreateBuffer(
 			BufferUsage::Vertex,
 			static_cast<UInt32>(m_subMesh->GetVertices().size() * sizeof(Vertex)),
@@ -48,6 +50,11 @@ namespace cct::gfx::rhi
 		return *m_vertexBuffer;
 	}
 
+	const AABB& GpuSubMesh::GetLocalBounds() const
+	{
+		return m_localBounds;
+	}
+
 	void GpuSubMesh::UploadVertices()
 	{
 		CCT_ASSERT(m_vertexBuffer, "ConcertoGraphics: invalid vertex buffer");
@@ -58,5 +65,11 @@ namespace cct::gfx::rhi
 			std::memcpy(data, vertices.data(), vertices.size() * sizeof(Vertex));
 			m_vertexBuffer->UnMap();
 		}
+	}
+
+	void GpuSubMesh::ComputeLocalBounds()
+	{
+		for (const Vertex& vertex : m_subMesh->GetVertices())
+			m_localBounds.Extend(vertex.position);
 	}
 } // namespace cct::gfx::rhi
