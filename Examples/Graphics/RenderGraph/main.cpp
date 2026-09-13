@@ -89,6 +89,7 @@ int main()
 
 		std::shared_ptr<rhi::GpuMesh> gpuMesh = device->CreateMesh(
 			"./assets/sponza/sponza.obj", *materialBuilder, *textureBuilder, renderer.GetPassRenderPass("SceneOpaque"));
+		gpuMesh->transformMatrix = Matrix4f::Identity();
 		forwardFeature.SetMesh(gpuMesh);
 
 		float aspect = static_cast<float>(window->GetWidth()) / static_cast<float>(window->GetHeight());
