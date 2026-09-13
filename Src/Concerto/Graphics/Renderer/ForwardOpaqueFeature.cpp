@@ -1,5 +1,7 @@
 #include "Concerto/Graphics/Renderer/ForwardOpaqueFeature.hpp"
 
+#include <Concerto/Core/Math/AABB/AABB.hpp>
+
 #include "Concerto/Graphics/RenderGraph/RenderGraphBuilder.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphContext.hpp"
 #include "Concerto/Graphics/RHI/CommandBuffer.hpp"
@@ -10,7 +12,7 @@ namespace cct::gfx
 {
 	namespace
 	{
-		void DrawMesh(rhi::RenderGraphContext& ctx, const rhi::GpuMesh& mesh)
+		void DrawMesh(rhi::RenderGraphContext& ctx, const rhi::GpuMesh& mesh, const Frustum& frustum)
 		{
 			rhi::CommandBuffer& cmd = ctx.GetCommandBuffer();
 			cmd.SetViewport({
@@ -29,6 +31,9 @@ namespace cct::gfx
 			{
 				const auto& material = subMesh->GetMaterial();
 				if (material == nullptr)
+					continue;
+				const AABB worldBounds = subMesh->GetLocalBounds().Transformed(mesh.transformMatrix);
+				if (!frustum.ContainsAABB(worldBounds))
 					continue;
 				const std::size_t materialHash = material->GetHash();
 				if (lastBoundMaterial != materialHash)
@@ -59,6 +64,11 @@ namespace cct::gfx
 				resources.depth = b.WriteDepth(resources.depth);
 			},
 			[this](rhi::RenderGraphContext& ctx)
-			{ DrawMesh(ctx, *m_mesh); });
+			{ DrawMesh(ctx, *m_mesh, m_frustum); });
+	}
+
+	void ForwardOpaqueFeature::UpdateFrameData(const View& view)
+	{
+		m_frustum = Frustum::FromViewProjection(view.projectionMatrix * view.viewMatrix);
 	}
 } // namespace cct::gfx
