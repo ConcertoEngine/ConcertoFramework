@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <span>
 
 #include <Concerto/Core/Math/Algorithm.hpp>
 #include <Concerto/Graphics/Core/Camera/Camera.hpp>
@@ -12,6 +13,7 @@
 #include <Concerto/Graphics/Core/Window/Window.hpp>
 #include <Concerto/Graphics/Renderer/ForwardOpaqueFeature.hpp>
 #include <Concerto/Graphics/Renderer/Renderer.hpp>
+#include <Concerto/Graphics/Renderer/RenderScene.hpp>
 #include <Concerto/Graphics/Renderer/RenderTarget.hpp>
 #include <Concerto/Graphics/Renderer/View.hpp>
 #include <Concerto/Graphics/RHI/CommandBuffer.hpp>
@@ -66,10 +68,9 @@ int main()
 		std::size_t minimumAlignment = device->GetMinimumUniformBufferOffsetAlignment();
 		std::unique_ptr<rhi::SwapChain> swapChain = device->CreateSwapChain(*window);
 
+		RenderScene scene;
 		Renderer renderer(*device, swapChain->GetImageCount());
-		auto forwardFeatureOwner = std::make_unique<ForwardOpaqueFeature>();
-		ForwardOpaqueFeature& forwardFeature = *forwardFeatureOwner;
-		renderer.AddFeature(std::move(forwardFeatureOwner));
+		renderer.AddFeature(std::make_unique<ForwardOpaqueFeature>(scene));
 
 		std::unique_ptr<rhi::TextureBuilder> textureBuilder = device->CreateTextureBuilder();
 		std::unique_ptr<rhi::MaterialBuilder> materialBuilder = device->CreateMaterialBuilder(swapChain->GetExtent(), *textureBuilder);
@@ -89,8 +90,18 @@ int main()
 
 		std::shared_ptr<rhi::GpuMesh> gpuMesh = device->CreateMesh(
 			"./assets/sponza/sponza.obj", *materialBuilder, *textureBuilder, renderer.GetPassRenderPass("SceneOpaque"));
-		gpuMesh->transformMatrix = Matrix4f::Identity();
-		forwardFeature.SetMesh(gpuMesh);
+
+		constexpr int gridSize = 10;
+		constexpr float gridSpacing = 3000.f;
+		for (int x = 0; x < gridSize; ++x)
+		{
+			for (int z = 0; z < gridSize; ++z)
+			{
+				const float offsetX = static_cast<float>(x - gridSize / 2) * gridSpacing;
+				const float offsetZ = static_cast<float>(z - gridSize / 2) * gridSpacing;
+				scene.AddInstance({.mesh = gpuMesh, .transform = Vector3f(offsetX, 0.f, offsetZ).ToTranslationMatrix()});
+			}
+		}
 
 		float aspect = static_cast<float>(window->GetWidth()) / static_cast<float>(window->GetHeight());
 		Camera camera(ToRadians(90.f), 0.1f, 1000000.f, aspect);
@@ -132,17 +143,12 @@ int main()
 		sceneParameters.gpuSceneData.sunlightColor = Vector4f{255.f, 109.f, 39.f, 1.f};
 		sceneParameters.clearColor = Vector4f{0.1f, 0.1f, 0.1f, 1.f};
 
-		const Vector3f position(0.f, 0.f, 0.f);
-		const EulerAnglesf rotation(0, 0, 0);
-		const Vector3f scale(1.f, 1.f, 1.f);
-		auto modelMatrix = Matrix4f::Identity();
-		modelMatrix *= position.ToTranslationMatrix();
-		modelMatrix *= rotation.ToQuaternion().ToRotationMatrix<Matrix4f>();
-		modelMatrix *= scale.ToScalingMatrix();
-
 		std::unique_ptr<rhi::Buffer> cameraBuffer = device->CreateBuffer(static_cast<rhi::BufferUsageFlags>(rhi::BufferUsage::Uniform), sizeof(GPUCamera), true);
 		std::unique_ptr<rhi::Buffer> sceneBuffer = device->CreateBuffer(static_cast<rhi::BufferUsageFlags>(rhi::BufferUsage::Uniform), sizeof(Scene), true);
-		std::unique_ptr<rhi::Buffer> objectsBuffer = device->CreateBuffer(static_cast<rhi::BufferUsageFlags>(rhi::BufferUsage::Storage), sizeof(GPUObjectData), true);
+		std::unique_ptr<rhi::Buffer> objectsBuffer = device->CreateBuffer(
+			static_cast<rhi::BufferUsageFlags>(rhi::BufferUsage::Storage),
+			static_cast<UInt32>(sizeof(GPUObjectData) * scene.GetInstances().size()),
+			true);
 
 		materialBuilder->Update(*cameraBuffer, 0, 0);
 		materialBuilder->Update(*sceneBuffer, 0, 1);
@@ -162,7 +168,10 @@ int main()
 			GPUCamera gpuCamera = camera.ToGPUCamera();
 			cameraBuffer->Write(gpuCamera, rhi::PadUniformBuffer(sizeof(GPUCamera), minimumAlignment * currentFrame.GetCurrentFrameIndex()));
 			sceneBuffer->Write(sceneParameters.gpuSceneData);
-			objectsBuffer->Write(modelMatrix);
+			objectsBuffer->Write<GPUObjectData, const MeshInstance>(
+				std::span<const MeshInstance>(scene.GetInstances()),
+				[](GPUObjectData& dest, const MeshInstance& src)
+				{ dest.modelMatrix = src.transform; });
 
 			const auto imageIndex = static_cast<UInt32>(currentFrame.GetCurrentFrameIndex());
 			const auto width = static_cast<UInt32>(window->GetWidth());
