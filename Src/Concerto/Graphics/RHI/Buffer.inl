@@ -38,7 +38,7 @@ namespace cct::gfx::rhi
 			return;
 		}
 		data += padding;
-		auto* destBuffer = static_cast<DestBuffer*>(data);
+		auto* destBuffer = reinterpret_cast<DestBuffer*>(data);
 		for (std::size_t i = 0; i < objects.size(); i++)
 		{
 			copyFunc(destBuffer[i], objects[i]);
