@@ -8,6 +8,7 @@
 #include <array>
 
 #include "Concerto/Core/Defines.hpp"
+#include "Concerto/Core/Math/AABB/AABB.hpp"
 #include "Concerto/Core/Math/Matrix/Matrix.hpp"
 #include "Concerto/Core/Math/Plane/Plane.hpp"
 #include "Concerto/Core/Math/Vector/Vector.hpp"
@@ -40,6 +41,7 @@ namespace cct
 		[[nodiscard]] const Plane& GetPlane(Side side) const;
 		[[nodiscard]] bool ContainsPoint(const Vector3f& point) const;
 		[[nodiscard]] bool ContainsSphere(const Vector3f& center, float radius) const;
+		[[nodiscard]] bool ContainsAABB(const AABB& aabb) const;
 
 	private:
 		std::array<Plane, static_cast<std::size_t>(Side::Count)> _planes;

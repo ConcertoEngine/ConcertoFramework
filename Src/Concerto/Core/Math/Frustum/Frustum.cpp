@@ -56,4 +56,21 @@ namespace cct
 		}
 		return true;
 	}
+
+	bool Frustum::ContainsAABB(const AABB& aabb) const
+	{
+		const Vector3f& min = aabb.GetMin();
+		const Vector3f& max = aabb.GetMax();
+		for (const Plane& plane : _planes)
+		{
+			const Vector3f& normal = plane.GetNormal();
+			Vector3f positive(
+				normal.X() >= 0.0f ? max.X() : min.X(),
+				normal.Y() >= 0.0f ? max.Y() : min.Y(),
+				normal.Z() >= 0.0f ? max.Z() : min.Z());
+			if (plane.SignedDistance(positive) < 0.0f)
+				return false;
+		}
+		return true;
+	}
 } // namespace cct

@@ -63,4 +63,30 @@ namespace CCT_ANONYMOUS_NAMESPACE
 			}
 		}
 	}
+
+	SCENARIO("Frustum - ContainsAABB")
+	{
+		GIVEN("A frustum built from the identity view-projection matrix")
+		{
+			Frustum frustum = Frustum::FromViewProjection(Matrix4f::Identity());
+
+			THEN("A box fully inside the clip volume is contained")
+			{
+				AABB aabb(Vector3f(-0.5f, -0.5f, 0.25f), Vector3f(0.5f, 0.5f, 0.75f));
+				REQUIRE(frustum.ContainsAABB(aabb));
+			}
+
+			THEN("A box overlapping a clip plane is still contained")
+			{
+				AABB aabb(Vector3f(0.5f, -0.5f, 0.25f), Vector3f(1.5f, 0.5f, 0.75f));
+				REQUIRE(frustum.ContainsAABB(aabb));
+			}
+
+			THEN("A box fully outside a clip plane is not contained")
+			{
+				AABB aabb(Vector3f(1.5f, -0.5f, 0.25f), Vector3f(2.5f, 0.5f, 0.75f));
+				REQUIRE_FALSE(frustum.ContainsAABB(aabb));
+			}
+		}
+	}
 } // namespace CCT_ANONYMOUS_NAMESPACE
