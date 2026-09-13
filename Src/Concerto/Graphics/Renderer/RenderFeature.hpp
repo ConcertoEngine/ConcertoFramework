@@ -3,6 +3,7 @@
 
 #include "Concerto/Graphics/RenderGraph/RenderGraph.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphResource.hpp"
+#include "Concerto/Graphics/Renderer/View.hpp"
 #include "Concerto/Graphics/RHI/Defines.hpp"
 
 namespace cct::gfx
@@ -18,6 +19,10 @@ namespace cct::gfx
 	public:
 		virtual ~RenderFeature() = default;
 		virtual void Setup(rhi::RenderGraph& graph, FrameResources& resources) = 0;
+		virtual void UpdateFrameData(const View& view)
+		{
+			(void)view;
+		}
 	};
 } // namespace cct::gfx
 
