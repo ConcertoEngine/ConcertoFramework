@@ -2,6 +2,7 @@
 
 #include <Concerto/Core/Math/AABB/AABB.hpp>
 
+#include "Concerto/Graphics/Renderer/RenderScene.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphBuilder.hpp"
 #include "Concerto/Graphics/RenderGraph/RenderGraphContext.hpp"
 #include "Concerto/Graphics/RHI/CommandBuffer.hpp"
@@ -12,7 +13,7 @@ namespace cct::gfx
 {
 	namespace
 	{
-		void DrawMesh(rhi::RenderGraphContext& ctx, const rhi::GpuMesh& mesh, const Frustum& frustum)
+		void DrawInstances(rhi::RenderGraphContext& ctx, const std::vector<MeshInstance>& instances, const Frustum& frustum)
 		{
 			rhi::CommandBuffer& cmd = ctx.GetCommandBuffer();
 			cmd.SetViewport({
@@ -27,31 +28,36 @@ namespace cct::gfx
 
 			std::size_t lastBoundMaterial = 0;
 			bool lastBindSucceeded = false;
-			for (const auto& subMesh : mesh.subMeshes)
+			for (std::size_t i = 0; i < instances.size(); ++i)
 			{
-				const auto& material = subMesh->GetMaterial();
-				if (material == nullptr)
-					continue;
-				const AABB worldBounds = subMesh->GetLocalBounds().Transformed(mesh.transformMatrix);
-				if (!frustum.ContainsAABB(worldBounds))
-					continue;
-				const std::size_t materialHash = material->GetHash();
-				if (lastBoundMaterial != materialHash)
+				const MeshInstance& instance = instances[i];
+				const UInt32 objectIndex = static_cast<UInt32>(i);
+				for (const auto& subMesh : instance.mesh->subMeshes)
 				{
-					lastBoundMaterial = materialHash;
-					lastBindSucceeded = cmd.BindMaterial(*material);
+					const auto& material = subMesh->GetMaterial();
+					if (material == nullptr)
+						continue;
+					const AABB worldBounds = subMesh->GetLocalBounds().Transformed(instance.transform);
+					if (!frustum.ContainsAABB(worldBounds))
+						continue;
+					const std::size_t materialHash = material->GetHash();
+					if (lastBoundMaterial != materialHash)
+					{
+						lastBoundMaterial = materialHash;
+						lastBindSucceeded = cmd.BindMaterial(*material);
+					}
+					if (!lastBindSucceeded)
+						continue;
+					cmd.BindVertexBuffer(subMesh->GetVertexBuffer());
+					cmd.Draw(static_cast<UInt32>(subMesh->GetVertices().size()), 1, 0, objectIndex);
 				}
-				if (!lastBindSucceeded)
-					continue;
-				cmd.BindVertexBuffer(subMesh->GetVertexBuffer());
-				cmd.Draw(static_cast<UInt32>(subMesh->GetVertices().size()), 1, 0, 0);
 			}
 		}
 	} // namespace
 
-	void ForwardOpaqueFeature::SetMesh(rhi::GpuMeshPtr mesh)
+	ForwardOpaqueFeature::ForwardOpaqueFeature(const RenderScene& scene) :
+		m_scene(scene)
 	{
-		m_mesh = std::move(mesh);
 	}
 
 	void ForwardOpaqueFeature::Setup(rhi::RenderGraph& graph, FrameResources& resources)
@@ -64,7 +70,7 @@ namespace cct::gfx
 				resources.depth = b.WriteDepth(resources.depth);
 			},
 			[this](rhi::RenderGraphContext& ctx)
-			{ DrawMesh(ctx, *m_mesh, m_frustum); });
+			{ DrawInstances(ctx, m_scene.GetInstances(), m_frustum); });
 	}
 
 	void ForwardOpaqueFeature::UpdateFrameData(const View& view)

@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "Concerto/Graphics/RHI/Defines.hpp"
+
 namespace cct::gfx::rhi
 {
 	class GpuSubMesh;
@@ -15,7 +17,6 @@ namespace cct::gfx::rhi
 	{
 	public:
 		virtual ~GpuMesh() = default;
-		Matrix4f transformMatrix;
 		std::vector<std::shared_ptr<GpuSubMesh>> subMeshes;
 	};
 

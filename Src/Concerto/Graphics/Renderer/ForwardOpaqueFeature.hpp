@@ -5,20 +5,21 @@
 #include <Concerto/Core/Math/Matrix/Matrix.hpp>
 
 #include "Concerto/Graphics/Renderer/RenderFeature.hpp"
-#include "Concerto/Graphics/RHI/GpuMesh.hpp"
 
 namespace cct::gfx
 {
+	class RenderScene;
+
 	class CONCERTO_GRAPHICS_RHI_BASE_API ForwardOpaqueFeature final : public RenderFeature
 	{
 	public:
-		void SetMesh(rhi::GpuMeshPtr mesh);
+		explicit ForwardOpaqueFeature(const RenderScene& scene);
 
 		void Setup(rhi::RenderGraph& graph, FrameResources& resources) override;
 		void UpdateFrameData(const View& view) override;
 
 	private:
-		rhi::GpuMeshPtr m_mesh;
+		const RenderScene& m_scene;
 		Frustum m_frustum = Frustum::FromViewProjection(Matrix4f::Identity());
 	};
 } // namespace cct::gfx
