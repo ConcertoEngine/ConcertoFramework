@@ -373,10 +373,10 @@ namespace cct::gfx::rhi
 		(void)passIdx;
 	}
 
-	ImageLayout RenderGraphCompiler::RequiredLayout(const RGTextureUsage& usage, RGPassType passType)
+	ImageLayout RenderGraphCompiler::RequiredLayout(const RGTextureUsage& usage, RGPassType passType, bool isStorage)
 	{
 		if (passType == RGPassType::Compute)
-			return ImageLayout::General;
+			return (isStorage || usage.access == RGResourceAccess::Write) ? ImageLayout::General : ImageLayout::ShaderReadOnlyOptimal;
 		if (passType == RGPassType::Transfer)
 			return usage.access == RGResourceAccess::Read
 					   ? ImageLayout::TransferSrcOptimal

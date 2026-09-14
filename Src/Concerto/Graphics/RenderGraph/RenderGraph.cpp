@@ -181,7 +181,7 @@ namespace cct::gfx::rhi
 			textureBarriers.reserve(p.textureUsages.size());
 			for (const RGTextureUsage& usage : p.textureUsages)
 			{
-				const ImageLayout required = RenderGraphCompiler::RequiredLayout(usage, p.type);
+				const ImageLayout required = RenderGraphCompiler::RequiredLayout(usage, p.type, m_registry.GetDesc(usage.handle).storage);
 				const ImageLayout current = m_registry.GetCurrentLayout(usage.handle);
 				if (current == required)
 					continue;
