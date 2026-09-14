@@ -9,6 +9,32 @@
 
 namespace cct::gfx::rhi
 {
+	namespace
+	{
+		struct ObjIndexKey
+		{
+			int position;
+			int normal;
+			int texCoord;
+
+			bool operator==(const ObjIndexKey& other) const noexcept
+			{
+				return position == other.position && normal == other.normal && texCoord == other.texCoord;
+			}
+		};
+
+		struct ObjIndexKeyHasher
+		{
+			std::size_t operator()(const ObjIndexKey& key) const noexcept
+			{
+				std::size_t hash = static_cast<std::size_t>(static_cast<UInt32>(key.position));
+				hash = hash * 31 + static_cast<std::size_t>(static_cast<UInt32>(key.normal));
+				hash = hash * 31 + static_cast<std::size_t>(static_cast<UInt32>(key.texCoord));
+				return hash;
+			}
+		};
+	} // namespace
+
 	bool ObjMeshImporter::CanImport(const std::string& filePath) const
 	{
 		std::filesystem::path path(filePath);
@@ -65,6 +91,7 @@ namespace cct::gfx::rhi
 		}
 
 		int currentSubMeshIndex = -1;
+		phmap::flat_hash_map<ObjIndexKey, Index, ObjIndexKeyHasher> vertexLookup;
 		for (const auto& shape : shapes)
 		{
 			std::size_t index_offset = 0;
@@ -76,6 +103,7 @@ namespace cct::gfx::rhi
 				{
 					outMesh.subMeshes.push_back(ImportedSubMesh{.materialName = materials[matId].name});
 					currentSubMeshIndex++;
+					vertexLookup.clear();
 				}
 
 				ImportedSubMesh& currentSubMesh = outMesh.subMeshes[currentSubMeshIndex];
@@ -83,22 +111,27 @@ namespace cct::gfx::rhi
 				for (std::size_t v = 0; v < fv; v++)
 				{
 					tinyobj::index_t idx = shape.mesh.indices[index_offset + v];
+					const ObjIndexKey key{idx.vertex_index, idx.normal_index, idx.texcoord_index};
+					auto [it, inserted] = vertexLookup.try_emplace(key, static_cast<Index>(currentSubMesh.vertices.size()));
+					if (inserted)
+					{
+						tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
+						tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
+						tinyobj::real_t vz = attrib.vertices[3 * idx.vertex_index + 2];
 
-					tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
-					tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
-					tinyobj::real_t vz = attrib.vertices[3 * idx.vertex_index + 2];
+						tinyobj::real_t nx = attrib.normals[3 * idx.normal_index + 0];
+						tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
+						tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
 
-					tinyobj::real_t nx = attrib.normals[3 * idx.normal_index + 0];
-					tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
-					tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
+						tinyobj::real_t ux = attrib.texcoords[2 * idx.texcoord_index + 0];
+						tinyobj::real_t uy = attrib.texcoords[2 * idx.texcoord_index + 1];
 
-					tinyobj::real_t ux = attrib.texcoords[2 * idx.texcoord_index + 0];
-					tinyobj::real_t uy = attrib.texcoords[2 * idx.texcoord_index + 1];
-
-					currentSubMesh.vertices.emplace_back(Vertex{Vector3f{vx, vy, vz},
-																Vector3f{nx, ny, nz},
-																Vector3f{nx, ny, nz},
-																Vector2f{ux, 1 - uy}});
+						currentSubMesh.vertices.emplace_back(Vertex{Vector3f{vx, vy, vz},
+																	Vector3f{nx, ny, nz},
+																	Vector3f{nx, ny, nz},
+																	Vector2f{ux, 1 - uy}});
+					}
+					currentSubMesh.indices.push_back(it->second);
 				}
 				index_offset += fv;
 			}

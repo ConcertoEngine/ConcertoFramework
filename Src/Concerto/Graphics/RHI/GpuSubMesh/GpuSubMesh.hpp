@@ -29,6 +29,10 @@ namespace cct::gfx::rhi
 		[[nodiscard]] const rhi::MaterialInstancePtr& GetMaterial() const;
 		[[nodiscard]] const rhi::SubMeshPtr& GetSubMesh() const;
 		const rhi::Buffer& GetVertexBuffer() const;
+		[[nodiscard]] bool HasIndexBuffer() const;
+		const rhi::Buffer& GetIndexBuffer() const;
+		[[nodiscard]] UInt32 GetIndexCount() const;
+		[[nodiscard]] bool UsesUInt32Indices() const;
 		[[nodiscard]] const AABB& GetLocalBounds() const;
 
 		void UploadVertices();
@@ -39,7 +43,10 @@ namespace cct::gfx::rhi
 		rhi::SubMeshPtr m_subMesh;
 		rhi::MaterialInstancePtr m_material;
 		std::unique_ptr<rhi::Buffer> m_vertexBuffer;
+		std::unique_ptr<rhi::Buffer> m_indexBuffer;
 		AABB m_localBounds;
+		UInt32 m_indexCount = 0;
+		bool m_use32BitIndices = true;
 	};
 	using GpuSubMeshPtr = std::shared_ptr<GpuSubMesh>;
 } // namespace cct::gfx::rhi

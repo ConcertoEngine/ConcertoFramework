@@ -15,6 +15,7 @@ namespace cct::gfx::rhi
 	struct ImportedSubMesh
 	{
 		Vertices vertices;
+		Indices indices;
 		std::string materialName;
 	};
 

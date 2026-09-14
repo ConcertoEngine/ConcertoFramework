@@ -19,12 +19,20 @@ namespace cct::gfx::rhi
 	public:
 		explicit SubMesh(Mesh* parent);
 		SubMesh(const Vertices& vertices, std::shared_ptr<rhi::MaterialInfo>& material, Mesh* parent);
-		[[nodiscard]] Vertices& GetVertices();
+		[[nodiscard]] const Vertices& GetVertices() const;
+		[[nodiscard]] const Indices& GetIndices() const;
+		[[nodiscard]] bool HasIndices() const;
 		[[nodiscard]] std::shared_ptr<rhi::MaterialInfo>& GetMaterial();
 		[[nodiscard]] Mesh* GetParent();
 
+		void SetVertices(Vertices vertices);
+		void SetGeometry(Vertices vertices, Indices indices);
+
 	private:
+		void BuildIndices();
+
 		Vertices m_vertices;
+		Indices m_indices;
 		std::shared_ptr<rhi::MaterialInfo> m_material;
 		Mesh* m_parent;
 	};

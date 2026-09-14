@@ -1,5 +1,7 @@
 #include "Concerto/Graphics/Renderer/ForwardOpaqueFeature.hpp"
 
+#include <optional>
+
 #include <Concerto/Core/Math/AABB/AABB.hpp>
 
 #include "Concerto/Graphics/Renderer/RenderScene.hpp"
@@ -26,8 +28,10 @@ namespace cct::gfx
 			});
 			cmd.SetScissor({0, 0, ctx.GetWidth(), ctx.GetHeight()});
 
-			std::size_t lastBoundMaterial = 0;
+			std::optional<std::size_t> lastBoundMaterial;
 			bool lastBindSucceeded = false;
+			const rhi::Buffer* lastVertexBuffer = nullptr;
+			const rhi::Buffer* lastIndexBuffer = nullptr;
 			for (std::size_t i = 0; i < instances.size(); ++i)
 			{
 				const MeshInstance& instance = instances[i];
@@ -49,8 +53,26 @@ namespace cct::gfx
 					if (!lastBindSucceeded)
 						continue;
 					cmd.SetObjectIndex(objectIndex);
-					cmd.BindVertexBuffer(subMesh->GetVertexBuffer());
-					cmd.Draw(static_cast<UInt32>(subMesh->GetVertices().size()), 1, 0, 0);
+					const rhi::Buffer& vertexBuffer = subMesh->GetVertexBuffer();
+					if (lastVertexBuffer != &vertexBuffer)
+					{
+						lastVertexBuffer = &vertexBuffer;
+						cmd.BindVertexBuffer(vertexBuffer);
+					}
+					if (subMesh->HasIndexBuffer())
+					{
+						const rhi::Buffer& indexBuffer = subMesh->GetIndexBuffer();
+						if (lastIndexBuffer != &indexBuffer)
+						{
+							lastIndexBuffer = &indexBuffer;
+							cmd.BindIndexBuffer(indexBuffer, subMesh->UsesUInt32Indices());
+						}
+						cmd.DrawIndexed(subMesh->GetIndexCount(), 1, 0, 0, 0);
+					}
+					else
+					{
+						cmd.Draw(static_cast<UInt32>(subMesh->GetVertices().size()), 1, 0, 0);
+					}
 				}
 			}
 		}

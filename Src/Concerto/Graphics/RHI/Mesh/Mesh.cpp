@@ -30,7 +30,7 @@ namespace cct::gfx::rhi
 	Mesh::Mesh(Vertices vertices)
 	{
 		rhi::SubMeshPtr subMesh = std::make_shared<rhi::SubMesh>(this);
-		subMesh->GetVertices() = std::move(vertices);
+		subMesh->SetVertices(std::move(vertices));
 		m_subMeshes.push_back(subMesh);
 	}
 
@@ -58,7 +58,7 @@ namespace cct::gfx::rhi
 		for (auto& importedSubMesh : imported.subMeshes)
 		{
 			SubMeshPtr subMesh = std::make_shared<SubMesh>(this);
-			subMesh->GetVertices() = std::move(importedSubMesh.vertices);
+			subMesh->SetGeometry(std::move(importedSubMesh.vertices), std::move(importedSubMesh.indices));
 			auto it = m_materials.find(importedSubMesh.materialName);
 			if (it != m_materials.end())
 				subMesh->GetMaterial() = it->second;

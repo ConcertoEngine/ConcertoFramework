@@ -8,6 +8,7 @@
 #include <vector>
 
 #include <Concerto/Core/Math/Vector/Vector.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 
 namespace cct::gfx
 {
@@ -19,6 +20,8 @@ namespace cct::gfx
 		Vector2f uv;
 	};
 	using Vertices = std::vector<Vertex>;
+	using Index = UInt32;
+	using Indices = std::vector<Index>;
 } // namespace cct::gfx
 
 #endif // CONCERTO_GRAPHICS_VERTEX_HPP
