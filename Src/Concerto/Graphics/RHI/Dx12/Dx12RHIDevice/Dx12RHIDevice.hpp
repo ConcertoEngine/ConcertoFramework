@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <mutex>
 #include <optional>
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
@@ -91,10 +92,8 @@ namespace cct::gfx::rhi
 		void EnsureRenderQueue() override;
 
 	private:
-		std::unique_ptr<FrameBuffer> CreateFrameBufferFromResources(UInt32 width, UInt32 height,
-																	const std::vector<ID3D12Resource*>& colorResources);
-
 		std::optional<Dx12RHIDescriptorPool> m_descriptorPool;
+		std::mutex m_descriptorPoolMutex;
 		ID3D12CommandQueue* m_renderQueue = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Fence> m_uploadFence;
 		HANDLE m_uploadEvent = nullptr;

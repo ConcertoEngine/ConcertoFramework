@@ -5,6 +5,7 @@
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
 
 #include <Concerto/Core/DynLib/DynLib.hpp>
+#include <Concerto/Core/Types/Types.hpp>
 
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 
@@ -57,8 +58,9 @@ namespace cct::gfx::dx12
 		ID3D12InfoQueue* infoQueue = nullptr;
 		if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue))))
 		{
-			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+			const BOOL breakOnSeverity = cct::IsDebuggerAttached() ? TRUE : FALSE;
+			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, breakOnSeverity);
+			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, breakOnSeverity);
 			infoQueue->Release();
 		}
 #endif

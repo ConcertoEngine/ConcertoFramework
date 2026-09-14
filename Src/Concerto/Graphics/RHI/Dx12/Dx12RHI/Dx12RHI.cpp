@@ -4,6 +4,8 @@
 
 #include "Concerto/Graphics/RHI/Dx12/Dx12RHI/Dx12RHI.hpp"
 
+#include <Concerto/Core/Types/Types.hpp>
+
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Device/Device.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/Factory/Factory.hpp"
 #include "Concerto/Graphics/Backend/Dx12/Wrapper/PhysicalDevice/PhysicalDevice.hpp"
@@ -64,8 +66,12 @@ namespace cct::gfx::rhi
 		ID3D12InfoQueue* infoQueue = nullptr;
 		if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue))))
 		{
-			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+			// Only break into a real debugger: without one attached, these breaks are
+			// unhandled exceptions and take the whole process down (e.g. on any
+			// first-chance validation ERROR raised during a later draw call).
+			const BOOL breakOnSeverity = cct::IsDebuggerAttached() ? TRUE : FALSE;
+			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, breakOnSeverity);
+			infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, breakOnSeverity);
 			infoQueue->Release();
 		}
 

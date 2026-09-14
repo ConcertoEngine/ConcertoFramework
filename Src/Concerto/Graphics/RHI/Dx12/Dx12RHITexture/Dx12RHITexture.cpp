@@ -9,12 +9,31 @@
 
 namespace cct::gfx::rhi
 {
+	namespace
+	{
+		bool IsDepthFormat(DXGI_FORMAT format)
+		{
+			switch (format)
+			{
+				case DXGI_FORMAT_D32_FLOAT:
+				case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+				case DXGI_FORMAT_D24_UNORM_S8_UINT:
+				case DXGI_FORMAT_D16_UNORM:
+					return true;
+				default:
+					return false;
+			}
+		}
+	} // namespace
+
 	Dx12RHITexture::Dx12RHITexture(Dx12RHIDevice& device, PixelFormat format, Int32 width, Int32 height, bool allowUnorderedAccess) :
 		m_device(&device),
 		m_format(dx12::Factory::PixelFormatToDXGI(format))
 	{
 		m_width = static_cast<UInt32>(width);
 		m_height = static_cast<UInt32>(height);
+
+		const bool isDepth = IsDepthFormat(m_format);
 
 		D3D12_HEAP_PROPERTIES heapProperties = {};
 		heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
@@ -32,21 +51,36 @@ namespace cct::gfx::rhi
 		resourceDesc.SampleDesc.Count = 1;
 		resourceDesc.SampleDesc.Quality = 0;
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-		if (allowUnorderedAccess)
-			resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		if (isDepth)
+			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		else
+		{
+			resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+			if (allowUnorderedAccess)
+				resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
 
-		const D3D12_RESOURCE_STATES initialState = allowUnorderedAccess
-													   ? D3D12_RESOURCE_STATE_UNORDERED_ACCESS
-													   : D3D12_RESOURCE_STATE_COMMON;
+		const D3D12_RESOURCE_STATES initialState = isDepth
+													   ? D3D12_RESOURCE_STATE_DEPTH_WRITE
+													   : (allowUnorderedAccess
+															  ? D3D12_RESOURCE_STATE_UNORDERED_ACCESS
+															  : D3D12_RESOURCE_STATE_COMMON);
 		m_currentState = initialState;
 
 		D3D12_CLEAR_VALUE clearValue{};
 		clearValue.Format = resourceDesc.Format;
-		clearValue.Color[0] = 0.f;
-		clearValue.Color[1] = 0.f;
-		clearValue.Color[2] = 0.f;
-		clearValue.Color[3] = 0.f;
+		if (isDepth)
+		{
+			clearValue.DepthStencil.Depth = 1.f;
+			clearValue.DepthStencil.Stencil = 0;
+		}
+		else
+		{
+			clearValue.Color[0] = 0.f;
+			clearValue.Color[1] = 0.f;
+			clearValue.Color[2] = 0.f;
+			clearValue.Color[3] = 0.f;
+		}
 
 		HRESULT hr = device.Get()->CreateCommittedResource(
 			&heapProperties,

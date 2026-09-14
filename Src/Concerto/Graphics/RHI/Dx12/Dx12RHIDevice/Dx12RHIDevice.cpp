@@ -56,68 +56,131 @@ namespace cct::gfx::rhi
 		return std::make_unique<Dx12RHIRenderPass>(attachments, subPassDescriptions, subPassDependencies);
 	}
 
-	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBufferFromResources(UInt32 width, UInt32 height,
-																			   const std::vector<ID3D12Resource*>& colorResources)
+	namespace
 	{
-		std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
-		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> rtResources;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
-
-		if (!colorResources.empty())
+		bool IsDx12DepthFormat(DXGI_FORMAT format)
 		{
-			auto* d3dDevice = dx12::Device::Get();
-
-			D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
-			heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-			heapDesc.NumDescriptors = static_cast<UINT>(colorResources.size());
-			heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-			HRESULT hr = d3dDevice->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeap));
-			CCT_ASSERT(SUCCEEDED(hr), "ConcertoGraphics: Failed to create DX12 RTV descriptor heap HRESULT={}", hr);
-
-			const UINT rtvSize = d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-			D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
-
-			rtvHandles.reserve(colorResources.size());
-			rtResources.reserve(colorResources.size());
-			for (ID3D12Resource* resource : colorResources)
+			switch (format)
 			{
-				d3dDevice->CreateRenderTargetView(resource, nullptr, handle);
-				rtvHandles.push_back(handle);
-				rtResources.emplace_back(resource);
-				handle.ptr += rtvSize;
+				case DXGI_FORMAT_D32_FLOAT:
+				case DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+				case DXGI_FORMAT_D24_UNORM_S8_UINT:
+				case DXGI_FORMAT_D16_UNORM:
+					return true;
+				default:
+					return false;
 			}
 		}
 
-		return std::make_unique<Dx12RHIFrameBuffer>(width, height, std::move(rtvHandles), std::move(rtResources),
-													std::nullopt, nullptr, std::move(rtvHeap));
-	}
+		struct Dx12RHIAttachment
+		{
+			ID3D12Resource* Resource;
+			DXGI_FORMAT Format;
+		};
+
+		std::unique_ptr<FrameBuffer> CreateFrameBufferFromAttachments(ID3D12Device* d3dDevice, UInt32 width, UInt32 height,
+																	  const std::vector<Dx12RHIAttachment>& attachments)
+		{
+			std::vector<Dx12RHIAttachment> colorAttachments;
+			Dx12RHIAttachment depthAttachment{nullptr, DXGI_FORMAT_UNKNOWN};
+			colorAttachments.reserve(attachments.size());
+			for (const Dx12RHIAttachment& attachment : attachments)
+			{
+				if (!attachment.Resource)
+					continue;
+				if (IsDx12DepthFormat(attachment.Format))
+					depthAttachment = attachment;
+				else
+					colorAttachments.push_back(attachment);
+			}
+
+			std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> rtvHandles;
+			std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> rtResources;
+			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap;
+
+			if (!colorAttachments.empty())
+			{
+				D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};
+				heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+				heapDesc.NumDescriptors = static_cast<UINT>(colorAttachments.size());
+				heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+				HRESULT hr = d3dDevice->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&rtvHeap));
+				CCT_ASSERT(SUCCEEDED(hr), "ConcertoGraphics: Failed to create DX12 RTV descriptor heap HRESULT={}", hr);
+
+				const UINT rtvSize = d3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+				D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+
+				rtvHandles.reserve(colorAttachments.size());
+				rtResources.reserve(colorAttachments.size());
+				for (const Dx12RHIAttachment& attachment : colorAttachments)
+				{
+					// Explicit desc: the resource's own creation format may differ from the
+					// logical attachment format (e.g. a flip-model swap chain back buffer is
+					// created as UNORM but rendered to through an SRGB view), and the pipeline
+					// state is built from the logical format via Dx12RHIRenderPass -- passing
+					// nullptr here would let CreateRenderTargetView infer the resource's raw
+					// format instead, producing RENDER_TARGET_FORMAT_MISMATCH_PIPELINE_STATE.
+					D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+					rtvDesc.Format = attachment.Format;
+					rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+					d3dDevice->CreateRenderTargetView(attachment.Resource, &rtvDesc, handle);
+					rtvHandles.push_back(handle);
+					rtResources.emplace_back(attachment.Resource);
+					handle.ptr += rtvSize;
+				}
+			}
+
+			std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandle;
+			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap;
+			if (depthAttachment.Resource)
+			{
+				D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
+				dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+				dsvHeapDesc.NumDescriptors = 1;
+				dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+				HRESULT hr = d3dDevice->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
+				CCT_ASSERT(SUCCEEDED(hr), "ConcertoGraphics: Failed to create DX12 DSV descriptor heap HRESULT={}", hr);
+				if (SUCCEEDED(hr))
+				{
+					dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
+					D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+					dsvDesc.Format = depthAttachment.Format;
+					dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+					d3dDevice->CreateDepthStencilView(depthAttachment.Resource, &dsvDesc, *dsvHandle);
+				}
+			}
+
+			return std::make_unique<Dx12RHIFrameBuffer>(width, height, std::move(rtvHandles), std::move(rtResources),
+														dsvHandle, dsvHandle.has_value() ? depthAttachment.Resource : nullptr, std::move(rtvHeap), std::move(dsvHeap));
+		}
+	} // namespace
 
 	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBuffer(UInt32 width, UInt32 height,
 																  const RenderPass& /*renderPass*/, const std::vector<std::unique_ptr<Texture>>& attachments)
 	{
-		std::vector<ID3D12Resource*> colorResources;
-		colorResources.reserve(attachments.size());
+		std::vector<Dx12RHIAttachment> resources;
+		resources.reserve(attachments.size());
 		for (const auto& attachment : attachments)
 		{
 			if (auto* dx12Texture = dynamic_cast<const Dx12RHITexture*>(attachment.get()))
-				colorResources.push_back(dx12Texture->GetResource());
+				resources.push_back({dx12Texture->GetResource(), dx12Texture->GetFormat()});
 		}
 
-		return CreateFrameBufferFromResources(width, height, colorResources);
+		return CreateFrameBufferFromAttachments(dx12::Device::Get(), width, height, resources);
 	}
 
 	std::unique_ptr<FrameBuffer> Dx12RHIDevice::CreateFrameBuffer(UInt32 width, UInt32 height,
 																  const RenderPass& /*renderPass*/, const std::vector<std::unique_ptr<TextureView>>& attachments)
 	{
-		std::vector<ID3D12Resource*> colorResources;
-		colorResources.reserve(attachments.size());
+		std::vector<Dx12RHIAttachment> resources;
+		resources.reserve(attachments.size());
 		for (const auto& attachment : attachments)
 		{
 			if (auto* dx12View = dynamic_cast<const Dx12RHITextureView*>(attachment.get()))
-				colorResources.push_back(dx12View->GetResource());
+				resources.push_back({dx12View->GetResource(), dx12View->GetFormat()});
 		}
 
-		return CreateFrameBufferFromResources(width, height, colorResources);
+		return CreateFrameBufferFromAttachments(dx12::Device::Get(), width, height, resources);
 	}
 
 	std::unique_ptr<MaterialBuilder> Dx12RHIDevice::CreateMaterialBuilder(const Vector2u& windowExtent, TextureBuilder& textureBuilder)
@@ -549,6 +612,7 @@ namespace cct::gfx::rhi
 
 	Dx12RHIDescriptorPool& Dx12RHIDevice::GetDescriptorPool()
 	{
+		std::lock_guard<std::mutex> lock(m_descriptorPoolMutex);
 		if (!m_descriptorPool.has_value())
 		{
 			m_descriptorPool.emplace();

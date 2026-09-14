@@ -21,7 +21,8 @@ namespace cct::gfx::rhi
 						   std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> renderTargetResources,
 						   std::optional<D3D12_CPU_DESCRIPTOR_HANDLE> dsvHandle = std::nullopt,
 						   Microsoft::WRL::ComPtr<ID3D12Resource> depthResource = nullptr,
-						   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap = nullptr);
+						   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvHeap = nullptr,
+						   Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr);
 
 		UInt32 GetWidth() const override
 		{
@@ -57,6 +58,7 @@ namespace cct::gfx::rhi
 		std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> m_renderTargetResources;
 		Microsoft::WRL::ComPtr<ID3D12Resource> m_depthResource;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
 	};
 } // namespace cct::gfx::rhi
 
