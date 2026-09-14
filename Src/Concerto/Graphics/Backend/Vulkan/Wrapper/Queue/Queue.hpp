@@ -12,7 +12,6 @@ namespace cct::gfx::vk
 {
 	class Device;
 	class SwapChain;
-	class FrameData;
 	class CommandBuffer;
 	class Semaphore;
 	class Fence;
