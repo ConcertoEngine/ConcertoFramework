@@ -155,6 +155,11 @@ namespace cct::gfx
 			for (auto& externalVariable : extDecl.externalVars)
 			{
 				const auto* varType = &externalVariable.type.GetResultingValue();
+				// Push constants aren't part of a descriptor set (no [set]/[binding] attributes);
+				// the RHI layer wires them through a fixed, backend-owned push/root constant range instead.
+				if (nzsl::Ast::IsPushConstantType(*varType))
+					continue;
+
 				const ShaderBindingType descriptorType = GetBindingType(varType);
 				UInt32 bindingSet = externalVariable.bindingSet.GetResultingValue();
 				UInt32 bindingIndex = externalVariable.bindingIndex.GetResultingValue();
@@ -264,6 +269,9 @@ namespace cct::gfx
 				for (auto& externalVariable : extDecl.externalVars)
 				{
 					const auto* varType = &externalVariable.type.GetResultingValue();
+					if (nzsl::Ast::IsPushConstantType(*varType))
+						continue;
+
 					const ShaderBindingType descriptorType = GetBindingType(varType);
 					UInt32 bindingSet = externalVariable.bindingSet.GetResultingValue();
 

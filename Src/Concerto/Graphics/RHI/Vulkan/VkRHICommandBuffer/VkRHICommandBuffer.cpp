@@ -153,6 +153,7 @@ namespace cct::gfx::rhi
 		const auto& pipeline = Cast<const VkRHIPipeline&>(*material.materialTemplate->pipeline);
 
 		const auto& pipelineLayout = pipeline.GetLayout();
+		m_currentPipelineLayout = *pipelineLayout.Get();
 
 		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetPipeline());
 
@@ -184,6 +185,14 @@ namespace cct::gfx::rhi
 		CCT_AUTO_PROFILER_SCOPE();
 
 		vk::CommandBuffer::Draw(vertexCount, instanceCount, firstVertex, firstInstance);
+	}
+
+	void VkRHICommandBuffer::SetObjectIndex(UInt32 index)
+	{
+		if (m_currentPipelineLayout == VK_NULL_HANDLE)
+			return;
+
+		vk::CommandBuffer::PushConstants(m_currentPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(UInt32), &index);
 	}
 
 	void VkRHICommandBuffer::Copy(const Buffer& src, const Texture& dst)
@@ -320,12 +329,16 @@ namespace cct::gfx::rhi
 	void VkRHICommandBuffer::BindPipeline(const Pipeline& pipeline)
 	{
 		const auto& vkPipeline = Cast<const VkRHIPipeline&>(pipeline);
+		m_currentPipelineLayout = *vkPipeline.GetLayout().Get();
 		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline.GetPipeline());
 	}
 
 	void VkRHICommandBuffer::BindComputePipeline(const Pipeline& pipeline)
 	{
 		const auto& vkPipeline = Cast<const VkRHIPipeline&>(pipeline);
+		// Object-index push constant is vertex-only; drop the cache so a stray SetObjectIndex()
+		// after this bind can't push against a compute-bound pipeline layout.
+		m_currentPipelineLayout = VK_NULL_HANDLE;
 		vk::CommandBuffer::BindPipeline(VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline.GetPipeline());
 	}
 

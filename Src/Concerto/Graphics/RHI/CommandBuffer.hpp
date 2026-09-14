@@ -50,6 +50,10 @@ namespace cct::gfx::rhi
 		virtual bool BindMaterial(const MaterialInstance& material) = 0;
 		virtual void BindVertexBuffer(const rhi::Buffer& buffer) = 0;
 		virtual void Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance) = 0;
+		// Sets the per-draw object index consumed by shaders, via a small push/root constant. Must be set before Draw()/DrawIndexed().
+		virtual void SetObjectIndex(UInt32 /*index*/)
+		{
+		}
 		virtual void Copy(const Buffer& src, const Texture& dst) = 0;
 		virtual void Copy(const Texture& src, const Buffer& dst, UInt64 dstOffset = 0) = 0;
 		virtual void TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout) = 0;

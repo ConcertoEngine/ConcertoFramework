@@ -48,8 +48,9 @@ namespace cct::gfx
 					}
 					if (!lastBindSucceeded)
 						continue;
+					cmd.SetObjectIndex(objectIndex);
 					cmd.BindVertexBuffer(subMesh->GetVertexBuffer());
-					cmd.Draw(static_cast<UInt32>(subMesh->GetVertices().size()), 1, 0, objectIndex);
+					cmd.Draw(static_cast<UInt32>(subMesh->GetVertices().size()), 1, 0, 0);
 				}
 			}
 		}

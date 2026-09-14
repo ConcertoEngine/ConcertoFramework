@@ -215,6 +215,14 @@ namespace cct::gfx::vk
 		m_device->vkCmdPushConstants(m_handle, pipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(MeshPushConstants), &meshPushConstants);
 	}
 
+	void CommandBuffer::PushConstants(VkPipelineLayout pipelineLayout, VkShaderStageFlags stageFlags, UInt32 offset, UInt32 size, const void* data) const
+	{
+		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");
+		CCT_AUTO_PROFILER_SCOPE();
+
+		m_device->vkCmdPushConstants(m_handle, pipelineLayout, stageFlags, offset, size, data);
+	}
+
 	void CommandBuffer::BindDescriptorSets(const VkPipelineBindPoint pipelineBindPoint, const VkPipelineLayout pipelineLayout, const UInt32 firstSet, const UInt32 descriptorSetCount, const DescriptorSet& descriptorSet, const UInt32 dynamicOffsets) const
 	{
 		CCT_ASSERT(IsValid(), "Invalid object state, 'Create' must be called");

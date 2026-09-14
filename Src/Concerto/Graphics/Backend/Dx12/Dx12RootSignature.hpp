@@ -16,6 +16,10 @@ namespace cct::gfx::dx12
 {
 	using Microsoft::WRL::ComPtr;
 
+	// Register/space reserved for the per-draw object-index push constant; far outside the range of NZSL [set(N)] values so it never collides.
+	constexpr UINT kObjectIndexRegister = 0;
+	constexpr UINT kObjectIndexRegisterSpace = 999;
+
 	/**
 	 * @brief DX12 Root Signature builder and wrapper
 	 * Equivalent to VkPipelineLayout in Vulkan
@@ -54,6 +58,14 @@ namespace cct::gfx::dx12
 		// Returns UINT_MAX if not found
 		UINT GetRootParameterIndex(UINT setIndex, bool isSampler = false) const noexcept;
 
+		// Root parameter index of the reserved object-index root constant (see
+		// kObjectIndexRegister/kObjectIndexRegisterSpace above). Graphics signatures always
+		// reserve this slot; UINT_MAX for compute-only signatures, which don't need it.
+		UINT GetObjectIndexRootParameter() const noexcept
+		{
+			return m_objectIndexRootParam;
+		}
+
 	private:
 		ComPtr<ID3D12RootSignature> m_rootSignature;
 		struct RootParamMapping
@@ -64,5 +76,6 @@ namespace cct::gfx::dx12
 		};
 		std::vector<RootParamMapping> m_setIndexToRootParam;
 		size_t m_parameterCount = 0;
+		UINT m_objectIndexRootParam = UINT_MAX;
 	};
 } // namespace cct::gfx::dx12

@@ -14,13 +14,29 @@ namespace cct::gfx::dx12
 													 ? D3D12_ROOT_SIGNATURE_FLAG_NONE
 													 : D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
+		// Build root parameters
+		std::vector<D3D12_ROOT_PARAMETER1> rootParameters;
+		rootParameters.reserve(tables.size() + 1);
+
+		// Reserved object-index root constant, vertex-only: meaningless for a compute pipeline.
+		if (!computeOnly)
+		{
+			D3D12_ROOT_PARAMETER1 objectIndexParam{};
+			objectIndexParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+			objectIndexParam.Constants.ShaderRegister = kObjectIndexRegister;
+			objectIndexParam.Constants.RegisterSpace = kObjectIndexRegisterSpace;
+			objectIndexParam.Constants.Num32BitValues = 1;
+			objectIndexParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+			m_objectIndexRootParam = static_cast<UINT>(rootParameters.size());
+			rootParameters.push_back(objectIndexParam);
+		}
+
 		if (tables.empty())
 		{
-			// Create an empty root signature
 			D3D12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 			rootSignatureDesc.Version = D3D_ROOT_SIGNATURE_VERSION_1_1;
-			rootSignatureDesc.Desc_1_1.NumParameters = 0;
-			rootSignatureDesc.Desc_1_1.pParameters = nullptr;
+			rootSignatureDesc.Desc_1_1.NumParameters = static_cast<UINT>(rootParameters.size());
+			rootSignatureDesc.Desc_1_1.pParameters = rootParameters.data();
 			rootSignatureDesc.Desc_1_1.NumStaticSamplers = 0;
 			rootSignatureDesc.Desc_1_1.pStaticSamplers = nullptr;
 			rootSignatureDesc.Desc_1_1.Flags = flags;
@@ -36,13 +52,9 @@ namespace cct::gfx::dx12
 											IID_PPV_ARGS(&m_rootSignature)),
 				"Failed to create root signature");
 
-			m_parameterCount = 0;
+			m_parameterCount = rootParameters.size();
 			return;
 		}
-
-		// Build root parameters
-		std::vector<D3D12_ROOT_PARAMETER1> rootParameters;
-		rootParameters.reserve(tables.size());
 
 		// Keep descriptor ranges alive during serialization
 		std::vector<std::vector<D3D12_DESCRIPTOR_RANGE1>> allRanges;

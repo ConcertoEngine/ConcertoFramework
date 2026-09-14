@@ -35,6 +35,9 @@ namespace cct::gfx::rhi
 	void Dx12RHICommandBuffer::Begin()
 	{
 		dx12::CommandList::Reset();
+		// A reset command list has no root signature bound yet; drop the cached one so
+		// SetObjectIndex() can't fire SetGraphicsRoot32BitConstant against a stale index.
+		m_currentRootSignature = nullptr;
 	}
 
 	void Dx12RHICommandBuffer::End()
@@ -88,11 +91,11 @@ namespace cct::gfx::rhi
 		const auto& rtvHandles = dx12FrameBuffer.GetRTVHandles();
 		const auto& dsvHandle = dx12FrameBuffer.GetDSVHandle();
 
-		if (!rtvHandles.empty())
+		if (!rtvHandles.empty() || dsvHandle.has_value())
 		{
 			Get()->OMSetRenderTargets(
 				static_cast<UINT>(rtvHandles.size()),
-				rtvHandles.data(),
+				rtvHandles.empty() ? nullptr : rtvHandles.data(),
 				FALSE,
 				dsvHandle.has_value() ? &dsvHandle.value() : nullptr);
 		}
@@ -137,11 +140,17 @@ namespace cct::gfx::rhi
 	{
 		Get()->SetPipelineState(pipeline.GetPipelineState());
 		if (isCompute)
+		{
 			Get()->SetComputeRootSignature(pipeline.GetLayout().GetRootSignature().Get());
+			// Object-index root constant is vertex-only; drop the graphics cache so a stray
+			// SetObjectIndex() after this bind can't target the wrong (now compute) signature.
+			m_currentRootSignature = nullptr;
+		}
 		else
 		{
 			Get()->SetGraphicsRootSignature(pipeline.GetLayout().GetRootSignature().Get());
 			m_currentVertexStride = pipeline.GetVertexStride();
+			m_currentRootSignature = &pipeline.GetLayout().GetRootSignature();
 		}
 
 		auto& pool = m_device->GetDescriptorPool();
@@ -287,6 +296,14 @@ namespace cct::gfx::rhi
 			return;
 
 		Get()->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
+	}
+
+	void Dx12RHICommandBuffer::SetObjectIndex(UInt32 index)
+	{
+		if (!IsValid() || !m_currentRootSignature)
+			return;
+
+		Get()->SetGraphicsRoot32BitConstant(m_currentRootSignature->GetObjectIndexRootParameter(), index, 0);
 	}
 
 	void Dx12RHICommandBuffer::Copy(const Buffer& src, const Texture& dst)

@@ -9,6 +9,7 @@
 
 #include <Concerto/Core/Assert.hpp>
 
+#include "Concerto/Graphics/Backend/Dx12/Dx12RootSignature.hpp"
 #include "Concerto/Graphics/Core/Defines.hpp"
 #include <spirv_cross/spirv_hlsl.hpp>
 #include <wrl/client.h>
@@ -92,6 +93,11 @@ namespace cct::gfx::rhi
 			auto common = compiler.get_common_options();
 			common.vertex.flip_vert_y = true;
 			compiler.set_common_options(common);
+
+			// Pin the object-index push constant to the register reserved for it in every root signature.
+			compiler.set_root_constant_layouts({
+				{0, 4, dx12::kObjectIndexRegister, dx12::kObjectIndexRegisterSpace},
+			});
 
 			hlslSource = compiler.compile();
 			hlslEntryPoint = compiler.get_cleansed_entry_point_name(entryPointName, executionModel);

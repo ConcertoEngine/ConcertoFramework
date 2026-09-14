@@ -45,6 +45,7 @@ namespace cct::gfx::rhi
 		void ClearTexture(const Texture& texture, const Vector4f& clearColor) override;
 		void BindVertexBuffer(const rhi::Buffer& buffer) override;
 		void Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance) override;
+		void SetObjectIndex(UInt32 index) override;
 		void Copy(const Buffer& src, const Texture& dst) override;
 		void Copy(const Texture& src, const Buffer& dst, UInt64 dstOffset = 0) override;
 		void TransitionImageLayout(const Texture& texture, ImageLayout oldLayout, ImageLayout newLayout) override;
@@ -75,6 +76,7 @@ namespace cct::gfx::rhi
 		void BindDescriptorSetImpl(const dx12::Dx12RootSignature& rootSig, const Dx12RHIDescriptorSet& set, UINT setIndex, bool isCompute);
 		Dx12RHIDevice* m_device = nullptr;
 		const Dx12RHIFrameBuffer* m_currentFrameBuffer = nullptr;
+		const dx12::Dx12RootSignature* m_currentRootSignature = nullptr;
 		UInt32 m_currentVertexStride = 0;
 	};
 } // namespace cct::gfx::rhi

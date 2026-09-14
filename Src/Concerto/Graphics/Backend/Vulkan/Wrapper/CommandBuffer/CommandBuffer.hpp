@@ -58,6 +58,7 @@ namespace cct::gfx::vk
 
 		void UpdatePushConstants(const PipelineLayout& pipelineLayout, const MeshPushConstants& meshPushConstants) const;
 		void UpdatePushConstants(VkPipelineLayout pipelineLayout, const MeshPushConstants& meshPushConstants) const;
+		void PushConstants(VkPipelineLayout pipelineLayout, VkShaderStageFlags stageFlags, UInt32 offset, UInt32 size, const void* data) const;
 
 		void Draw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex,
 				  UInt32 firstInstance) const;

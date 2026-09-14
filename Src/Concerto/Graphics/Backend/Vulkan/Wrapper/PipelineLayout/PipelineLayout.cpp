@@ -33,14 +33,20 @@ namespace cct::gfx::vk
 		for (const auto& descriptorSetLayout : m_descriptorSetLayouts)
 			vkDescriptorSetLayouts.push_back(*descriptorSetLayout->Get());
 
+		// Reserved for the per-draw object index, pushed via CommandBuffer::PushConstants before each draw.
+		VkPushConstantRange objectIndexRange{};
+		objectIndexRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		objectIndexRange.offset = 0;
+		objectIndexRange.size = sizeof(UInt32);
+
 		VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo;
 		pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutCreateInfo.pNext = nullptr;
 		pipelineLayoutCreateInfo.flags = 0;
 		pipelineLayoutCreateInfo.setLayoutCount = static_cast<UInt32>(vkDescriptorSetLayouts.size());
 		pipelineLayoutCreateInfo.pSetLayouts = vkDescriptorSetLayouts.data();
-		pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
-		pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
+		pipelineLayoutCreateInfo.pushConstantRangeCount = 1;
+		pipelineLayoutCreateInfo.pPushConstantRanges = &objectIndexRange;
 
 		m_lastResult = m_device->vkCreatePipelineLayout(*m_device->Get(), &pipelineLayoutCreateInfo, nullptr, &m_handle);
 		CCT_ASSERT(m_lastResult == VK_SUCCESS, "ConcertoGraphics: vkCreatePipelineLayout failed VKResult={}", static_cast<int>(m_lastResult));
