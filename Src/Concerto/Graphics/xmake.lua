@@ -1,6 +1,6 @@
 add_repositories("nazara-repo https://github.com/NazaraEngine/xmake-repo")
 
-add_requires("nazara-repo@nzsl 7dd436ce2815202e9a64fb54c736b13d5be8067a", {alias = "nzsl", configs = {shared = false}})
+add_requires("nazara-repo@nzsl v1.2.0", {alias = "nzsl", configs = {shared = false}})
 add_requires("vulkan-headers >=1.4.309")
 add_requires("vulkan-memory-allocator", "stb", "vulkan-utility-libraries", "parallel-hashmap", "tinyobjloader")
 add_requires("libsdl3", {configs = {wayland = is_plat("linux", "bsd"), x11 = is_plat("linux", "bsd")}})
