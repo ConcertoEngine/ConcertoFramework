@@ -65,7 +65,7 @@ int main()
 			return EXIT_FAILURE;
 		}
 
-		std::size_t minimumAlignment = device->GetMinimumUniformBufferOffsetAlignment();
+		std::size_t minimumAlignment = device->GetLimits().m_minUniformBufferOffsetAlignment;
 		std::unique_ptr<rhi::SwapChain> swapChain = device->CreateSwapChain(*window);
 
 		RenderScene scene;

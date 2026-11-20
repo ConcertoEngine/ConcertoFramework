@@ -35,6 +35,9 @@ namespace cct::gfx::rhi
 		rhi::Device(),
 		dx12::Device(device, physicalDevice)
 	{
+		m_limits.m_minUniformBufferOffsetAlignment = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
+		m_limits.m_minStorageBufferOffsetAlignment = D3D12_UAV_COUNTER_PLACEMENT_ALIGNMENT;
+		m_limits.m_textureCompressionBc = true;
 	}
 
 	Dx12RHIDevice::~Dx12RHIDevice() = default;
@@ -295,11 +298,6 @@ namespace cct::gfx::rhi
 	std::unique_ptr<Buffer> Dx12RHIDevice::CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping)
 	{
 		return std::make_unique<Dx12RHIBuffer>(*this, usage, allocationSize, allowBufferMapping);
-	}
-
-	std::size_t Dx12RHIDevice::GetMinimumUniformBufferOffsetAlignment() const
-	{
-		return D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
 	}
 
 	std::unique_ptr<GpuMesh> Dx12RHIDevice::CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, rhi::TextureBuilder& textureBuilder, const RenderPass& renderPass)

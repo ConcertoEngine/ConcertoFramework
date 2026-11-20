@@ -4,6 +4,8 @@
 
 #include "Concerto/Graphics/RHI/Vulkan/VkRHIDevice/VkRHIDevice.hpp"
 
+#include <algorithm>
+#include <limits>
 #include <Concerto/Core/Assert.hpp>
 #include <Concerto/Core/Cast.hpp>
 
@@ -38,6 +40,24 @@ namespace cct::gfx::rhi
 		vk::Device(physicalDevice),
 		m_surface(nullptr)
 	{
+		const auto& vkLimits = GetPhysicalDevice().GetProperties().limits;
+		auto highestBit = [](VkSampleCountFlags f) -> UInt32 {
+			for (UInt32 s = 64; s >= 1; s >>= 1)
+				if (f & s) return s;
+			return 1;
+		};
+		auto clampGL = [](UInt32 v) { return std::min(v, static_cast<UInt32>(std::numeric_limits<std::int32_t>::max())); };
+
+		m_limits.m_minUniformBufferOffsetAlignment = vkLimits.minUniformBufferOffsetAlignment;
+		m_limits.m_minStorageBufferOffsetAlignment = vkLimits.minStorageBufferOffsetAlignment;
+		m_limits.m_maxUniformBufferRange = clampGL(vkLimits.maxUniformBufferRange);
+		m_limits.m_maxStorageBufferRange = clampGL(vkLimits.maxStorageBufferRange);
+		m_limits.m_maxImageUnits = std::min(vkLimits.maxPerStageDescriptorStorageImages, 64u);
+		m_limits.m_maxTextureSize = clampGL(vkLimits.maxImageDimension2D);
+		m_limits.m_maxColorAttachments = clampGL(vkLimits.maxColorAttachments);
+		m_limits.m_maxVertexAttribs = clampGL(vkLimits.maxVertexInputAttributes);
+		m_limits.m_maxSamples = highestBit(vkLimits.framebufferColorSampleCounts & vkLimits.framebufferDepthSampleCounts);
+		m_limits.m_textureCompressionBc = GetPhysicalDevice().GetFeatures().textureCompressionBC == VK_TRUE;
 	}
 
 	VkRHIDevice::~VkRHIDevice()
@@ -207,11 +227,6 @@ namespace cct::gfx::rhi
 	std::unique_ptr<rhi::Buffer> VkRHIDevice::CreateBuffer(rhi::BufferUsageFlags usage, UInt32 allocationSize, bool allowBufferMapping)
 	{
 		return std::make_unique<VkRHIBuffer>(*this, usage, allocationSize, allowBufferMapping);
-	}
-
-	std::size_t VkRHIDevice::GetMinimumUniformBufferOffsetAlignment() const
-	{
-		return vk::Device::GetPhysicalDevice().GetProperties().limits.minUniformBufferOffsetAlignment;
 	}
 
 	std::unique_ptr<GpuMesh> VkRHIDevice::CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, rhi::TextureBuilder& textureBuilder, const RenderPass& renderPass)

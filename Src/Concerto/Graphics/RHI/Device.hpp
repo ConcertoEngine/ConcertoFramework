@@ -54,6 +54,20 @@ namespace cct::gfx::rhi
 		DeviceType type;
 	};
 
+	struct DeviceLimits
+	{
+		std::size_t m_minUniformBufferOffsetAlignment = 256;
+		std::size_t m_minStorageBufferOffsetAlignment = 256;
+		UInt32 m_maxUniformBufferRange = 65536;
+		UInt32 m_maxStorageBufferRange = 134217728;
+		UInt32 m_maxImageUnits = 8;
+		UInt32 m_maxTextureSize = 16384;
+		UInt32 m_maxColorAttachments = 8;
+		UInt32 m_maxVertexAttribs = 16;
+		UInt32 m_maxSamples = 4;
+		bool m_textureCompressionBc = false;
+	};
+
 	class ShaderModule;
 	class DescriptorSetLayout;
 	class PipelineLayout;
@@ -106,7 +120,7 @@ namespace cct::gfx::rhi
 			return nullptr;
 		}
 		virtual std::unique_ptr<DescriptorSet> CreateDescriptorSet(const DescriptorSetLayout& layout) = 0;
-		virtual std::size_t GetMinimumUniformBufferOffsetAlignment() const = 0;
+		[[nodiscard]] const DeviceLimits& GetLimits() const { return m_limits; }
 		virtual std::shared_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height) = 0;
 		virtual void WaitIdle() = 0;
 		virtual std::unique_ptr<GpuMesh> CreateMesh(const std::string& meshPath, rhi::MaterialBuilder& materialBuilder, rhi::TextureBuilder& textureBuilder, const RenderPass& renderPass) = 0;
@@ -204,6 +218,9 @@ namespace cct::gfx::rhi
 
 	private:
 		ThreadPool m_threadPool;
+
+	protected:
+		DeviceLimits m_limits;
 	};
 } // namespace cct::gfx::rhi
 

@@ -52,7 +52,6 @@ namespace cct::gfx::rhi
 													  const Vector2u& windowExtent, const rhi::PipelineConfig& config) override;
 		std::shared_ptr<rhi::Pipeline> CreateComputePipeline(const rhi::ShaderModule& computeShader, const rhi::PipelineLayout& pipelineLayout) override;
 		std::unique_ptr<rhi::DescriptorSet> CreateDescriptorSet(const rhi::DescriptorSetLayout& layout) override;
-		std::size_t GetMinimumUniformBufferOffsetAlignment() const override;
 		std::shared_ptr<Texture> CreateTexture(PixelFormat format, Int32 width, Int32 height) override;
 		std::shared_ptr<Texture> CreateStorageTexture(PixelFormat format, Int32 width, Int32 height) override;
 		void WaitIdle() override;
