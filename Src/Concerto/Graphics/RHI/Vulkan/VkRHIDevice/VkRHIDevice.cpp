@@ -219,6 +219,12 @@ namespace cct::gfx::rhi
 		return std::make_shared<VkRHIShaderModule>(*this, std::move(coreShaderModule));
 	}
 
+	std::shared_ptr<rhi::ShaderModule> VkRHIDevice::CreateShaderModuleFromSpirv(const std::vector<UInt32>& spirv, cct::gfx::ShaderStage stage)
+	{
+		cct::gfx::ShaderModule coreShaderModule(spirv, {}, "main", stage);
+		return std::make_shared<VkRHIShaderModule>(*this, std::move(coreShaderModule));
+	}
+
 	std::unique_ptr<CommandPool> VkRHIDevice::CreateCommandPool(rhi::QueueFamily family, CommandBufferUsage usage)
 	{
 		return std::make_unique<VkRHICommandPool>(*this, family, usage);

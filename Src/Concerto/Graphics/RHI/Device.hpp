@@ -104,6 +104,10 @@ namespace cct::gfx::rhi
 		{
 			return nullptr;
 		}
+		virtual std::shared_ptr<ShaderModule> CreateShaderModuleFromSpirv(const std::vector<UInt32>& /*spirv*/, cct::gfx::ShaderStage /*stage*/)
+		{
+			return nullptr;
+		}
 		virtual std::shared_ptr<DescriptorSetLayout> CreateDescriptorSetLayout(const std::vector<cct::gfx::DescriptorSetLayoutBinding>& bindings) = 0;
 		virtual std::shared_ptr<PipelineLayout> CreatePipelineLayout(const std::vector<std::shared_ptr<DescriptorSetLayout>>& descriptorSetLayouts) = 0;
 		virtual std::shared_ptr<Pipeline> CreatePipeline(const ShaderModule& vertexShader, const ShaderModule& fragmentShader,
